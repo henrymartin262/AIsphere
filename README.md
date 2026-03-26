@@ -201,7 +201,7 @@ All contracts deployed and verified on 0G Testnet (Chain ID: 16602).
 
 ```bash
 # Clone repository
-git clone https://github.com/siriusyao/SealMind.git
+git clone https://github.com/henrymartin262/SealMind.git
 cd SealMind
 
 # Install dependencies (monorepo)
@@ -517,7 +517,7 @@ MIT
 
 ## 🔗 Links
 
-- **GitHub**: https://github.com/siriusyao/SealMind
+- **GitHub**: https://github.com/henrymartin262/SealMind
 - **0G Network**: https://0g.ai
 - **0G Explorer (Testnet)**: https://chainscan-galileo.0g.ai
 - **0G Explorer (Mainnet)**: https://chainscan.0g.ai
