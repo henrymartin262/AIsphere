@@ -1,5 +1,11 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
 
+interface ApiEnvelope<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
     let errorMsg = `HTTP ${res.status}`;
@@ -11,7 +17,15 @@ async function handleResponse<T>(res: Response): Promise<T> {
     }
     throw new Error(errorMsg);
   }
-  return res.json() as Promise<T>;
+
+  const json = await res.json() as ApiEnvelope<T> | T;
+
+  // Unwrap { success, data } envelope if present
+  if (json && typeof json === "object" && "success" in json && "data" in json) {
+    return (json as ApiEnvelope<T>).data as T;
+  }
+
+  return json as T;
 }
 
 export async function apiGet<T>(
