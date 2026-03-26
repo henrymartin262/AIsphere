@@ -6,19 +6,27 @@ const router: ExpressRouter = Router();
 // POST /api/agents — Create a new agent (mint INFT)
 router.post("/", async (req, res) => {
   try {
-    const { name, model, metadata, walletAddress } = req.body as {
+    const { name, model, metadata, walletAddress, ownerAddress, description, personality } = req.body as {
       name?: string;
       model?: string;
       metadata?: Record<string, unknown>;
       walletAddress?: string;
+      ownerAddress?: string;   // frontend sends ownerAddress
+      description?: string;
+      personality?: string;
     };
 
-    if (!name || !model || !walletAddress) {
+    // accept both walletAddress and ownerAddress
+    const wallet = walletAddress || ownerAddress;
+
+    if (!name || !model || !wallet) {
       res.status(400).json({ error: "name, model, and walletAddress are required" });
       return;
     }
 
-    const result = await AgentService.createAgent({ name, model, metadata, walletAddress });
+    // merge description/personality into metadata
+    const mergedMeta = { ...metadata, description, personality };
+    const result = await AgentService.createAgent({ name, model, metadata: mergedMeta, walletAddress: wallet });
     res.status(201).json({ success: true, data: result });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to create agent";
