@@ -1,0 +1,117 @@
+import { Router, type Router as ExpressRouter } from "express";
+import * as MemoryVaultService from "../services/MemoryVaultService.js";
+import * as SealedInferenceService from "../services/SealedInferenceService.js";
+import * as DecisionChainService from "../services/DecisionChainService.js";
+import { hashContent } from "../utils/encryption.js";
+
+const router: ExpressRouter = Router();
+
+// POST /api/chat/:agentId — Core inference flow
+router.post("/:agentId", async (req, res) => {
+  try {
+    const agentId = parseInt(req.params.agentId, 10);
+    if (isNaN(agentId)) {
+      res.status(400).json({ error: "agentId must be a number" });
+      return;
+    }
+
+    const { message, walletAddress, model } = req.body as {
+      message?: string;
+      walletAddress?: string;
+      model?: string;
+    };
+
+    if (!message || !walletAddress) {
+      res.status(400).json({ error: "message and walletAddress are required" });
+      return;
+    }
+
+    // 1. Build context from prior memories
+    const context = await MemoryVaultService.buildContext(agentId, walletAddress);
+
+    // 2. Run sealed inference
+    const { response, proof } = await SealedInferenceService.inference(
+      agentId,
+      message,
+      context,
+      model
+    );
+
+    // 3. Persist conversation memories (fire-and-forget style, non-blocking)
+    const userMemoryPromise = MemoryVaultService.saveMemory(
+      agentId,
+      {
+        type: "conversation",
+        content: `User: ${message}`,
+        importance: 0.5,
+        tags: ["conversation"]
+      },
+      walletAddress
+    );
+
+    const agentMemoryPromise = MemoryVaultService.saveMemory(
+      agentId,
+      {
+        type: "conversation",
+        content: `Agent: ${response}`,
+        importance: 0.5,
+        tags: ["conversation"]
+      },
+      walletAddress
+    );
+
+    // 4. Record decision with importance based on proof verification
+    const importance = proof.teeVerified ? 4 : 2;
+    const decisionPromise = DecisionChainService.recordDecision(agentId, proof, importance);
+
+    await Promise.all([userMemoryPromise, agentMemoryPromise, decisionPromise]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        response,
+        proof: {
+          proofHash: proof.proofHash,
+          teeVerified: proof.teeVerified,
+          timestamp: proof.timestamp
+        }
+      }
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Inference failed";
+    res.status(500).json({ error: message });
+  }
+});
+
+// GET /api/chat/:agentId/history — Load conversation history
+router.get("/:agentId/history", async (req, res) => {
+  try {
+    const agentId = parseInt(req.params.agentId, 10);
+    if (isNaN(agentId)) {
+      res.status(400).json({ error: "agentId must be a number" });
+      return;
+    }
+
+    const { walletAddress, limit } = req.query as {
+      walletAddress?: string;
+      limit?: string;
+    };
+
+    if (!walletAddress) {
+      res.status(400).json({ error: "walletAddress query param is required" });
+      return;
+    }
+
+    const memories = await MemoryVaultService.loadMemories(agentId, walletAddress, {
+      type: "conversation",
+      limit: limit ? parseInt(limit, 10) : 50
+    });
+
+    res.status(200).json({ success: true, data: memories });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to load history";
+    res.status(500).json({ error: message });
+  }
+});
+
+export default router;

@@ -1,0 +1,59 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Hardhat
+cache/
+artifacts/
+typechain-types/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.python-version
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Deployment (deployment.json is tracked - contains contract addresses, no secrets)
+
+# Misc
+.codebuddy/
+.omc/
+.tmp/
+codebuddy_history_*.md
+EXPLORATION_SUMMARY.md
+IMPLEMENTATION_ROADMAP.md
+QUICK_REFERENCE.md
+README_EXPLORATION.md
+
+# OMC agent state (auto-generated)
+**/.omc/
