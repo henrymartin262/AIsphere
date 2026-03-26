@@ -8,6 +8,8 @@
 ![Next.js](https://img.shields.io/badge/Next.js-14-000?style=flat-square)
 ![Hackathon](https://img.shields.io/badge/0G%20Hackathon-Track%201-FF6B6B?style=flat-square)
 
+> 📖 [中文版本](./README_CN.md)
+
 ---
 
 ## 📖 Overview
