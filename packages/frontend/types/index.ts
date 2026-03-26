@@ -59,5 +59,27 @@ export interface MemoryItem {
   content: string;
   importance: number;
   timestamp: number;
+  type?: "conversation" | "knowledge" | "personality" | "skill" | "decision";
+  tags?: string[];
   embedding?: number[];
+}
+
+export interface Decision {
+  id: string;
+  agentId: number;
+  inputHash: string;
+  outputHash: string;
+  modelHash: string;
+  importance: number;
+  timestamp: number;
+  onChain: boolean;
+  txHash?: string;
+  proofHash: string;
+}
+
+export interface DecisionStats {
+  total: number;
+  onChain: number;
+  batched: number;
+  local: number;
 }
