@@ -2,9 +2,29 @@ import { Router, type Router as ExpressRouter } from "express";
 import * as MemoryVaultService from "../services/MemoryVaultService.js";
 import * as SealedInferenceService from "../services/SealedInferenceService.js";
 import * as DecisionChainService from "../services/DecisionChainService.js";
-import { hashContent } from "../utils/encryption.js";
+import { initialize0GClients } from "../config/og.js";
+import { contracts } from "../config/contracts.js";
+import { ethers } from "ethers";
 
 const router: ExpressRouter = Router();
+
+const INFT_ABI = [
+  "function recordInference(uint256 tokenId, uint256 trustDelta)"
+];
+
+async function recordInferenceOnChain(agentId: number): Promise<void> {
+  try {
+    if (!contracts.inft) return;
+    const clients = await initialize0GClients();
+    if (!clients.signer) return;
+    const contract = new ethers.Contract(contracts.inft, INFT_ABI, clients.signer);
+    const tx = await contract.recordInference(agentId, 10); // +10 trust per inference
+    await tx.wait();
+    console.log(`[Chat] recordInference agentId=${agentId} ok`);
+  } catch (err) {
+    console.warn(`[Chat] recordInference failed (non-fatal):`, (err as Error).message);
+  }
+}
 
 // POST /api/chat/:agentId — Core inference flow
 router.post("/:agentId", async (req, res) => {
@@ -65,6 +85,9 @@ router.post("/:agentId", async (req, res) => {
     const decisionPromise = DecisionChainService.recordDecision(agentId, proof, importance);
 
     await Promise.all([userMemoryPromise, agentMemoryPromise, decisionPromise]);
+
+    // 5. Record inference on INFT contract (non-blocking, updates level/stats)
+    recordInferenceOnChain(agentId).catch(() => {});
 
     res.status(200).json({
       success: true,

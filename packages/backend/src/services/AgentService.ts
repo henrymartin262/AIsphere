@@ -13,8 +13,11 @@ export interface AgentProfile {
 }
 
 export interface AgentStats {
-  totalDecisions: number;
-  lastActive: number;
+  totalInferences: number;
+  totalMemories: number;
+  trustScore: number;
+  level: number;
+  lastActiveAt: number;
 }
 
 export interface AgentInfo {
@@ -37,12 +40,14 @@ export interface CreateAgentResult {
   mock?: boolean;
 }
 
-// ─── ABI (minimal) ────────────────────────────────────────────────────────────
+// ─── ABI (minimal, matches SealMindINFT.sol exactly) ─────────────────────────
 
 const INFT_ABI = [
-  "function createAgent(string name, string model, bytes32 metadataHash, string encryptedURI, address to) returns (uint256)",
-  "function getAgentInfo(uint256 tokenId) view returns (address owner, tuple(string name, string model, bytes32 metadataHash, string encryptedURI) profile, tuple(uint256 totalDecisions, uint256 lastActive) stats)",
-  "function getAgentsByOwner(address owner) view returns (uint256[])"
+  "function createAgent(string name, string model, string metadataHash, string encryptedURI, address to) returns (uint256)",
+  "function getAgentInfo(uint256 tokenId) view returns (address owner, tuple(string name, string model, string metadataHash, string encryptedURI, uint256 createdAt) profile, tuple(uint256 totalInferences, uint256 totalMemories, uint256 trustScore, uint8 level, uint256 lastActiveAt) stats)",
+  "function getAgentsByOwner(address owner) view returns (uint256[])",
+  "function recordInference(uint256 tokenId, uint256 trustDelta)",
+  "event AgentCreated(uint256 indexed tokenId, address indexed owner, string name, string model, uint256 timestamp)"
 ];
 
 // ─── Mock data counter (in-process for MVP) ───────────────────────────────────
@@ -72,23 +77,19 @@ export async function createAgent(params: CreateAgentParams): Promise<CreateAgen
       const tx = await contract.createAgent(
         name,
         model,
-        ethers.getBytes(metadataHash),
-        "",
+        metadataHash,   // string (keccak256 hex)
+        "",             // encryptedURI (empty for now)
         walletAddress
       );
       const receipt = await tx.wait();
-      // The token ID is typically emitted in a Transfer event (ERC-721)
-      const transferEvent = receipt.logs
+      // Parse AgentCreated event to get tokenId
+      const agentCreatedEvent = receipt.logs
         .map((log: ethers.Log) => {
-          try {
-            return contract.interface.parseLog(log);
-          } catch {
-            return null;
-          }
+          try { return contract.interface.parseLog(log); } catch { return null; }
         })
-        .find((e: ethers.LogDescription | null) => e?.name === "Transfer");
+        .find((e: ethers.LogDescription | null) => e?.name === "AgentCreated");
 
-      const agentId = transferEvent ? Number(transferEvent.args[2]) : Date.now();
+      const agentId = agentCreatedEvent ? Number(agentCreatedEvent.args[0]) : Date.now();
       return { agentId, txHash: receipt.hash };
     }
   } catch (err) {
@@ -101,7 +102,7 @@ export async function createAgent(params: CreateAgentParams): Promise<CreateAgen
     agentId,
     owner: walletAddress,
     profile: { name, model, metadataHash, encryptedURI: "" },
-    stats: { totalDecisions: 0, lastActive: Date.now() }
+    stats: { totalInferences: 0, totalMemories: 0, trustScore: 0, level: 1, lastActiveAt: Date.now() }
   };
   mockAgents.set(agentId, agent);
   return { agentId, txHash: `0xmock_${Date.now().toString(16)}`, mock: true };
@@ -118,12 +119,15 @@ export async function getAgent(agentId: number): Promise<AgentInfo | null> {
         profile: {
           name: profile.name,
           model: profile.model,
-          metadataHash: ethers.hexlify(profile.metadataHash),
+          metadataHash: profile.metadataHash,
           encryptedURI: profile.encryptedURI
         },
         stats: {
-          totalDecisions: Number(stats.totalDecisions),
-          lastActive: Number(stats.lastActive)
+          totalInferences: Number(stats.totalInferences),
+          totalMemories: Number(stats.totalMemories),
+          trustScore: Number(stats.trustScore),
+          level: Number(stats.level),
+          lastActiveAt: Number(stats.lastActiveAt)
         }
       };
     }
