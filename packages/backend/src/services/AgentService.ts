@@ -55,6 +55,24 @@ const INFT_ABI = [
 let mockIdCounter = 1;
 const mockAgents: Map<number, AgentInfo> = new Map();
 
+// ─── TTL Cache (avoid repeated RPC calls) ─────────────────────────────────────
+const CACHE_TTL_MS = 30_000; // 30 seconds
+interface CacheEntry { data: AgentInfo; expiresAt: number; }
+const agentCache: Map<number, CacheEntry> = new Map();
+const ownerCache: Map<string, { ids: number[]; expiresAt: number }> = new Map();
+
+function getCachedAgent(agentId: number): AgentInfo | null {
+  const entry = agentCache.get(agentId);
+  if (entry && Date.now() < entry.expiresAt) return entry.data;
+  return null;
+}
+function setCachedAgent(agentId: number, data: AgentInfo) {
+  agentCache.set(agentId, { data, expiresAt: Date.now() + CACHE_TTL_MS });
+}
+export function invalidateAgentCache(agentId: number) {
+  agentCache.delete(agentId);
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 async function getContract(): Promise<ethers.Contract | null> {
@@ -109,11 +127,15 @@ export async function createAgent(params: CreateAgentParams): Promise<CreateAgen
 }
 
 export async function getAgent(agentId: number): Promise<AgentInfo | null> {
+  // Check cache first
+  const cached = getCachedAgent(agentId);
+  if (cached) return cached;
+
   try {
     const contract = await getContract();
     if (contract) {
       const [owner, profile, stats] = await contract.getAgentInfo(agentId);
-      return {
+      const result: AgentInfo = {
         agentId,
         owner,
         profile: {
@@ -130,27 +152,40 @@ export async function getAgent(agentId: number): Promise<AgentInfo | null> {
           lastActiveAt: Number(stats.lastActiveAt)
         }
       };
+      setCachedAgent(agentId, result);
+      return result;
     }
   } catch (err) {
     console.warn("[AgentService] getAgentInfo failed, using mock:", err);
   }
 
-  return mockAgents.get(agentId) ?? null;
+  const mock = mockAgents.get(agentId) ?? null;
+  if (mock) setCachedAgent(agentId, mock);
+  return mock;
 }
 
 export async function getAgentsByOwner(address: string): Promise<AgentInfo[]> {
+  // Check owner cache
+  const ownerEntry = ownerCache.get(address.toLowerCase());
+  if (ownerEntry && Date.now() < ownerEntry.expiresAt) {
+    const infos = await Promise.all(ownerEntry.ids.map((id) => getAgent(id)));
+    return infos.filter((a): a is AgentInfo => a !== null);
+  }
+
   try {
     const contract = await getContract();
     if (contract) {
       const ids: bigint[] = await contract.getAgentsByOwner(address);
-      const infos = await Promise.all(ids.map((id) => getAgent(Number(id))));
+      const numIds = ids.map(Number);
+      ownerCache.set(address.toLowerCase(), { ids: numIds, expiresAt: Date.now() + CACHE_TTL_MS });
+      const infos = await Promise.all(numIds.map((id) => getAgent(id)));
       return infos.filter((a): a is AgentInfo => a !== null);
     }
   } catch (err) {
     console.warn("[AgentService] getAgentsByOwner failed, using mock:", err);
   }
 
-  // Mock fallback: return all mock agents owned by address
+  // Mock fallback
   return Array.from(mockAgents.values()).filter(
     (a) => a.owner.toLowerCase() === address.toLowerCase()
   );
