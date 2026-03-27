@@ -57,6 +57,11 @@ All powered by **0G Network** — the only infrastructure that integrates storag
 │  │  │   Agent     │ │   Memory    │ │  Inference        │   │ │
 │  │  │  Service    │ │   Service   │ │  Service (TEE)    │   │ │
 │  │  └──────┬──────┘ └──────┬──────┘ └────────┬──────────┘   │ │
+│  │  ┌──────┴──────┐ ┌──────┴──────┐ ┌────────┴──────────┐   │ │
+│  │  │ Multi-Agent │ │  OpenClaw   │ │   Decision        │   │ │
+│  │  │ Routing     │ │  Skills +   │ │   Chain           │   │ │
+│  │  │ + Handoff   │ │  Pipelines  │ │   Service         │   │ │
+│  │  └──────┬──────┘ └──────┬──────┘ └────────┬──────────┘   │ │
 │  └─────────┼───────────────┼─────────────────┼────────────────┘ │
 │            │               │                 │                  │
 │  ┌─────────▼────┐  ┌──────▼──────┐  ┌──────▼─────────────┐   │
@@ -93,9 +98,11 @@ User Creates Agent
 | Feature | Description | 0G Component |
 |---------|-------------|--------------|
 | **🔒 Sealed Mind** | AI inference executed in Intel TDX TEE with cryptographic proof. Every response is verifiable. | 0G Compute (TeeML) |
-| **🧠 Memory Vault** | Client-side encrypted memory stored in 0G Storage KV. Only the owner holds the decryption key. | 0G Storage KV + 0G Indexer |
+| **🧠 Memory Vault** | Client-side encrypted memory stored in 0G Storage KV. Only the owner holds the decryption key. Dual-layer: hot cache + 0G KV persistence. | 0G Storage KV + 0G Indexer |
 | **🪪 Agent Identity** | ERC-721 INFT standard token on 0G Chain. Agent ownership is transferable and tradeable. | 0G Chain (EVM) + INFT Standard |
 | **⛓️ Decision Chain** | Immutable audit log. Critical decisions recorded on-chain, low-importance stored in 0G Storage. | 0G Chain + 0G Storage |
+| **🤖 Multi-Agent Collaboration** | Agent-to-agent messaging, task delegation, parallel orchestration, handoff, and session management. | Built-in + 0G Compute |
+| **🔗 OpenClaw Integration** | Agent registration as OpenClaw Skills, skill pipelines, task queues, and gateway configuration. | OpenClaw + 0G Compute |
 | **📊 Trust Scoring** | Agent reputation calculated from inference verification rate and memory quality. Reflects on-chain level. | 0G Chain Smart Contracts |
 | **🎓 Level System** | Agents gain levels (1-5) based on inference count and quality. Unlocks advanced features at each tier. | 0G Chain Smart Contracts |
 
@@ -133,10 +140,14 @@ SealMind integrates **all four core 0G components** for a complete agent infrast
 - **Implementation**:
   - Agent owner derives encryption key from wallet signature + agent ID
   - Memories encrypted with AES-256-GCM before storage
+  - Dual-layer architecture: in-memory hot cache + 0G KV Storage persistence
+  - Write path: encrypt → push to cache → async persist via `kvBatchWrite`
+  - Read path: hydrate from 0G KV on first access → serve from cache
+  - Graceful degradation: falls back to memory-only when 0G KV is unavailable
   - Only the key holder can decrypt
 - **API**: `KvClient.getValue()` / Batcher for batch writes
 - **Indexer**: 0G Storage Indexer for node discovery
-- **Benefit**: PB-scale storage + zero-knowledge privacy
+- **Benefit**: PB-scale storage + zero-knowledge privacy + persistence across restarts
 
 ### 2. 0G Compute (Sealed Inference) — Verifiable AI
 
@@ -306,12 +317,16 @@ SealMind/
 │   │   │   │   ├── agentRoutes.ts    # POST/GET /api/agents/*
 │   │   │   │   ├── chatRoutes.ts     # POST /api/chat/*
 │   │   │   │   ├── memoryRoutes.ts   # GET/POST /api/memory/*
-│   │   │   │   └── decisionRoutes.ts # GET /api/decisions/*
+│   │   │   │   ├── decisionRoutes.ts # GET /api/decisions/*
+│   │   │   │   ├── multiAgentRoutes.ts  # Multi-Agent collaboration
+│   │   │   │   └── openclawRoutes.ts    # OpenClaw integration
 │   │   │   ├── services/
 │   │   │   │   ├── AgentService.ts           # Agent lifecycle
 │   │   │   │   ├── SealedInferenceService.ts # TEE inference
-│   │   │   │   ├── MemoryVaultService.ts     # Encrypted memory
-│   │   │   │   └── DecisionChainService.ts   # Decision recording
+│   │   │   │   ├── MemoryVaultService.ts     # Encrypted memory (0G KV)
+│   │   │   │   ├── DecisionChainService.ts   # Decision recording
+│   │   │   │   ├── MultiAgentService.ts      # Multi-Agent orchestration
+│   │   │   │   └── OpenClawService.ts        # OpenClaw skill engine
 │   │   │   ├── middleware/
 │   │   │   │   ├── auth.ts           # Wallet signature verification
 │   │   │   │   └── errorHandler.ts   # Unified error handling
@@ -402,6 +417,38 @@ DELETE /api/memory/:agentId/:id       # Delete memory
 GET    /api/decisions/:agentId        # Get decision history
 POST   /api/decisions/verify          # Verify proof hash
 GET    /api/decisions/stats/:agentId  # Get decision stats
+```
+
+### Multi-Agent Collaboration
+
+```
+POST   /api/multi-agent/orchestrate         # Route query to best agent(s), parallel inference
+POST   /api/multi-agent/delegate            # Delegate task between agents
+POST   /api/multi-agent/tasks/:id/execute   # Execute delegated task
+GET    /api/multi-agent/tasks/:id           # Get task details
+GET    /api/multi-agent/agents/:id/tasks    # List agent's tasks
+POST   /api/multi-agent/messages            # Send inter-agent message
+GET    /api/multi-agent/agents/:id/messages # Get agent's inbox
+POST   /api/multi-agent/handoff             # Transfer conversation between agents
+POST   /api/multi-agent/sessions            # Create collaboration session
+GET    /api/multi-agent/sessions/:id        # Get session details
+GET    /api/multi-agent/sessions            # List sessions for wallet
+```
+
+### OpenClaw Integration
+
+```
+GET    /api/openclaw/status                 # Integration status
+POST   /api/openclaw/agents                 # Register agent in OpenClaw
+GET    /api/openclaw/agents                 # List OpenClaw agents
+GET    /api/openclaw/agents/:agentId        # Get OpenClaw agent
+GET    /api/openclaw/skills                 # List all skills (built-in + custom)
+POST   /api/openclaw/skills                 # Register custom skill
+POST   /api/openclaw/skills/:id/execute     # Execute skill on agent
+POST   /api/openclaw/tasks                  # Submit task to orchestration queue
+GET    /api/openclaw/tasks/:taskId          # Get task details
+GET    /api/openclaw/config                 # Generate gateway configuration
+POST   /api/openclaw/pipelines              # Create skill pipeline
 ```
 
 ---
@@ -539,7 +586,7 @@ For questions or issues:
 
 ---
 
-**Last Updated**: 2026-03-26
-**Version**: 1.0
+**Last Updated**: 2026-03-27
+**Version**: 1.1
 **Status**: 🟢 Production Ready (Testnet)
 

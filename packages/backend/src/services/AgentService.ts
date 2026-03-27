@@ -191,12 +191,39 @@ export async function getAgentsByOwner(address: string): Promise<AgentInfo[]> {
   );
 }
 
+// ─── Registry ABI (minimal, matches AgentRegistry.sol) ────────────────────────
+
+const REGISTRY_ABI = [
+  "function getPublicAgents(uint256 offset, uint256 limit) view returns (uint256[] result, uint256 total)",
+  "function getTotalAgents() view returns (uint256)",
+];
+
+async function getRegistryContract(): Promise<ethers.Contract | null> {
+  if (!contracts.registry) return null;
+  const clients = await initialize0GClients();
+  if (!clients.signer) return null;
+  return new ethers.Contract(contracts.registry, REGISTRY_ABI, clients.signer);
+}
+
 export async function listPublicAgents(
   offset = 0,
   limit = 20
 ): Promise<{ agents: AgentInfo[]; total: number }> {
-  // In production this would call an AgentRegistry contract.
-  // For MVP, return all known mock agents paginated.
+  // Try on-chain AgentRegistry first
+  try {
+    const registryContract = await getRegistryContract();
+    if (registryContract) {
+      const [ids, total]: [bigint[], bigint] = await registryContract.getPublicAgents(offset, limit);
+      const numIds = ids.map(Number);
+      const infos = await Promise.all(numIds.map((id) => getAgent(id)));
+      const agents = infos.filter((a): a is AgentInfo => a !== null);
+      return { agents, total: Number(total) };
+    }
+  } catch (err) {
+    console.warn("[AgentService] AgentRegistry.getPublicAgents failed, falling back to mock:", err);
+  }
+
+  // Fallback: return all known mock agents paginated
   const all = Array.from(mockAgents.values());
   const page = all.slice(offset, offset + limit);
   return { agents: page, total: all.length };

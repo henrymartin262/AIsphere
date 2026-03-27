@@ -22,6 +22,8 @@ export function Navbar() {
   const links = [
     { href: "/", label: t("nav_home") },
     { href: "/dashboard", label: t("nav_dashboard") },
+    { href: "/multi-agent", label: t("nav_multi_agent") },
+    { href: "/openclaw", label: "OpenClaw" },
     { href: "/explore", label: t("nav_explore") },
     { href: "/verify", label: t("nav_verify") },
   ];
@@ -59,7 +61,7 @@ export function Navbar() {
         </Link>
 
         {/* Nav links — pill 导航 */}
-        <nav className="hidden items-center gap-1.5 rounded-full border border-gray-100 bg-gray-50/60 p-1.5 md:flex">
+        <nav className="hidden items-center gap-1 rounded-full border border-gray-100 bg-gray-50/60 p-1 md:flex">
           {links.map((link) => {
             const active = isActive(link.href);
             return (
@@ -67,7 +69,7 @@ export function Navbar() {
                 key={link.href}
                 href={link.href}
                 prefetch={true}
-                className={`relative rounded-full px-5 py-2 text-sm font-medium transition-all duration-200 ${
+                className={`relative rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-200 ${
                   active
                     ? "bg-white text-indigo-600 shadow-sm"
                     : "text-gray-500 hover:text-gray-800 hover:bg-white/60"

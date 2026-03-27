@@ -197,7 +197,7 @@ export default function HomePage() {
   const features = [
     {
       title: t("home_feat_inft"),
-      desc: t("home_feature_placeholder"),
+      desc: t("home_feat_inft_desc"),
       icon: (
         <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
           <rect x="3" y="3" width="18" height="18" rx="4" />
@@ -205,51 +205,99 @@ export default function HomePage() {
           <path d="M7 18c0-2.8 2.2-5 5-5s5 2.2 5 5" strokeLinecap="round" />
         </svg>
       ),
-      color: "from-indigo-500 to-indigo-600",
       bg: "bg-indigo-50",
       text: "text-indigo-600",
+      link: "/dashboard",
     },
     {
       title: t("home_feat_tee"),
-      desc: t("home_feature_placeholder"),
+      desc: t("home_feat_tee_desc"),
       icon: (
         <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-          <path d="M12 2L22 7v10l-10 5L2 17V7l10-5z" />
-          <circle cx="12" cy="12" r="3" />
+          <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
         </svg>
       ),
-      color: "from-violet-500 to-violet-600",
       bg: "bg-violet-50",
       text: "text-violet-600",
+      link: "/verify",
     },
     {
       title: t("home_feat_memory"),
-      desc: t("home_feature_placeholder"),
+      desc: t("home_feat_memory_desc"),
       icon: (
         <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-          <ellipse cx="12" cy="12" rx="9" ry="4" />
-          <ellipse cx="12" cy="8" rx="9" ry="4" />
-          <ellipse cx="12" cy="16" rx="9" ry="4" />
+          <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
         </svg>
       ),
-      color: "from-blue-500 to-blue-600",
       bg: "bg-blue-50",
       text: "text-blue-600",
+      link: "/dashboard",
     },
     {
       title: t("home_feat_decision"),
-      desc: t("home_feature_placeholder"),
+      desc: t("home_feat_decision_desc"),
       icon: (
         <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-          <rect x="4" y="4" width="6" height="6" rx="1.5" />
-          <rect x="14" y="4" width="6" height="6" rx="1.5" />
-          <rect x="9" y="14" width="6" height="6" rx="1.5" />
-          <path d="M7 10v1.5a1.5 1.5 0 001.5 1.5h0M17 10v1.5a1.5 1.5 0 01-1.5 1.5h0" opacity="0.5" />
+          <path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
         </svg>
       ),
-      color: "from-orange-500 to-amber-500",
       bg: "bg-orange-50",
       text: "text-orange-600",
+      link: "/dashboard",
+    },
+    {
+      title: t("home_feat_multi_agent"),
+      desc: t("home_feat_multi_agent_desc"),
+      icon: (
+        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+          <circle cx="9" cy="7" r="3" />
+          <circle cx="17" cy="7" r="2" />
+          <path d="M3 18c0-3 2.7-5 6-5 1.2 0 2.3.3 3.2.7M14 18c0-2.2 1.3-4 3-4s3 1.8 3 4" strokeLinecap="round" />
+        </svg>
+      ),
+      bg: "bg-emerald-50",
+      text: "text-emerald-600",
+      link: "/multi-agent",
+    },
+    {
+      title: t("home_feat_openclaw"),
+      desc: t("home_feat_openclaw_desc"),
+      icon: (
+        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+          <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+        </svg>
+      ),
+      bg: "bg-cyan-50",
+      text: "text-cyan-600",
+      link: "/openclaw",
+    },
+    {
+      title: t("home_feat_storage"),
+      desc: t("home_feat_storage_desc"),
+      icon: (
+        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+          <ellipse cx="12" cy="6" rx="8" ry="3" />
+          <path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6" />
+          <path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6" />
+        </svg>
+      ),
+      bg: "bg-purple-50",
+      text: "text-purple-600",
+      link: "/dashboard",
+    },
+    {
+      title: t("home_feat_wallet_auth"),
+      desc: t("home_feat_wallet_auth_desc"),
+      icon: (
+        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+          <path d="M21 12V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h7" />
+          <path d="M16 12h5v4h-5a2 2 0 010-4z" />
+          <circle cx="18" cy="14" r="1" fill="currentColor" />
+        </svg>
+      ),
+      bg: "bg-amber-50",
+      text: "text-amber-600",
+      link: "/dashboard",
     },
   ];
 
@@ -383,17 +431,19 @@ export default function HomePage() {
               { value: "3", label: "Smart Contracts", icon: "M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1", color: "text-indigo-600", bg: "bg-indigo-50" },
               { value: "TEE", label: "Sealed Inference", icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z", color: "text-violet-600", bg: "bg-violet-50" },
               { value: "AES-256", label: "Memory Encryption", icon: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z", color: "text-blue-600", bg: "bg-blue-50" },
+              { value: "21+", label: "API Endpoints", icon: "M4 6h16M4 12h16M4 18h16", color: "text-emerald-600", bg: "bg-emerald-50" },
+              { value: "5", label: "OpenClaw Skills", icon: "M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4", color: "text-cyan-600", bg: "bg-cyan-50" },
               { value: "0G", label: "Native Integration", icon: "M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8", color: "text-orange-600", bg: "bg-orange-50" },
             ].map((stat, i) => (
-              <div key={i} className="group flex-1 min-w-[140px] rounded-xl border border-gray-100 bg-white px-4 py-3.5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:border-gray-200">
-                <div className="flex items-center gap-3">
-                  <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${stat.bg} ${stat.color} transition-transform group-hover:scale-105`}>
-                    <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <div key={i} className="group flex-1 min-w-[130px] rounded-xl border border-gray-100 bg-white px-3.5 py-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:border-gray-200">
+                <div className="flex items-center gap-2.5">
+                  <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${stat.bg} ${stat.color} transition-transform group-hover:scale-105`}>
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d={stat.icon} />
                     </svg>
                   </div>
                   <div>
-                    <p className="text-base font-bold text-gray-900 leading-tight">{stat.value}</p>
+                    <p className="text-sm font-bold text-gray-900 leading-tight">{stat.value}</p>
                     <p className="text-[10px] font-medium text-gray-400 leading-tight">{stat.label}</p>
                   </div>
                 </div>
@@ -401,27 +451,35 @@ export default function HomePage() {
             ))}
           </div>
 
-          {/* 特性卡片 — 紧随统计条 */}
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {/* 特性卡片 — 8 个功能展示 */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((item, i) => (
-            <article
+            <Link
               key={i}
-              className="animate-slide-up-stagger group relative cursor-default rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg hover:border-gray-200"
-              style={{ animationDelay: `${0.1 + i * 0.08}s` }}
+              href={item.link}
+              className="animate-slide-up-stagger group relative cursor-pointer rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg hover:border-gray-200"
+              style={{ animationDelay: `${0.1 + i * 0.06}s` }}
             >
-              <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${item.bg} ${item.text} transition-transform group-hover:scale-110`}>
+              {/* 顶部角标 — 标识已实现 */}
+              <div className="absolute top-3 right-3">
+                <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[9px] font-semibold text-green-600">
+                  <span className="h-1 w-1 rounded-full bg-green-500" />
+                  Live
+                </span>
+              </div>
+              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${item.bg} ${item.text} transition-transform group-hover:scale-110`}>
                 {item.icon}
               </div>
-              <p className="mt-4 text-[10px] font-bold uppercase tracking-widest text-gray-300">
+              <p className="mt-3 text-[10px] font-bold uppercase tracking-widest text-gray-300">
                 {t("home_feature_label")}
               </p>
-              <h2 className="mt-1.5 text-base font-bold text-gray-800">
+              <h2 className="mt-1 text-sm font-bold text-gray-800 leading-snug">
                 {item.title}
               </h2>
-              <p className="mt-2 text-sm leading-relaxed text-gray-400">
+              <p className="mt-1.5 text-xs leading-relaxed text-gray-400 line-clamp-2">
                 {item.desc}
               </p>
-            </article>
+            </Link>
           ))}
           </div>
         </section>
