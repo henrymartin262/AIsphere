@@ -9,18 +9,17 @@ import { ChatMessage } from "../../../../components/ChatMessage";
 import { useLang } from "../../../../contexts/LangContext";
 
 const LEVEL_COLORS: Record<number, string> = {
-  1: "text-slate-300", 2: "text-green-300", 3: "text-blue-300",
-  4: "text-purple-300", 5: "text-cyan-300",
+  1: "text-gray-400 dark:text-slate-400",
+  2: "text-green-600 dark:text-green-400",
+  3: "text-blue-600 dark:text-blue-400",
+  4: "text-purple-600 dark:text-purple-400",
+  5: "text-indigo-600 dark:text-indigo-400",
 };
 
 export default function AgentChatPage() {
   const params = useParams();
   const agentId =
-    typeof params?.id === "string"
-      ? params.id
-      : Array.isArray(params?.id)
-      ? params.id[0]
-      : "";
+    typeof params?.id === "string" ? params.id : Array.isArray(params?.id) ? params.id[0] : "";
 
   const { isConnected } = useAccount();
   const { agent, isLoading: agentLoading } = useAgent(agentId);
@@ -28,10 +27,10 @@ export default function AgentChatPage() {
   const { t, lang } = useLang();
 
   const THINKING_STEPS = [
-    { label: t("chat_sending") === "发送中" ? "发送中" : "Sending", icon: "📤" },
-    { label: t("chat_sending"), icon: "🧠" },
+    { label: lang === "zh" ? "发送中" : "Sending", icon: "📤" },
+    { label: t("chat_sending"),                    icon: "🧠" },
     { label: lang === "zh" ? "保存记忆" : "Saving", icon: "💾" },
-    { label: lang === "zh" ? "完成" : "Done", icon: "✅" },
+    { label: lang === "zh" ? "完成" : "Done",       icon: "✅" },
   ];
 
   const LEVEL_LABELS: Record<number, string> = {
@@ -44,14 +43,8 @@ export default function AgentChatPage() {
   const [thinkStep, setThinkStep] = useState<number | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (agentId) loadHistory();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [agentId]);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, thinkStep]);
+  useEffect(() => { if (agentId) loadHistory(); }, [agentId]); // eslint-disable-line
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, thinkStep]);
 
   async function handleSend() {
     if (!input.trim() || !isConnected || chatLoading) return;
@@ -67,51 +60,45 @@ export default function AgentChatPage() {
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
   }
 
   const level = agent?.stats?.level ?? 1;
-
   const importanceLabel =
-    importance >= 4
-      ? lang === "zh" ? "高优先级" : "High Priority"
-      : importance <= 2
-      ? lang === "zh" ? "临时对话" : "Temporary"
-      : lang === "zh" ? "标准记忆" : "Standard";
+    importance >= 4 ? (lang === "zh" ? "高优先级" : "High Priority")
+    : importance <= 2 ? (lang === "zh" ? "临时对话" : "Temporary")
+    : (lang === "zh" ? "标准记忆" : "Standard");
 
   return (
     <div className="flex h-[calc(100vh-65px)] overflow-hidden">
       {/* ── Left Sidebar ── */}
-      <aside className="hidden w-64 shrink-0 flex-col border-r border-white/10 bg-slate-950/60 p-5 md:flex">
+      <aside className="hidden w-64 shrink-0 flex-col border-r border-gray-100 bg-white p-5 md:flex dark:border-white/[0.08] dark:bg-slate-950">
         {agentLoading ? (
           <div className="space-y-3 animate-pulse">
-            <div className="h-12 w-12 rounded-full bg-white/10" />
-            <div className="h-4 w-3/4 rounded bg-white/10" />
-            <div className="h-3 w-1/2 rounded bg-white/5" />
+            <div className="h-12 w-12 rounded-xl bg-gray-100 dark:bg-white/10" />
+            <div className="h-4 w-3/4 rounded bg-gray-100 dark:bg-white/10" />
+            <div className="h-3 w-1/2 rounded bg-gray-50 dark:bg-white/5" />
           </div>
         ) : agent ? (
           <>
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-cyan-400/30 bg-cyan-400/10 text-2xl">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-indigo-100 bg-indigo-50 text-2xl dark:border-indigo-400/20 dark:bg-indigo-500/10">
               🤖
             </div>
-            <h2 className="mt-3 text-base font-semibold text-white">{agent.profile?.name}</h2>
-            <span className={`mt-1 text-xs font-medium ${LEVEL_COLORS[level] ?? "text-slate-300"}`}>
+            <h2 className="mt-3 text-base font-semibold text-gray-900 dark:text-white">{agent.profile?.name}</h2>
+            <span className={`mt-1 text-xs font-medium ${LEVEL_COLORS[level] ?? "text-gray-400"}`}>
               Lv.{level} {LEVEL_LABELS[level] ?? ""}
             </span>
-            <p className="mt-1 text-xs text-slate-500">{agent.profile?.model}</p>
+            <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">{agent.profile?.model}</p>
 
             <div className="mt-5 space-y-2">
               {[
                 { label: t("card_inferences"), value: agent.stats?.totalInferences ?? 0 },
-                { label: t("card_memories"), value: agent.stats?.totalMemories ?? 0 },
-                { label: t("card_trust"), value: agent.stats?.trustScore ?? 0, highlight: true },
+                { label: t("card_memories"),   value: agent.stats?.totalMemories ?? 0 },
+                { label: t("card_trust"),      value: agent.stats?.trustScore ?? 0, highlight: true },
               ].map(({ label, value, highlight }) => (
-                <div key={label} className="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2">
-                  <span className="text-xs text-slate-500">{label}</span>
-                  <span className={`text-sm font-semibold ${highlight ? "text-cyan-300" : "text-white"}`}>
+                <div key={label} className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-3 py-2 dark:border-white/[0.06] dark:bg-white/[0.03]">
+                  <span className="text-xs text-gray-500 dark:text-slate-500">{label}</span>
+                  <span className={`text-sm font-semibold ${highlight ? "text-indigo-600 dark:text-indigo-300" : "text-gray-900 dark:text-white"}`}>
                     {value}
                   </span>
                 </div>
@@ -119,26 +106,24 @@ export default function AgentChatPage() {
             </div>
 
             {(agent.profile as any)?.description && (
-              <p className="mt-4 text-xs leading-relaxed text-slate-500">
+              <p className="mt-4 text-xs leading-relaxed text-gray-400 dark:text-slate-500">
                 {(agent.profile as any).description}
               </p>
             )}
           </>
         ) : (
-          <p className="text-sm text-slate-600">
-            {lang === "zh" ? "Agent 不存在" : "Agent not found"}
-          </p>
+          <p className="text-sm text-gray-400">{lang === "zh" ? "Agent 不存在" : "Agent not found"}</p>
         )}
       </aside>
 
       {/* ── Main Chat ── */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-hidden bg-gray-50/50 dark:bg-slate-950/50">
         {/* Mobile header */}
-        <div className="flex items-center gap-3 border-b border-white/10 bg-slate-950/60 px-4 py-3 md:hidden">
+        <div className="flex items-center gap-3 border-b border-gray-100 bg-white px-4 py-3 md:hidden dark:border-white/[0.08] dark:bg-slate-900">
           <span className="text-xl">🤖</span>
           <div>
-            <p className="text-sm font-medium text-white">{agent?.profile?.name ?? `Agent #${agentId}`}</p>
-            <p className="text-xs text-slate-500">{agent?.profile?.model}</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-white">{agent?.profile?.name ?? `Agent #${agentId}`}</p>
+            <p className="text-xs text-gray-400 dark:text-slate-500">{agent?.profile?.model}</p>
           </div>
         </div>
 
@@ -147,38 +132,35 @@ export default function AgentChatPage() {
           {messages.length === 0 && !chatLoading && (
             <div className="flex flex-col items-center gap-3 py-16 text-center">
               <span className="text-4xl">💬</span>
-              <p className="text-slate-400">{t("chat_empty")}</p>
+              <p className="text-gray-400 dark:text-slate-500">{t("chat_empty")}</p>
             </div>
           )}
 
-          {messages.map((msg) => (
-            <ChatMessage key={msg.id} message={msg} />
-          ))}
+          {messages.map((msg) => <ChatMessage key={msg.id} message={msg} />)}
 
           {/* Thinking indicator */}
           {thinkStep !== null && (
             <div className="flex gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-blue-500/30 bg-blue-500/20 text-xs text-blue-300">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-indigo-200 bg-indigo-50 text-xs font-medium text-indigo-600 dark:border-indigo-400/30 dark:bg-indigo-500/15 dark:text-indigo-300">
                 AI
               </div>
-              <div className="rounded-2xl rounded-tl-sm border border-white/10 bg-white/5 px-4 py-3">
+              <div className="rounded-2xl rounded-tl-sm border border-gray-200 bg-white px-4 py-3 dark:border-white/[0.08] dark:bg-white/5">
                 <div className="flex items-center gap-2">
                   {THINKING_STEPS.map((s, i) => (
-                    <div
-                      key={i}
-                      className={`flex items-center gap-1 text-xs transition-all ${
-                        i < (thinkStep ?? 0) ? "text-green-400" : i === thinkStep ? "text-cyan-300" : "text-slate-700"
-                      }`}
-                    >
+                    <div key={i} className={`flex items-center gap-1 text-xs transition-all ${
+                      i < (thinkStep ?? 0) ? "text-green-600 dark:text-green-400"
+                      : i === thinkStep ? "text-indigo-600 dark:text-indigo-300"
+                      : "text-gray-300 dark:text-slate-700"
+                    }`}>
                       <span>{s.icon}</span>
                       <span className="hidden sm:inline">{s.label}</span>
-                      {i < THINKING_STEPS.length - 1 && <span className="mx-0.5 text-slate-700">›</span>}
+                      {i < THINKING_STEPS.length - 1 && <span className="mx-0.5 text-gray-300 dark:text-slate-700">›</span>}
                     </div>
                   ))}
                 </div>
                 <div className="mt-2 flex gap-1">
                   {[0, 1, 2].map((i) => (
-                    <span key={i} className="h-1.5 w-1.5 rounded-full bg-cyan-400/60 animate-bounce"
+                    <span key={i} className="h-1.5 w-1.5 rounded-full bg-indigo-400/60 animate-bounce"
                       style={{ animationDelay: `${i * 150}ms` }} />
                   ))}
                 </div>
@@ -187,7 +169,7 @@ export default function AgentChatPage() {
           )}
 
           {chatError && (
-            <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
               ⚠ {chatError}
             </div>
           )}
@@ -195,42 +177,34 @@ export default function AgentChatPage() {
         </div>
 
         {/* ── Input Area ── */}
-        <div className="border-t border-white/10 bg-slate-950/80 p-4">
+        <div className="border-t border-gray-100 bg-white p-4 dark:border-white/[0.08] dark:bg-slate-950">
           <div className="mb-3 flex items-center gap-2">
-            <span className="text-xs text-slate-500">{t("chat_importance")}</span>
+            <span className="text-xs text-gray-400 dark:text-slate-500">{t("chat_importance")}</span>
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map((n) => (
-                <button
-                  key={n}
-                  onClick={() => setImportance(n)}
+                <button key={n} onClick={() => setImportance(n)}
                   className={`h-6 w-6 rounded-full text-xs font-medium transition ${
                     importance === n
-                      ? "bg-cyan-400 text-slate-950"
-                      : "border border-white/10 bg-white/5 text-slate-500 hover:border-cyan-400/30 hover:text-cyan-300"
-                  }`}
-                >
+                      ? "bg-indigo-500 text-white dark:bg-indigo-500"
+                      : "border border-gray-200 bg-white text-gray-400 hover:border-indigo-300 hover:text-indigo-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-500 dark:hover:border-indigo-400/30 dark:hover:text-indigo-300"
+                  }`}>
                   {n}
                 </button>
               ))}
             </div>
-            <span className="ml-1 text-[10px] text-slate-600">{importanceLabel}</span>
+            <span className="ml-1 text-[10px] text-gray-400 dark:text-slate-600">{importanceLabel}</span>
           </div>
 
           <div className="flex gap-3">
             <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              disabled={!isConnected || chatLoading}
-              rows={2}
+              value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown}
+              disabled={!isConnected || chatLoading} rows={2}
               placeholder={isConnected ? t("chat_placeholder") : lang === "zh" ? "请先连接钱包以开始对话" : "Connect wallet to start chatting"}
-              className="flex-1 resize-none rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-slate-600 outline-none transition focus:border-cyan-400/50 focus:ring-1 focus:ring-cyan-400/30 disabled:opacity-50"
+              className="flex-1 resize-none rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 disabled:opacity-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder-slate-600 dark:focus:border-indigo-400/50 dark:focus:ring-indigo-400/10"
             />
-            <button
-              onClick={handleSend}
+            <button onClick={handleSend}
               disabled={!isConnected || chatLoading || !input.trim()}
-              className="self-end rounded-2xl bg-cyan-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
+              className="self-end rounded-2xl bg-indigo-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-600 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
               {chatLoading ? (
                 <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />

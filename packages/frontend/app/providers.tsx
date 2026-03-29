@@ -7,6 +7,7 @@ import { WagmiProvider } from "wagmi";
 
 import { createWagmiConfig } from "../lib/wagmiConfig";
 import { LangProvider } from "../contexts/LangContext";
+import { ThemeProvider } from "../contexts/ThemeContext";
 
 /* ── 自定义 RainbowKit 暖色主题 ── */
 const warmTheme = lightTheme({
@@ -46,9 +47,11 @@ export function Providers({ children }: PropsWithChildren) {
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider theme={customTheme} modalSize="compact">
-          <LangProvider>
-            {children}
-          </LangProvider>
+          <ThemeProvider>
+            <LangProvider>
+              {children}
+            </LangProvider>
+          </ThemeProvider>
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>

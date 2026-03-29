@@ -252,3 +252,125 @@ main {
   50% { transform: translate(-30px, 80px); }
   75% { transform: translate(-60px, 20px); }
 }
+
+/* ════════════════════════════════════════
+   Dark Mode
+   ════════════════════════════════════════ */
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark body {
+  background: #0b0c14;
+  color: #e2e8f0;
+}
+
+html.dark body::before {
+  background:
+    radial-gradient(ellipse 70% 50% at 20% -5%, rgba(99, 102, 241, 0.10), transparent),
+    radial-gradient(ellipse 50% 40% at 80% 20%, rgba(139, 92, 246, 0.08), transparent),
+    radial-gradient(ellipse 40% 40% at 50% 90%, rgba(249, 115, 22, 0.05), transparent);
+}
+
+/* ── 全局文字颜色覆盖（高特异性，解决 Tailwind 硬编码颜色类覆盖问题）── */
+html.dark .text-gray-900, html.dark .text-gray-800 { color: #f1f5f9 !important; }
+html.dark .text-gray-700 { color: #cbd5e1 !important; }
+html.dark .text-gray-600 { color: #94a3b8 !important; }
+html.dark .text-gray-500 { color: #64748b !important; }
+html.dark .text-gray-400 { color: #475569 !important; }
+html.dark .text-gray-300 { color: #334155 !important; }
+
+html.dark .text-slate-800, html.dark .text-slate-900 { color: #f1f5f9 !important; }
+html.dark .text-slate-700 { color: #cbd5e1 !important; }
+html.dark .text-slate-600 { color: #94a3b8 !important; }
+html.dark .text-slate-500 { color: #64748b !important; }
+
+/* ── 背景色覆盖 ── */
+html.dark .bg-white { background-color: #141520 !important; }
+html.dark .bg-gray-50 { background-color: #1a1b2e !important; }
+html.dark .bg-gray-100 { background-color: #1e2035 !important; }
+html.dark .bg-gray-200 { background-color: #252740 !important; }
+
+/* ── 边框色覆盖 ── */
+html.dark .border-gray-100 { border-color: rgba(255,255,255,0.07) !important; }
+html.dark .border-gray-200 { border-color: rgba(255,255,255,0.10) !important; }
+html.dark .border-gray-300 { border-color: rgba(255,255,255,0.15) !important; }
+
+/* ── 背景组合（带透明度的不受影响，此处覆盖常用实色） ── */
+html.dark .bg-white\/80  { background-color: rgba(11,12,20,0.80) !important; }
+html.dark .bg-white\/60  { background-color: rgba(11,12,20,0.60) !important; }
+
+/* ── 导航栏 ── */
+html.dark header.sticky {
+  background-color: rgba(11,12,20,0.85) !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
+
+/* ── 组件类 ── */
+html.dark .card {
+  background: #141520 !important;
+  border-color: rgba(255,255,255,0.08) !important;
+  box-shadow: none;
+}
+html.dark .card:hover {
+  border-color: rgba(255,255,255,0.15) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+html.dark .card-gradient {
+  background: #141520 !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
+html.dark .card-gradient:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3), 0 8px 40px rgba(99,102,241,0.12);
+}
+
+html.dark .badge {
+  background: rgba(99,102,241,0.12) !important;
+  border-color: rgba(99,102,241,0.3) !important;
+  color: #a5b4fc !important;
+}
+
+html.dark .btn-primary {
+  background: #4f46e5 !important;
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgba(79,70,229,0.25);
+}
+html.dark .btn-primary:hover {
+  background: #4338ca !important;
+}
+
+html.dark .btn-secondary {
+  background: rgba(255,255,255,0.04) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+  color: #94a3b8 !important;
+}
+html.dark .btn-secondary:hover {
+  border-color: rgba(99,102,241,0.4) !important;
+  color: #a5b4fc !important;
+}
+
+/* ── input / textarea ── */
+html.dark input, html.dark textarea, html.dark select {
+  background-color: rgba(255,255,255,0.04) !important;
+  border-color: rgba(255,255,255,0.10) !important;
+  color: #e2e8f0 !important;
+}
+html.dark input::placeholder, html.dark textarea::placeholder {
+  color: #475569 !important;
+}
+
+/* ── 跟随系统 placeholder ── */
+html.dark .animate-pulse .bg-orange-100,
+html.dark .animate-pulse .bg-orange-50,
+html.dark .animate-pulse .bg-orange-100\/40 {
+  background-color: rgba(255,255,255,0.06) !important;
+}
+
+/* ── 滚动条 dark ── */
+html.dark ::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.20);
+}
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.35);
+}
