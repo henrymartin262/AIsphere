@@ -50,7 +50,22 @@ const Providers = dynamic(() => import("./providers").then((mod) => mod.Provider
 
 export const metadata: Metadata = {
   title: "SealMind — Privacy-Sovereign AI Agent OS",
-  description: "Build truly sovereign AI Agents with verifiable inference and encrypted memory on 0G Network."
+  description: "Build truly sovereign AI Agents with verifiable inference and encrypted memory on 0G Network.",
+  icons: {
+    icon: "/icon",
+    apple: "/apple-icon",
+  },
+  openGraph: {
+    title: "SealMind — Privacy-Sovereign AI Agent OS",
+    description: "Build truly sovereign AI Agents with verifiable inference and encrypted memory on 0G Network.",
+    siteName: "SealMind",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "SealMind",
+    description: "Privacy-Sovereign AI Agent OS on 0G Network",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

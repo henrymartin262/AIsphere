@@ -68,4 +68,31 @@ router.get("/:agentId", async (req, res) => {
   }
 });
 
+// GET /api/agents/:agentId/soul-signature — 获取 Agent 灵魂签名
+router.get("/:agentId/soul-signature", async (req, res) => {
+  try {
+    const agentId = parseInt(req.params.agentId, 10);
+    if (isNaN(agentId)) {
+      res.status(400).json({ error: "agentId must be a number" });
+      return;
+    }
+    const agent = await AgentService.getAgent(agentId);
+    if (!agent) {
+      res.status(404).json({ error: `Agent ${agentId} not found` });
+      return;
+    }
+    res.status(200).json({
+      success: true,
+      data: {
+        agentId,
+        soulSignature: agent.soulSignature ?? null,
+        name: agent.profile.name
+      }
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to fetch soul signature";
+    res.status(500).json({ error: message });
+  }
+});
+
 export default router;

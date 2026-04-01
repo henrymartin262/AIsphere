@@ -41,6 +41,9 @@ contract SealMindINFT is ERC721Enumerable, Ownable, ReentrancyGuard {
     // 被授权的操作员（可调用 recordInference 等）
     mapping(address => bool) public authorizedOperators;
 
+    // tokenId => 灵魂签名（创建时一次性生成，永不可修改）
+    mapping(uint256 => bytes32) public soulSignatures;
+
     // 等级升级阈值（推理次数）：Level 1→2: 100, 2→3: 500, 3→4: 2000, 4→5: 10000
     uint256[5] private _levelThresholds = [0, 100, 500, 2000, 10000];
 
@@ -65,6 +68,8 @@ contract SealMindINFT is ERC721Enumerable, Ownable, ReentrancyGuard {
     event OperatorUpdated(address indexed operator, bool authorized);
 
     event LevelUp(uint256 indexed tokenId, uint8 oldLevel, uint8 newLevel);
+
+    event SoulSignatureGenerated(uint256 indexed tokenId, bytes32 soulSignature);
 
     // ==================== 修饰器 ====================
 
@@ -109,6 +114,17 @@ contract SealMindINFT is ERC721Enumerable, Ownable, ReentrancyGuard {
         tokenId = _nextTokenId++;
 
         _safeMint(to, tokenId);
+
+        // 生成灵魂签名 —— 创建时刻 + 创建者 + 接收者 + 名称 + tokenId 的唯一哈希
+        bytes32 soulSig = keccak256(abi.encodePacked(
+            block.timestamp,
+            msg.sender,
+            to,
+            name,
+            tokenId
+        ));
+        soulSignatures[tokenId] = soulSig;
+        emit SoulSignatureGenerated(tokenId, soulSig);
 
         agentProfiles[tokenId] = AgentProfile({
             name: name,
@@ -222,6 +238,14 @@ contract SealMindINFT is ERC721Enumerable, Ownable, ReentrancyGuard {
             tokenIds[i] = tokenOfOwnerByIndex(ownerAddr, i);
         }
         return tokenIds;
+    }
+
+    /**
+     * @notice 获取 Agent 的灵魂签名
+     * @dev 灵魂签名在创建时生成，永不可修改，是 Agent 的唯一性锚点
+     */
+    function getSoulSignature(uint256 tokenId) external view tokenExists(tokenId) returns (bytes32) {
+        return soulSignatures[tokenId];
     }
 
     /**

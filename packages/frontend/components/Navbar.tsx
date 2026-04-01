@@ -84,6 +84,7 @@ export function Navbar() {
     { href: "/dashboard", label: t("nav_dashboard") },
     { href: "/multi-agent", label: t("nav_multi_agent") },
     { href: "/openclaw", label: "OpenClaw" },
+    { href: "/bounty", label: lang === "zh" ? "赏金" : "Bounty" },
     { href: "/explore", label: t("nav_explore") },
     { href: "/verify", label: t("nav_verify") },
   ];

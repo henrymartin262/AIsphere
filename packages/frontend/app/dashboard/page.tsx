@@ -33,7 +33,8 @@ function SkeletonCard() {
 }
 
 /* ── 连接钱包未连接时的大号引导页 ── */
-function ConnectWalletPrompt({ t }: { t: (key: string) => string }) {
+function ConnectWalletPrompt() {
+  const { t } = useLang();
   return (
     <main className="mx-auto flex max-w-7xl flex-col items-center justify-center gap-8 px-6 py-20">
       <div className="relative w-full max-w-xl overflow-hidden">
@@ -112,7 +113,7 @@ export default function DashboardPage() {
   const { t } = useLang();
 
   if (!isConnected) {
-    return <ConnectWalletPrompt t={t} />;
+    return <ConnectWalletPrompt />;
   }
 
   return (

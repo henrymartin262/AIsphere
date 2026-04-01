@@ -9,6 +9,7 @@ export interface Agent {
     tags?: string[];
     metadataHash: string;
     encryptedURI: string;
+    soulSignature?: string;
   };
   stats: {
     totalInferences: number;
@@ -17,6 +18,8 @@ export interface Agent {
     level: number;
     lastActiveAt: number;
   };
+  soulSignature?: string;
+  price?: string;          // listing price in A0GI, e.g. "1.5"
 }
 
 export interface ChatMessage {
@@ -36,6 +39,7 @@ export interface InferenceProof {
   onChain: boolean;
   txHash?: string;
   timestamp: number;
+  inferenceMode?: "tee" | "real" | "mock";
 }
 
 export interface VerifyResult {
@@ -82,4 +86,33 @@ export interface DecisionStats {
   onChain: number;
   batched: number;
   local: number;
+}
+
+export type BountyStatus = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+// 0=Open, 1=Assigned, 2=Submitted, 3=Completed, 4=Disputed, 5=Expired, 6=Cancelled
+
+export interface Bounty {
+  id: number;
+  creator: string;
+  creatorAgentId: number;
+  title: string;
+  description: string;
+  reward: string;        // wei
+  rewardEth: string;     // formatted
+  deadline: number;      // unix timestamp
+  criteriaHash: string;
+  assignedAgentId: number;
+  assignedOwner: string;
+  resultProofHash: string;
+  status: BountyStatus;
+  statusLabel: string;
+  parentBountyId: number;
+  createdAt: number;
+  completedAt: number;
+  isExpired: boolean;
+}
+
+export interface BountyStats {
+  totalBounties: number;
+  totalRewardPool: string;
 }

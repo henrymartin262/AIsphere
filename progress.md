@@ -2,9 +2,11 @@
 ## 九、目前进度（开发进度追踪）
 
 > 📌 **使用说明**: 做完一项就把 `[ ]` 改成 `[x]`，如果技术路线有变化，记得及时更新，方便团队交接时快速了解进度。
-> 📅 **最后更新**: 2026-03-26（Session 3）
+> 📅 **最后更新**: 2026-04-01（Session 7 — v2.0 增强规划启动）
 
 ---
+
+## v1.0 基础功能（已完成）
 
 ### 模块 #0：项目骨架 — Monorepo 初始化 `✅ 已完成`
 
@@ -27,296 +29,256 @@
 **1.1 SealMindINFT.sol — Agent 身份 INFT**
 - [x] 继承 `ERC721Enumerable`, `Ownable`, `ReentrancyGuard`
 - [x] 定义 `AgentProfile` 结构体（name, model, metadataHash, encryptedURI）
-- [x] 定义 `AgentStats` 结构体（totalInferences, totalMemories, trustScore, level, lastActiveAt, createdAt）
-- [x] 实现 `createAgent(name, model, encryptedURI, metadataHash)` — 铸造 + 初始化
-- [x] 实现 `recordInference(tokenId)` — 推理计数 + 等级检查
+- [x] 定义 `AgentStats` 结构体（totalInferences, totalMemories, trustScore, level, lastActiveAt）
+- [x] 实现 `createAgent()` — 铸造 + 初始化
+- [x] 实现 `recordInference(tokenId, trustDelta)` — 推理计数 + 等级检查
 - [x] 实现 `updateMemoryCount(tokenId, count)` — 更新记忆数
-- [x] 实现 `authorizeOperator(tokenId, operator)` / `revokeOperator` — 操作员管理
+- [x] 实现 `authorizeOperator` / `revokeOperator` — 操作员管理
 - [x] 实现 `getAgentInfo(tokenId)` — 查询完整信息
 - [x] 实现 `getAgentsByOwner(address)` — 查询某地址所有 Agent
 - [x] 实现等级检查内部函数 `_checkLevelUp(tokenId)`
-- [x] 事件: `AgentCreated`, `AgentStatsUpdated`, `OperatorUpdated`
+- [x] 事件: `AgentCreated`, `AgentStatsUpdated`, `OperatorUpdated`, `LevelUp`
 
 **1.2 DecisionChain.sol — 决策链**
-- [x] 定义 `Decision` 结构体（agentId, inputHash, outputHash, modelHash, proofHash, timestamp, importance）
+- [x] 定义 `Decision` 结构体
 - [x] 存储: `decisions`, `proofExists`, `authorizedRecorders` 映射
-- [x] 实现 `addRecorder(address)` — 添加授权记录者
-- [x] 实现 `removeRecorder(address)` — 移除授权记录者
-- [x] 实现 `recordDecision(...)` — 单条记录
-- [x] 实现 `recordBatchDecisions(...)` — 批量记录
-- [x] 实现 `verifyProof(proofHash)` — 验证证明
-- [x] 实现 `getDecisionCount(agentId)` — 决策总数
-- [x] 实现 `getDecision(agentId, index)` — 按索引获取
-- [x] 实现 `getRecentDecisions(agentId, count)` — 最近 N 条
+- [x] 实现 `addRecorder` / `removeRecorder`
+- [x] 实现 `recordDecision` — 单条记录 + 防重放
+- [x] 实现 `recordBatchDecisions` — 批量记录（节省 gas）
+- [x] 实现 `verifyProof` — 验证证明
+- [x] 实现 `getDecisionCount` / `getDecision` / `getRecentDecisions`
 - [x] 事件: `DecisionRecorded`, `BatchDecisionsRecorded`
 
 **1.3 AgentRegistry.sol — 注册表**
 - [x] 存储: `registeredAgents`, `agentTags`, `tagToAgents`, `isPublic` 映射
-- [x] 实现 `registerAgent(tokenId, tags[])` — 注册到全局表
-- [x] 实现 `getAgentsByTag(tag)` — 按标签搜索
-- [x] 实现 `getPublicAgents(offset, limit)` — 分页获取公开 Agent
-- [x] 实现 `setVisibility(tokenId, isPublic)` — 设置可见性
-- [x] 实现 `getTotalAgents()` — 总数统计
+- [x] 实现 `registerAgent` / `setVisibility` / `getAgentsByTag` / `getPublicAgents` / `getTotalAgents`
 
 **1.4 部署脚本 + 测试**
-- [ ] 编写 `scripts/deploy.ts` — 按依赖顺序部署 3 个合约（待做）
-- [x] 编写单元测试: INFT 创建/推理/升级 (10 tests ✅)
-- [x] 编写单元测试: DecisionChain 记录/验证/批量 (7 tests ✅)
-- [x] 编写单元测试: Registry 注册/搜索 (7 tests ✅)
+- [x] 编写 `scripts/deploy.ts` — 按依赖顺序部署 3 个合约
+- [x] 单元测试全部通过（28/28）
 - [x] Hardhat 配置: 0G 测试网 + 主网网络
-- [x] 验证: 所有合约编译通过，单元测试 28/28 通过
+- [x] **部署到 0G Testnet**:
+  - SealMindINFT: `0x1f29Bd4E0426222a78Ce0D484677A672DF3E8fa6`
+  - DecisionChain: `0x354306105a61505EB9a01A142E9fCA537E102EC2`
+  - AgentRegistry: `0x127b73133c9Ba241dE1d1ADdc366c686fd499c02`
 
 ---
 
 ### 模块 #2：后端骨架搭建 `✅ 已完成`
 
-- [x] 初始化 `package.json` + TypeScript 配置
-- [x] 安装依赖: `express`, `ethers@6`, `cors`, `dotenv`, `@0gfoundation/0g-ts-sdk`, `@0glabs/0g-serving-broker`
-- [x] 创建 `src/index.ts` — Express 启动入口
-- [x] 创建 `src/config/index.ts` — 环境变量加载 + 校验
-- [x] 创建 `src/config/contracts.ts` — 合约 ABI + 地址
-- [x] 创建 `src/config/og.ts` — 0G 组件初始化（Provider, Wallet, 含 graceful fallback）
-- [x] 创建路由文件（全部完成）
-- [x] 创建中间件: errorHandler.ts, auth.ts
-- [x] 创建 `src/utils/encryption.ts` — AES-256-GCM 完整实现
+- [x] Express + TypeScript 完整框架
+- [x] `config/og.ts` — 0G KV + Provider + Signer 初始化（含 graceful fallback）
+- [x] `utils/encryption.ts` — AES-256-GCM 完整实现（derive/encrypt/decrypt/hash）
+- [x] 全部路由文件（agents/chat/memory/decisions/explore/multi-agent/openclaw）
+- [x] 中间件: errorHandler + walletAuth
 - [x] 健康检查端点 `GET /api/health`
-- [x] 验证: 启动成功，所有路由 smoke test 通过
 
 ---
 
 ### 模块 #3：前端骨架 + 钱包连接 `✅ 已完成`
 
-- [x] Next.js 14 初始化 (TypeScript + TailwindCSS + App Router)
-- [x] 安装依赖: `@rainbow-me/rainbowkit`, `wagmi`, `viem`, `@tanstack/react-query`
-- [x] 配置 `lib/wagmiConfig.ts` — 0G 测试网/主网链定义
-- [x] 配置 `lib/contracts.ts` — 合约 ABI + 地址
-- [x] 创建 `app/layout.tsx` — 全局布局
-- [x] 创建 `components/Navbar.tsx` — 导航栏 + ConnectButton
-- [x] 所有页面路由骨架
-- [x] 配置 TailwindCSS 主题（深色科技风）
-- [x] 验证: 构建成功，零 TypeScript 错误
+- [x] Next.js 14 + TailwindCSS + App Router
+- [x] RainbowKit + wagmi v2 + viem
+- [x] 0G Testnet/Mainnet 链配置
+- [x] 深色/浅色主题 + 中英文 i18n
 
 ---
 
-### 模块 #4：合约部署（Testnet） `⚪ 未开始`
+### 模块 #5-9：后端服务（全部完成）`✅ 已完成`
 
-- [ ] 获取 0G 测试网水龙头代币
-- [ ] 编写部署脚本 `packages/contracts/scripts/deploy.ts`
-- [ ] 执行部署脚本 `npx hardhat run scripts/deploy.ts --network og-testnet`
-- [ ] 记录合约地址到 `.env` 和 `deployment.json`
-- [ ] 执行权限配置: `DecisionChain.addRecorder(backendWalletAddress)`
-- [ ] 在 0G Explorer 验证合约
-- [ ] 更新前端 + 后端的合约地址配置
-- [ ] 验证: 合约部署成功，Explorer 可查
+- [x] AgentService — createAgent / getAgent / getAgentsByOwner / listPublicAgents
+- [x] MemoryVaultService — 双层架构（内存 + 0G KV 持久化）+ AES-256-GCM
+- [x] SealedInferenceService — Broker 尝试 TeeML → mock fallback
+- [x] DecisionChainService — 三层分级上链（即时/批量/仅本地）
+- [x] MultiAgentService — 编排/委派/消息/会话
+- [x] OpenClawService — 5 个内置 Skill + Pipeline
 
 ---
 
-### 模块 #5：AgentService（后端） `✅ 已完成`
+### 模块 #10：前端页面（全部完成）`✅ 已完成`
 
-- [x] 实现 `services/AgentService.ts` — createAgent / getAgent / getAgentsByOwner / listPublicAgents
-- [x] 实现 `routes/agentRoutes.ts` — POST/GET 全部路由
-- [x] 实现 `routes/exploreRoutes.ts` — GET /api/explore/agents 分页
-- [x] Graceful fallback（合约未配置时 mock 数据）
-- [x] 验证: smoke test 通过
-
----
-
-### 模块 #6：MemoryVaultService（加密记忆） `✅ 已完成`
-
-- [x] 实现 `utils/encryption.ts` — AES-256-GCM 完整加密/解密 + deriveAgentKey + hashContent
-- [x] 实现 `services/MemoryVaultService.ts` — saveMemory / loadMemories / buildContext / deleteMemory
-- [x] 内存存储（加密后），保留 0G KV 接口注释供后续替换
-- [x] 实现 `routes/memoryRoutes.ts` — GET/POST/DELETE
-- [x] 验证: 加密写入 / 解密读取正常
+- [x] 首页 / Dashboard / Create / Chat / Verify
+- [x] Memory / Decisions / Multi-Agent / OpenClaw
+- [x] AgentCard / ChatMessage / ProofModal 组件
+- [x] 所有 hooks（useAgent/useChat/useVerify/useMemory）
+- [x] Explore 页面（当前为 Coming Soon 占位）
 
 ---
 
-### 模块 #7：SealedInferenceService（TEE 推理） `✅ 已完成`
+### 模块 #11：主网部署 `⏳ 等待 gas 代币`
 
-- [x] 实现 `services/SealedInferenceService.ts` — inference + listAvailableModels
-- [x] 使用 `createZGComputeNetworkBroker` 接入 0G Compute
-- [x] 降级策略: Broker 不可用 → mock 响应（teeVerified: false）
-- [x] 推理证明结构体 InferenceProof 完整实现
-- [x] 验证: POST /api/chat/:agentId 返回 response + proof
+- [ ] 获取 0G 主网代币（主办方发放中）
+- [ ] 部署所有合约到 0G Mainnet (Chain ID: 16661)
+- [ ] 更新配置 + 端到端验证
 
 ---
 
-### 模块 #8：DecisionChainService（决策上链） `✅ 已完成`
+---
 
-- [x] 实现 `services/DecisionChainService.ts` — 三层分级策略
-  - [x] importance >= 4: 立即上链
-  - [x] importance == 3: 批量队列（10条自动flush）
-  - [x] importance <= 2: 仅本地
-- [x] verifyProof / getDecisions / getDecisionStats
-- [x] 实现 `routes/decisionRoutes.ts` — GET/POST verify/stats
-- [x] 验证: 决策分层策略正常工作
+## v2.0 增强功能
+
+> 目标：让项目从"技术 Demo"升级为"有真实经济生态的 Agent 操作系统"
+> 策略：全部先部署 testnet，拿到主网 gas 代币后一键迁移
 
 ---
 
-### 模块 #9：对话 API 全流程联调 `✅ 已完成`
+### 模块 B：真实推理接入（DeepSeek API）`✅ 已完成`
 
-- [x] 实现核心对话端点 `POST /api/chat/:agentId` — 完整流水线:
-  - [x] 参数校验
-  - [x] buildContext → inference → saveMemory → recordDecision → recordInference
-  - [x] 返回 response + proof + agentStats
-- [x] 实现对话历史端点 `GET /api/chat/:agentId/history`
-- [x] smoke test 通过
-- [ ] 联调测试（需真实 0G 网络部署后验证）
-
----
-
-### 模块 #10：前端页面开发 `✅ 已完成（核心页面）`
-
-**10.1 核心组件**
-- [x] `components/AgentCard.tsx` — 等级徽章5色 + 统计数据 + hover动效 + tags
-- [x] `components/ChatMessage.tsx` — 双端气泡布局 + ✅ Verified 徽章 + ProofModal 触发
-- [x] `components/ProofModal.tsx` — 遮罩弹窗 + TEE状态 + on-chain链接 + 复制按钮
-
-**10.2 P0 核心页面**
-- [x] `app/page.tsx` — 首页（产品介绍 + 核心能力 + CTA）
-- [x] `app/dashboard/page.tsx` — 仪表盘（钱包检查→骨架屏→空态→Agent网格）
-- [x] `app/agent/create/page.tsx` — 创建 Agent（表单 + 5步铸造进度动画 + 跳转）
-- [x] `app/agent/[id]/chat/page.tsx` — ⭐ 对话核心页面（侧栏信息 + 消息列表 + 推理进度 + ProofModal）
-- [x] `app/verify/page.tsx` — 验证器（输入 proofHash → 链上验证结果）
-
-**10.3 P1 重要页面**
-- [ ] `app/agent/[id]/memory/page.tsx` — 记忆浏览器（待完善）
-- [ ] `app/agent/[id]/decisions/page.tsx` — 决策审计（待完善）
-
-**10.4 P2 加分页面**
-- [ ] `app/explore/page.tsx` — Agent 市场（待完善）
-
-**10.5 Hooks 开发**
-- [x] `hooks/useAgent.ts` — useAgents + useAgent + useCreateAgent
-- [x] `hooks/useChat.ts` — sendMessage + loadHistory + isLoading
-- [x] `hooks/useVerify.ts` — verify + result + isLoading
-- [x] `hooks/useMemory.ts` — 记忆管理
-
-**10.6 其他**
-- [x] `lib/api.ts` — apiGet / apiPost / apiDelete
-- [x] `types/index.ts` — Agent / ChatMessage / InferenceProof / VerifyResult
-- [x] `app/agent/[id]/layout.tsx` — 子页面共用 header + tabs
-- [x] 构建验证: 零 TypeScript 错误，所有路由通过
+- [x] `SealedInferenceService.ts` 三层降级推理
+  - [x] Layer 1: 0G Compute Broker (TeeML) → `teeVerified: true, inferenceMode: "tee"`
+  - [x] Layer 2: DeepSeek API（`DEEPSEEK_API_KEY` 控制）→ `inferenceMode: "real"`
+  - [x] Layer 3: Mock fallback → `inferenceMode: "mock"`
+- [x] `config/index.ts` 添加 `DEEPSEEK_API_KEY` + `DEEPSEEK_BASE_URL`
+- [x] `InferenceProof` 接口新增 `inferenceMode` 字段，透传给前端
 
 ---
 
-### 模块 #11：主网部署 + 端到端测试 `⚪ 未开始`
+### 模块 C：Explore 页面实装 `✅ 已完成`
 
-- [ ] 获取 0G 主网代币
-- [ ] 部署合约到 0G Mainnet (Chain ID: 16661)
-- [ ] 更新所有配置为主网地址
-- [ ] 端到端测试全流程
-- [ ] 性能测试 + 安全检查
-
----
-
-### 模块 #12：UI 打磨 + Demo 准备 + 最终提交 `🟡 进行中`
-
-- [ ] UI/UX 打磨（响应式 + 动画 + 空状态）
-- [ ] Demo 视频录制 (≤3 分钟)
-- [x] README.md 完善 — 项目概述 + 架构图 + 0G 组件深度说明 + 合约地址 + 快速开始
-- [ ] Twitter 推文
-- [ ] HackQuest 平台提交
+- [x] `exploreRoutes.ts` 新增 `GET /api/explore/stats` 端点（totalAgents / totalInferences / totalBounties）
+- [x] `app/explore/page.tsx` 完全重写
+  - [x] 全网统计卡（3 个数字）
+  - [x] 名称搜索（客户端实时过滤）
+  - [x] 标签筛选（All / defi / ai / chat / code / creative）
+  - [x] 排序（最新 / 等级最高 / 推理次数最多）
+  - [x] AgentCard 网格（复用现有组件）
+  - [x] 骨架屏加载态 + 空状态
 
 ---
 
-### 📊 总进度看板
+### 模块 A：Bounty Board（赏金市场）⭐ `✅ 已完成`
 
-| 模块 | 名称 | 状态 | 完成项 | 总项 | 备注 |
-|------|------|------|--------|------|------|
-| #0 | 项目骨架 | ✅ 已完成 | 11 | 11 | — |
-| #1 | 智能合约 | ✅ 已完成 | 36 | 37 | 缺部署脚本 |
-| #2 | 后端骨架 | ✅ 已完成 | 16 | 16 | — |
-| #3 | 前端骨架 | ✅ 已完成 | 14 | 14 | — |
-| #4 | 合约部署 | ✅ 已完成 | 8 | 8 | 0G 测试网已部署 |
-| #5 | AgentService | ✅ 已完成 | 8 | 8 | — |
-| #6 | MemoryVault | ✅ 已完成 | 13 | 13 | — |
-| #7 | SealedInference | ✅ 已完成 | 14 | 14 | — |
-| #8 | DecisionChain | ✅ 已完成 | 10 | 10 | — |
-| #9 | 对话联调 | ✅ 已完成 | 10 | 13 | 需真实网络验证 |
-| #10 | 前端页面 | ✅ 已完成 | 21 | 21 | 含记忆/决策/i18n |
-| #11 | 主网部署 | ⚪ 未开始 | 0 | 13 | 待执行 |
-| #12 | 提交材料 | 🟡 进行中 | 3 | 16 | README + Demo + 提交进行中 |
-| | **合计** | | **178** | **201** | **89% 核心功能完成** |
+#### A.1 合约 ✅
+- [x] `BountyBoard.sol` — 完整合约（7 种状态，9 个核心函数，7 个查询函数）
+  - [x] `createBounty()` payable — 锁入赏金（MIN_REWARD = 0.001 ETH）
+  - [x] `acceptBounty` / `submitResult` / `approveBounty`
+  - [x] `disputeBounty` / `resolveDispute` — 争议仲裁
+  - [x] `cancelBounty` / `expireBounty` — 退款机制
+  - [x] `createSubBounty()` — Agent 发布子任务
+  - [x] 分页查询、按状态/创建者/Agent 筛选
+  - [x] ReentrancyGuard + CEI 模式防重入
+- [x] `test/BountyBoard.ts` — 50 个测试用例全通过
+- [x] `hardhat.config.ts` 添加 `viaIR: true`（解决 stack too deep）
+- [ ] 部署到 0G Testnet（待执行，需要 gas）
 
-> 📝 **Session 3 完成内容（2026-03-26 早）**:
-> - ✅ 合约部署到 0G 测试网（SealMindINFT / DecisionChain / AgentRegistry）
-> - ✅ 前端记忆浏览器页面（分类筛选 + 添加/删除 + 加密显示）
-> - ✅ 前端决策审计页面（统计卡片 + 时间线 + 分页）
-> - ✅ 中英文 i18n 全站切换（36 个新 key）
-> - ✅ 后端 0G KV Storage 接入（og.ts 集成 KvClient + Batcher）
+#### A.2 后端 ✅
+- [x] `BountyService.ts` — 11 个 service 函数（合约优先 + mock fallback，预置 3 条示例）
+- [x] `bountyRoutes.ts` — 11 条路由（GET 不鉴权，POST 路由内部鉴权）
+- [x] `config/contracts.ts` — BOUNTY_BOARD_ABI + bountyBoard 地址字段
+- [x] `config/index.ts` — `BOUNTY_BOARD_ADDRESS` env 变量
+- [x] `index.ts` — 挂载 `/api/bounty` 路由
+
+#### A.3 前端 ✅
+- [x] `components/BountyCard.tsx` — 状态徽章 + 赏金大字 + 截止时间 + 悬浮效果
+- [x] `app/bounty/page.tsx` — 任务大厅（统计卡 + 状态筛选 + 网格 + 骨架屏）
+- [x] `app/bounty/create/page.tsx` — 三步发布表单（填写→确认→成功）
+- [x] `app/bounty/[id]/page.tsx` — 任务详情（状态时间线 + 角色相关操作按钮）
+- [x] `hooks/useBounty.ts` — 6 个 Hook（useBounties / useCreateBounty / useAcceptBounty 等）
+- [x] `types/index.ts` — 新增 `Bounty` / `BountyStatus` / `BountyStats` 类型
+- [x] `Navbar.tsx` — 添加 "Bounty / 赏金" 导航入口
+
+---
+
+### 模块 D：Agent 公开档案页 `✅ 已完成`
+
+- [x] `app/agent/[id]/profile/page.tsx`
+  - [x] Agent 基本信息（名称/等级星星/模型/创建时间）
+  - [x] 链上统计（推理次数/记忆数/信任分/等级）
+  - [x] 灵魂签名可视化卡（SVG 图案 + 哈希 + 复制）
+  - [x] 最近 5 条决策记录（链上状态图标）
+  - [x] Share 按钮（复制页面链接）
+  - [x] 骨架屏 + 错误处理
+- [x] `app/agent/[id]/layout.tsx` — 添加 `🪪 Profile / 档案` tab
+
+---
+
+### 模块 E：Agent 灵魂签名 `✅ 已完成`
+
+- [x] `SealMindINFT.sol` 添加 `soulSignatures` mapping
+  - [x] `createAgent()` 时用 `keccak256(timestamp + sender + to + name + tokenId)` 生成
+  - [x] `SoulSignatureGenerated` 事件
+  - [x] `getSoulSignature(tokenId)` 查询函数
+  - [x] 合约重新编译通过
+- [x] `AgentService.ts` — `getAgent()` 追加读取灵魂签名
+- [x] `agentRoutes.ts` — `GET /api/agents/:agentId/soul-signature` 端点
+- [x] `types/index.ts` — Agent 接口新增 `soulSignature?: string`
+- [x] `components/SoulSignature.tsx` — bytes32 → 确定性 SVG（多边形 + 星形 + 渐变）
+- [ ] 重新部署 SealMindINFT 到 testnet（含新字段，待 gas）
+
+---
+
+### 模块 F：Agent 转让 + 记忆迁移 `⚪ 未开始（P1）`
+
+- [ ] `SealMindINFT.sol` 添加转让相关函数
+- [ ] `TransferService.ts` — 记忆重新加密
+- [ ] 档案页转让按钮
+
+---
+
+### 模块 G：Agent 雇佣 Agent `⚪ 未开始（P2）`
+
+- [ ] 依赖 BountyBoard.createSubBounty
+- [ ] MultiAgentService 扩展
+
+---
+
+### 模块 H：UI 打磨 + Demo 数据预置 `🟡 进行中`
+
+- [ ] 推理模式标记（Chat 页显示 TEE/Real/Mock 颜色标签）
+- [ ] ProofModal 更新（显示 inferenceMode）
+- [ ] 首页统计数字实装（接入 /explore/stats）
+- [ ] Demo 数据脚本（预置若干 Agent + Bounty + 对话记录）
+- [ ] 加载态 / 空态 / 错误态统一
+- [ ] 移动端响应式检查
+
+---
+
+## 📊 总进度看板
+
+| 模块 | 名称 | 状态 | 说明 |
+|------|------|------|------|
+| #0-3 | 项目骨架+合约+双端框架 | ✅ 完成 | — |
+| #5-9 | 后端全部服务 | ✅ 完成 | 含 MultiAgent + OpenClaw |
+| #10 | 前端 v1.0 页面（10个）| ✅ 完成 | — |
+| #11 | 主网部署 | ⏳ 等待 gas 代币 | — |
+| v2.B | 真实推理（DeepSeek） | ✅ 完成 | — |
+| v2.C | Explore 实装 | ✅ 完成 | — |
+| v2.A | Bounty Board | ✅ 完成（待部署）| 合约/后端/前端全完成 |
+| v2.D | Agent 档案页 | ✅ 完成 | — |
+| v2.E | 灵魂签名 | ✅ 完成（待部署）| 合约/后端/前端全完成 |
+| v2.F | Agent 转让 | ⚪ P1 | — |
+| v2.G | Agent 雇佣 Agent | ⚪ P2 | — |
+| v2.H | UI 打磨 + Demo 数据 | 🟡 进行中 | — |
+
+---
+
+## 📝 Session 日志
+
+> **Session 1-3（2026-03-25 ~ 03-26）**:
+> - ✅ Monorepo 初始化 + 3 个合约 + 单元测试全通过（28/28）
+> - ✅ 后端全部服务（Agent/Memory/Inference/Decision）
+> - ✅ 前端骨架 + 钱包连接 + 所有页面
+> - ✅ 合约部署到 0G Testnet（3 个合约地址确认）
+> - ✅ 0G KV Storage 真实接入（双层架构）
 > - ✅ 首次 git commit（76 文件，19801 行）
->
-> 📝 **Session 4 完成内容（2026-03-26 晚）**:
-> - ✅ README.md 完善 — 英文为主，包含：
->   - 产品概述（问题 + 解决方案 + 核心叙事）
->   - ASCII 架构图（前端 + 后端 + 0G 组件）
->   - 5 大核心功能表格 + 技术栈表格
->   - 0G 4 大组件深度集成说明（Storage KV + Compute TEE + Chain + INFT）
->   - 3 个合约地址 + Explorer 可点击链接
->   - 快速开始（本地运行 backend + frontend）
->   - 完整项目结构树（3 packages）
->   - 12 个 API 端点说明
->   - 3 分钟 Demo 脚本（WOW MOMENT）
->   - 安全威胁模型 + 密钥管理
->   - 测试状态（28/28 通过）
-> - ✅ progress.md 更新 — 模块 #12 标记 README 完成，总进度 170/193（88%）
->
-> 📝 **Session 5 完成内容（2026-03-27）**:
-> - ✅ **Track 1 缺口补齐 — 3 大关键改进**：
->   1. **0G KV Storage 真实接入** — MemoryVaultService 从纯内存 Map 升级为双层架构：
->      - 内存 Map 热缓存 + 0G KV Storage 持久化
->      - 写入路径：encrypt → push to cache → async persist to 0G KV (kvBatchWrite)
->      - 读取路径：首次访问时从 0G KV 水合到内存缓存 (hydrateFromKV)
->      - 删除时同步更新 0G KV 索引
->      - 优雅降级：0G KV 不可用时自动回退到纯内存模式
->   2. **Multi-Agent 协作机制** — 新增 MultiAgentService + multiAgentRoutes：
->      - Agent 间消息传递（request/response/delegate/broadcast/handoff）
->      - 任务委派 + 自动执行（delegateTask → executeTask）
->      - 多 Agent 并行推理编排（orchestrate）
->      - 智能路由（基于 keyword-capability 匹配）
->      - Agent Handoff（会话转移 + 上下文迁移）
->      - 协作会话管理（createSession/getSession/listSessions）
->      - 8 个新 API 端点
->   3. **OpenClaw 集成** — 新增 OpenClawService + openclawRoutes：
->      - Agent 注册到 OpenClaw 编排层
->      - 5 个内建 Skill（sealed-inference, memory-recall, decision-audit, multi-agent-delegate, context-builder）
->      - Skill 执行引擎 + 自定义 Skill 注册
->      - 任务队列 + 自动执行
->      - Skill Pipeline（链式 Skill 执行）
->      - OpenClaw Gateway 配置生成
->      - 10 个新 API 端点
-> - ✅ Health 端点增强 — 展示所有集成状态（0G Chain/KV/Compute/OpenClaw/Multi-Agent）
-> - ✅ 新增 4 个文件：MultiAgentService.ts, multiAgentRoutes.ts, OpenClawService.ts, openclawRoutes.ts
-> - ✅ 修改 3 个文件：MemoryVaultService.ts, index.ts (路由注册 + health 增强)
->
-> 📝 **下一步重点**:
-> 1. 🧪 端到端联调测试（创建 Agent → 对话 → 记忆 → 决策全链路）
-> 2. 🎬 Demo 视频录制 (≤3 分钟)
-> 3. 🚀 主网部署（模块 #11）
-> 4. 📤 最终提交（模块 #12 剩余部分）
->
-> 📝 **Session 6 完成内容（2026-03-27）**:
-> - ✅ **前端新增 Multi-Agent 协作页面** (`app/multi-agent/page.tsx`):
->   - 编排推理界面（输入 Agent IDs + 查询 → 并行推理 → 聚合结果展示）
->   - 协作会话管理界面（创建/列出协作会话）
->   - 状态统计卡片（活跃会话数、消息类型、编排模式）
->   - 连接钱包引导页 + 完整 i18n 双语支持
-> - ✅ **前端新增 OpenClaw 技能管理页面** (`app/openclaw/page.tsx`):
->   - 概览标签页（内置技能列表 + ASCII 架构图）
->   - 技能标签页（卡片网格展示所有已注册技能）
->   - Agent 标签页（注册表单 + 已注册 Agent 列表）
->   - 状态指示器（Connected/Standby）+ 四项统计
->   - 5 个内置技能颜色编码
-> - ✅ **Navbar 更新** — 添加 Multi-Agent 和 OpenClaw 两个新导航入口
-> - ✅ **i18n 更新** — 新增 `nav_multi_agent` 翻译键（中/英双语）
-> - ✅ **walletAuth 中间件启用** — 对 agents/chat/memory/multi-agent 路由开启钱包验证
-> - ✅ **AgentService.listPublicAgents 对接链上** — 优先从 AgentRegistry 合约读取公开 Agent 列表，失败时优雅回退到 mock
-> - ✅ **README_CN.md 同步更新** — 与英文版对齐：
->   - 新增 Multi-Agent 协作 + OpenClaw 集成到核心功能表
->   - 更新架构图（添加多 Agent 协作 + OpenClaw 技能层）
->   - 更新 0G Storage KV 描述（双层架构）
->   - 新增 Multi-Agent（11 端点）和 OpenClaw（10 端点）API 文档
->   - 更新项目结构树（新文件）
->   - 版本号 1.0 → 1.1
-> - ✅ 所有修改文件零 lint 错误
+
+> **Session 4-5（2026-03-26 ~ 03-27）**:
+> - ✅ README.md 英文完整版（架构图 + API + Demo 脚本）
+> - ✅ MultiAgentService + multiAgentRoutes（8 个端点）
+> - ✅ OpenClawService + openclawRoutes（10 个端点）
+> - ✅ 前端 Multi-Agent 页面 + OpenClaw 页面
+> - ✅ walletAuth 中间件启用
+> - ✅ AgentRegistry 合约对接（listPublicAgents）
+
+> **Session 6（2026-03-27）**:
+> - ✅ README_CN.md 同步更新（中文完整版）
+> - ✅ i18n 全站双语（36 个新 key）
+> - ✅ Navbar 添加 Multi-Agent + OpenClaw 入口
+> - ✅ 前端记忆浏览器 + 决策审计页面完善
+
+> **Session 7（2026-04-01）**:
+> - ✅ v2.0 增强规划完成
+>   - plan.md 全面更新（增加 A/B/C/D/E/F/G 7 个增强模块）
+>   - progress.md 更新（v1.0 总结 + v2.0 任务清单）
+>   - 核心增强：Bounty Board（赏金市场）+ 真实推理 + Explore 实装 + 灵魂签名 + 转让
+> - 🔜 下一步：开始实现模块 B（真实推理接入）→ 模块 C（Explore）→ 模块 A（Bounty）

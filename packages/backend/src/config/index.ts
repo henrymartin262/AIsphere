@@ -15,7 +15,10 @@ const envSchema = z.object({
   DEPLOYER_PRIVATE_KEY: z.string().optional(),
   INFT_ADDRESS: z.string().optional(),
   DECISION_CHAIN_ADDRESS: z.string().optional(),
-  REGISTRY_ADDRESS: z.string().optional()
+  REGISTRY_ADDRESS: z.string().optional(),
+  DEEPSEEK_API_KEY: z.string().optional(),
+  DEEPSEEK_BASE_URL: z.string().url().default("https://api.deepseek.com"),
+  BOUNTY_BOARD_ADDRESS: z.string().optional(),
 });
 
 export const env = envSchema.parse(process.env);

@@ -174,9 +174,10 @@ function DynamicBackground() {
    首页主体 — 明亮清爽
    ═══════════════════════════════════════════════ */
 export default function HomePage() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [showCover, setShowCover] = useState(true);
   const [coverExiting, setCoverExiting] = useState(false);
+  const [stats, setStats] = useState({ totalAgents: 0, totalInferences: 0, totalBounties: 0 });
 
   const handleEnter = useCallback(() => {
     setCoverExiting(true);
@@ -193,6 +194,16 @@ export default function HomePage() {
   useEffect(() => {
     if (!showCover) sessionStorage.setItem("sealmind-entered", "1");
   }, [showCover]);
+
+  useEffect(() => {
+    const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
+    fetch(`${API}/explore/stats`)
+      .then(r => r.json())
+      .then(j => { if (j.success) setStats(j.data); })
+      .catch(() => {});
+  }, []);
+
+  const isEn = lang !== "zh";
 
   const features = [
     {
@@ -481,6 +492,142 @@ export default function HomePage() {
               </p>
             </Link>
           ))}
+          </div>
+
+          {/* 全网统计 */}
+          <div className="mt-12 flex flex-wrap justify-center gap-8">
+            {[
+              { value: stats.totalAgents, label: "Agents Created", labelZh: "已创建 Agent" },
+              { value: stats.totalInferences, label: "Inferences Run", labelZh: "推理次数" },
+              { value: stats.totalBounties, label: "Bounties Posted", labelZh: "赏金任务" },
+            ].map(({ value, label, labelZh }) => (
+              <div key={label} className="text-center">
+                <p className="text-3xl font-bold bg-gradient-to-r from-indigo-600 via-violet-500 to-indigo-600 bg-clip-text text-transparent">
+                  {value > 0 ? value.toLocaleString() : "—"}
+                </p>
+                <p className="mt-1 text-xs text-slate-500">{isEn ? label : labelZh}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Bounty Board Preview ── */}
+        <section className="animate-slide-up stagger-3">
+          <div className="mb-5 flex items-end justify-between">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-400">{isEn ? "New" : "新功能"}</span>
+              <h2 className="mt-1 text-xl font-bold text-slate-800">
+                {isEn ? "Bounty " : "赏金 "}
+                <span className="text-gradient">{isEn ? "Board" : "任务板"}</span>
+              </h2>
+              <p className="mt-1 text-sm text-slate-400">
+                {isEn ? "Post tasks, let AI Agents earn rewards on-chain." : "发布任务，让 AI Agent 完成并赚取链上赏金。"}
+              </p>
+            </div>
+            <Link href="/bounty" className="shrink-0 flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-xs font-semibold text-indigo-600 hover:bg-indigo-100 transition dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400">
+              {isEn ? "View All" : "查看全部"}
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" d="M13 7l5 5-5 5M6 12h12" />
+              </svg>
+            </Link>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            {[
+              { id: 1, title: isEn ? "Analyze 0G Network Performance" : "分析 0G 网络性能指标", reward: "0.1", status: 0, statusLabel: isEn ? "Open" : "开放", statusColor: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "bg-emerald-500", deadline: isEn ? "7d left" : "剩余 7 天" },
+              { id: 4, title: isEn ? "Generate Solidity Security Audit" : "生成 Solidity 安全审计报告", reward: "0.8", status: 2, statusLabel: isEn ? "Submitted" : "已提交", statusColor: "bg-amber-50 text-amber-700 border-amber-200", dot: "bg-amber-500", deadline: isEn ? "10d left" : "剩余 10 天" },
+              { id: 5, title: isEn ? "Build ChatGPT Plugin for 0G Storage" : "构建 0G Storage ChatGPT 插件", reward: "1.5", status: 0, statusLabel: isEn ? "Open" : "开放", statusColor: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "bg-emerald-500", deadline: isEn ? "14d left" : "剩余 14 天" },
+            ].map((b) => (
+              <Link key={b.id} href={`/bounty/${b.id}`} className="group flex flex-col rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:border-indigo-200 dark:border-white/8 dark:bg-slate-900">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="flex-1 text-sm font-semibold text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 transition-colors line-clamp-2">{b.title}</p>
+                  <span className={`shrink-0 inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${b.statusColor}`}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${b.dot}`} />
+                    {b.statusLabel}
+                  </span>
+                </div>
+                <div className="mt-auto pt-4 flex items-end justify-between">
+                  <div>
+                    <p className="text-[10px] text-slate-400 uppercase tracking-wider">{isEn ? "Reward" : "赏金"}</p>
+                    <p className="text-lg font-bold text-indigo-600 dark:text-indigo-400">{b.reward} <span className="text-xs font-normal text-slate-400">A0GI</span></p>
+                  </div>
+                  <p className="text-xs text-slate-400">{b.deadline}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Agent Marketplace Preview ── */}
+        <section className="animate-slide-up stagger-4">
+          <div className="mb-5 flex items-end justify-between">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-orange-400">{isEn ? "New" : "新功能"}</span>
+              <h2 className="mt-1 text-xl font-bold text-slate-800">
+                {isEn ? "Agent " : "Agent "}
+                <span className="bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">{isEn ? "Marketplace" : "交易市场"}</span>
+              </h2>
+              <p className="mt-1 text-sm text-slate-400">
+                {isEn ? "Buy, sell, and try AI Agents. 3 free interactions before purchase." : "买卖 AI Agent，购买前可免费体验 3 次。"}
+              </p>
+            </div>
+            <Link href="/explore" className="shrink-0 flex items-center gap-1.5 rounded-xl border border-orange-200 bg-orange-50 px-4 py-2 text-xs font-semibold text-orange-600 hover:bg-orange-100 transition dark:border-orange-500/30 dark:bg-orange-500/10 dark:text-orange-400">
+              {isEn ? "Browse All" : "浏览全部"}
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" d="M13 7l5 5-5 5M6 12h12" />
+              </svg>
+            </Link>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            {[
+              { id: 3, name: "Orion", model: "qwen-2.5-72b", level: 5, inferences: 524, trust: 96, price: "3.0", tags: ["defi", "ai", "code"], levelColor: "border-amber-200 bg-amber-50 text-amber-700" },
+              { id: 10, name: "Lyra", model: "qwen-2.5-72b", level: 5, inferences: 612, trust: 99, price: "5.0", tags: ["creative", "chat", "ai"], levelColor: "border-amber-200 bg-amber-50 text-amber-700" },
+              { id: 9, name: "Vega", model: "deepseek-v3", level: 4, inferences: 389, trust: 92, price: "2.5", tags: ["defi", "code", "ai"], levelColor: "border-purple-200 bg-purple-50 text-purple-700" },
+            ].map((a) => (
+              <Link key={a.id} href="/explore" className="group flex flex-col rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:border-orange-200 dark:border-white/8 dark:bg-slate-900">
+                {/* Header */}
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-orange-200/60 bg-gradient-to-br from-orange-50 to-amber-50 group-hover:scale-105 transition-transform">
+                      <svg className="h-5 w-5 text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.3}>
+                        <rect x="3" y="3" width="18" height="18" rx="4" />
+                        <circle cx="12" cy="10" r="3" />
+                        <path d="M7 20c0-2.8 2.2-5 5-5s5 2.2 5 5" strokeLinecap="round" />
+                      </svg>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-slate-800 dark:text-slate-100 group-hover:text-orange-600 transition-colors">{a.name}</p>
+                      <p className="text-[11px] text-slate-400 truncate">{a.model}</p>
+                    </div>
+                  </div>
+                  <span className={`shrink-0 inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold ${a.levelColor}`}>Lv.{a.level}</span>
+                </div>
+                {/* Tags */}
+                <div className="mt-3 flex flex-wrap gap-1">
+                  {a.tags.map(t => (
+                    <span key={t} className="rounded-md border border-orange-100 bg-orange-50/60 px-1.5 py-0.5 text-[9px] font-medium text-orange-500">#{t}</span>
+                  ))}
+                </div>
+                {/* Stats + price */}
+                <div className="mt-auto pt-4 flex items-end justify-between">
+                  <div className="flex gap-3 text-center">
+                    <div>
+                      <p className="text-sm font-bold text-slate-700">{a.inferences}</p>
+                      <p className="text-[9px] text-slate-400 uppercase">{isEn ? "Inf." : "推理"}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-orange-500">{a.trust}</p>
+                      <p className="text-[9px] text-slate-400 uppercase">{isEn ? "Trust" : "信任"}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] text-slate-400 uppercase tracking-wider">{isEn ? "Price" : "售价"}</p>
+                    <p className="text-lg font-bold text-orange-600">{a.price} <span className="text-xs font-normal text-slate-400">A0GI</span></p>
+                  </div>
+                </div>
+              </Link>
+            ))}
           </div>
         </section>
 

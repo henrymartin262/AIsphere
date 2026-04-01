@@ -119,9 +119,10 @@ async function hydrateFromKV(agentId: number): Promise<void> {
 
     // Try to read the index
     const indexRaw = await clients.kvClient.getValue(streamId, toKvKey("index:memories"));
-    if (!indexRaw || indexRaw.length === 0) return;
+    const indexBytes = indexRaw as unknown as Uint8Array | null | undefined;
+    if (!indexBytes || indexBytes.length === 0) return;
 
-    const indexStr = new TextDecoder().decode(indexRaw);
+    const indexStr = new TextDecoder().decode(indexBytes);
     const index = JSON.parse(indexStr) as Array<{ id: string }>;
 
     // Read each memory entry from 0G KV
@@ -133,8 +134,9 @@ async function hydrateFromKV(agentId: number): Promise<void> {
 
       try {
         const memRaw = await clients.kvClient.getValue(streamId, toKvKey(`memory:${entry.id}`));
-        if (memRaw && memRaw.length > 0) {
-          const memStr = new TextDecoder().decode(memRaw);
+        const memBytes = memRaw as unknown as Uint8Array | null | undefined;
+        if (memBytes && memBytes.length > 0) {
+          const memStr = new TextDecoder().decode(memBytes);
           const encrypted = JSON.parse(memStr) as EncryptedMemory;
           getStore(agentId).push(encrypted);
           loaded++;

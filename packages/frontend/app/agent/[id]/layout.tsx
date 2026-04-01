@@ -21,6 +21,7 @@ export default function AgentLayout({ children }: { children: React.ReactNode })
 
   const TABS = [
     { href: "chat",      label: `💬 ${isEn ? "Chat" : "对话"}` },
+    { href: "profile",   label: `🪪 ${isEn ? "Profile" : "档案"}` },
     { href: "memory",    label: `🧠 ${isEn ? "Memory" : "记忆"}` },
     { href: "decisions", label: `⛓ ${isEn ? "Decisions" : "决策"}` },
   ];

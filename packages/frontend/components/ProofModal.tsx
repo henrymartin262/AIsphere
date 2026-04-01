@@ -76,23 +76,38 @@ export function ProofModal({ proof, onClose }: ProofModalProps) {
         </div>
 
         {/* TEE Status */}
-        <div className={`mt-4 flex items-center gap-2 rounded-xl border px-4 py-3 ${
-          proof.teeVerified
-            ? "border-green-500/30 bg-green-500/10 text-green-300"
-            : "border-orange-500/30 bg-orange-500/10 text-orange-300"
-        }`}>
-          <span className="text-lg">{proof.teeVerified ? "✅" : "⚠️"}</span>
-          <div>
-            <p className="text-sm font-medium">
-              {proof.teeVerified ? t("proof_tee_verified") : t("proof_tee_unverified")}
-            </p>
-            <p className="text-[11px] opacity-70">
-              {proof.teeVerified
-                ? lang === "zh" ? "此推理在安全硬件飞地内完成，结果不可篡改" : "Inference completed in secure hardware enclave, tamper-proof"
-                : lang === "zh" ? "链上状态尚未确认，请稍后重试" : "On-chain status pending, please retry later"}
-            </p>
-          </div>
-        </div>
+        {(() => {
+          const mode = proof.inferenceMode;
+          const isTee = proof.teeVerified || mode === "tee";
+          const isReal = !isTee && mode === "real";
+          return (
+            <div className={`mt-4 flex items-center gap-2 rounded-xl border px-4 py-3 ${
+              isTee
+                ? "border-green-500/30 bg-green-500/10 text-green-300"
+                : isReal
+                ? "border-amber-500/30 bg-amber-500/10 text-amber-300"
+                : "border-slate-500/30 bg-slate-500/10 text-slate-400"
+            }`}>
+              <span className="text-lg">{isTee ? "✅" : isReal ? "⚡" : "🔮"}</span>
+              <div>
+                <p className="text-sm font-medium">
+                  {isTee
+                    ? t("proof_tee_verified")
+                    : isReal
+                    ? lang === "zh" ? "真实 AI（未验证）" : "Real AI (Unverified)"
+                    : lang === "zh" ? "模拟响应" : "Simulated Response"}
+                </p>
+                <p className="text-[11px] opacity-70">
+                  {isTee
+                    ? lang === "zh" ? "此推理在安全硬件飞地内完成，结果不可篡改" : "Inference completed in secure hardware enclave, tamper-proof"
+                    : isReal
+                    ? lang === "zh" ? "响应来自 DeepSeek，未经 TEE 认证" : "Response from DeepSeek, not TEE-attested"
+                    : lang === "zh" ? "开发模式 Mock 响应" : "Development mode mock"}
+                </p>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* On-chain status */}
         {proof.onChain && proof.txHash && (
@@ -123,6 +138,14 @@ export function ProofModal({ proof, onClose }: ProofModalProps) {
         {/* Timestamp */}
         <p className="mt-3 text-center text-[11px] text-slate-600">
           {new Date(proof.timestamp).toLocaleString(lang === "zh" ? "zh-CN" : "en-US")}
+        </p>
+        <p className="mt-2 text-center text-[10px] text-slate-600">
+          {(() => {
+            const mode = proof.inferenceMode;
+            const isTee = proof.teeVerified || mode === "tee";
+            const isReal = !isTee && mode === "real";
+            return isTee ? "0G Compute TeeML" : isReal ? "DeepSeek Chat API" : "Dev Mock";
+          })()}
         </p>
 
         {/* Copy CTA */}

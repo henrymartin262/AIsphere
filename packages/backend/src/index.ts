@@ -6,6 +6,7 @@ import { initialize0GClients } from "./config/og.js";
 import * as OpenClawService from "./services/OpenClawService.js";
 import { walletAuth } from "./middleware/auth.js";
 import agentRoutes from "./routes/agentRoutes.js";
+import bountyRoutes from "./routes/bountyRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import decisionRoutes from "./routes/decisionRoutes.js";
 import exploreRoutes from "./routes/exploreRoutes.js";
@@ -41,6 +42,7 @@ app.get("/api/health", async (_req, res) => {
 });
 
 app.use("/api/agents", walletAuth, agentRoutes);
+app.use("/api/bounty", bountyRoutes);
 app.use("/api/chat", walletAuth, chatRoutes);
 app.use("/api/memory", walletAuth, memoryRoutes);
 app.use("/api/decisions", decisionRoutes);

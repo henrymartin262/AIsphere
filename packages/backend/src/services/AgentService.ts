@@ -25,6 +25,8 @@ export interface AgentInfo {
   owner: string;
   profile: AgentProfile;
   stats: AgentStats;
+  soulSignature?: string;  // bytes32 hex string
+  price?: string;          // listing price in A0GI (e.g. "0.5")
 }
 
 export interface CreateAgentParams {
@@ -47,13 +49,97 @@ const INFT_ABI = [
   "function getAgentInfo(uint256 tokenId) view returns (address owner, tuple(string name, string model, string metadataHash, string encryptedURI, uint256 createdAt) profile, tuple(uint256 totalInferences, uint256 totalMemories, uint256 trustScore, uint8 level, uint256 lastActiveAt) stats)",
   "function getAgentsByOwner(address owner) view returns (uint256[])",
   "function recordInference(uint256 tokenId, uint256 trustDelta)",
-  "event AgentCreated(uint256 indexed tokenId, address indexed owner, string name, string model, uint256 timestamp)"
+  "event AgentCreated(uint256 indexed tokenId, address indexed owner, string name, string model, uint256 timestamp)",
+  "function getSoulSignature(uint256 tokenId) view returns (bytes32)",
+  "event SoulSignatureGenerated(uint256 indexed tokenId, bytes32 soulSignature)"
 ];
 
 // ─── Mock data counter (in-process for MVP) ───────────────────────────────────
 
-let mockIdCounter = 1;
-const mockAgents: Map<number, AgentInfo> = new Map();
+let mockIdCounter = 11;
+const _ts = () => Math.floor(Date.now() / 1000);
+const mockAgents: Map<number, AgentInfo> = new Map([
+  [1, {
+    agentId: 1,
+    owner: "0xA1B2C3D4E5F6A7B8C9D0E1F2A3B4C5D6E7F8A9B0",
+    profile: { name: "Aria", model: "deepseek-v3", metadataHash: "0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b", encryptedURI: "", tags: ["chat", "ai", "creative"] } as any,
+    stats: { totalInferences: 312, totalMemories: 47, trustScore: 91, level: 4, lastActiveAt: _ts() - 600 },
+    soulSignature: "0xariasoulsig0000000000000000000000000000000000000000000000000001",
+    price: "1.2"
+  }],
+  [2, {
+    agentId: 2,
+    owner: "0xB2C3D4E5F6A7B8C9D0E1F2A3B4C5D6E7F8A9B0C1",
+    profile: { name: "Kira", model: "deepseek-v3", metadataHash: "0x2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c", encryptedURI: "", tags: ["code", "ai"] } as any,
+    stats: { totalInferences: 187, totalMemories: 31, trustScore: 78, level: 3, lastActiveAt: _ts() - 1800 },
+    soulSignature: "0xkirasoulsig0000000000000000000000000000000000000000000000000002",
+    price: "0.5"
+  }],
+  [3, {
+    agentId: 3,
+    owner: "0xC3D4E5F6A7B8C9D0E1F2A3B4C5D6E7F8A9B0C1D2",
+    profile: { name: "Orion", model: "qwen-2.5-72b", metadataHash: "0x3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d", encryptedURI: "", tags: ["defi", "ai", "code"] } as any,
+    stats: { totalInferences: 524, totalMemories: 89, trustScore: 96, level: 5, lastActiveAt: _ts() - 120 },
+    soulSignature: "0xorionsoulsig000000000000000000000000000000000000000000000000003",
+    price: "3.0"
+  }],
+  [4, {
+    agentId: 4,
+    owner: "0xD4E5F6A7B8C9D0E1F2A3B4C5D6E7F8A9B0C1D2E3",
+    profile: { name: "Nova", model: "deepseek-v3", metadataHash: "0x4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e", encryptedURI: "", tags: ["chat", "creative"] } as any,
+    stats: { totalInferences: 98, totalMemories: 14, trustScore: 55, level: 2, lastActiveAt: _ts() - 7200 },
+    soulSignature: "0xnovasoulsig0000000000000000000000000000000000000000000000000004",
+    price: "0.2"
+  }],
+  [5, {
+    agentId: 5,
+    owner: "0xE5F6A7B8C9D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4",
+    profile: { name: "Sage", model: "qwen-2.5-72b", metadataHash: "0x5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f", encryptedURI: "", tags: ["defi", "chat", "ai"] } as any,
+    stats: { totalInferences: 433, totalMemories: 62, trustScore: 88, level: 4, lastActiveAt: _ts() - 300 },
+    soulSignature: "0xsagesoulsig0000000000000000000000000000000000000000000000000005",
+    price: "1.8"
+  }],
+  [6, {
+    agentId: 6,
+    owner: "0xF6A7B8C9D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5",
+    profile: { name: "Cipher", model: "deepseek-v3", metadataHash: "0x6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a", encryptedURI: "", tags: ["code", "defi"] } as any,
+    stats: { totalInferences: 271, totalMemories: 40, trustScore: 83, level: 3, lastActiveAt: _ts() - 900 },
+    soulSignature: "0xciphersoulsig00000000000000000000000000000000000000000000000006",
+    price: "0.8"
+  }],
+  [7, {
+    agentId: 7,
+    owner: "0xA7B8C9D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B6",
+    profile: { name: "Echo", model: "deepseek-v3", metadataHash: "0x7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b", encryptedURI: "", tags: ["chat"] } as any,
+    stats: { totalInferences: 45, totalMemories: 8, trustScore: 32, level: 1, lastActiveAt: _ts() - 86400 },
+    soulSignature: "0xechosoulsig0000000000000000000000000000000000000000000000000007",
+    price: "0.1"
+  }],
+  [8, {
+    agentId: 8,
+    owner: "0xB8C9D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B6C7",
+    profile: { name: "Flux", model: "qwen-2.5-72b", metadataHash: "0x8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c", encryptedURI: "", tags: ["creative", "ai", "chat"] } as any,
+    stats: { totalInferences: 156, totalMemories: 25, trustScore: 67, level: 2, lastActiveAt: _ts() - 3600 },
+    soulSignature: "0xfluxsoulsig0000000000000000000000000000000000000000000000000008",
+    price: "0.35"
+  }],
+  [9, {
+    agentId: 9,
+    owner: "0xC9D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B6C7D8",
+    profile: { name: "Vega", model: "deepseek-v3", metadataHash: "0x9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d", encryptedURI: "", tags: ["defi", "code", "ai"] } as any,
+    stats: { totalInferences: 389, totalMemories: 55, trustScore: 92, level: 4, lastActiveAt: _ts() - 450 },
+    soulSignature: "0xvegasoulsig0000000000000000000000000000000000000000000000000009",
+    price: "2.5"
+  }],
+  [10, {
+    agentId: 10,
+    owner: "0xD0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B6C7D8E9",
+    profile: { name: "Lyra", model: "qwen-2.5-72b", metadataHash: "0x0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e", encryptedURI: "", tags: ["creative", "chat", "ai", "defi"] } as any,
+    stats: { totalInferences: 612, totalMemories: 103, trustScore: 99, level: 5, lastActiveAt: _ts() - 60 },
+    soulSignature: "0xlyrasoulsig000000000000000000000000000000000000000000000000000a",
+    price: "5.0"
+  }]
+]);
 
 // ─── TTL Cache (avoid repeated RPC calls) ─────────────────────────────────────
 const CACHE_TTL_MS = 30_000; // 30 seconds
@@ -152,6 +238,13 @@ export async function getAgent(agentId: number): Promise<AgentInfo | null> {
           lastActiveAt: Number(stats.lastActiveAt)
         }
       };
+      // 尝试读取灵魂签名
+      try {
+        const sig = await contract.getSoulSignature(agentId);
+        result.soulSignature = sig;
+      } catch {
+        // 旧版合约可能没有此函数，忽略
+      }
       setCachedAgent(agentId, result);
       return result;
     }
@@ -209,15 +302,17 @@ export async function listPublicAgents(
   offset = 0,
   limit = 20
 ): Promise<{ agents: AgentInfo[]; total: number }> {
-  // Try on-chain AgentRegistry first
+  // Try on-chain AgentRegistry first — only use if it returns actual agents
   try {
     const registryContract = await getRegistryContract();
     if (registryContract) {
       const [ids, total]: [bigint[], bigint] = await registryContract.getPublicAgents(offset, limit);
       const numIds = ids.map(Number);
-      const infos = await Promise.all(numIds.map((id) => getAgent(id)));
-      const agents = infos.filter((a): a is AgentInfo => a !== null);
-      return { agents, total: Number(total) };
+      if (numIds.length > 0) {
+        const infos = await Promise.all(numIds.map((id) => getAgent(id)));
+        const agents = infos.filter((a): a is AgentInfo => a !== null);
+        return { agents, total: Number(total) };
+      }
     }
   } catch (err) {
     console.warn("[AgentService] AgentRegistry.getPublicAgents failed, falling back to mock:", err);

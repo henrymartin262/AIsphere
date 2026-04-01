@@ -96,7 +96,8 @@ router.post("/:agentId", async (req, res) => {
         proof: {
           proofHash: proof.proofHash,
           teeVerified: proof.teeVerified,
-          timestamp: proof.timestamp
+          timestamp: proof.timestamp,
+          inferenceMode: proof.inferenceMode
         }
       }
     });

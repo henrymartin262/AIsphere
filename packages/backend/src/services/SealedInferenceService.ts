@@ -1,5 +1,6 @@
 import { hashContent } from "../utils/encryption.js";
 import { initialize0GClients } from "../config/og.js";
+import { env } from "../config/index.js";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -11,6 +12,7 @@ export interface InferenceProof {
   timestamp: number;
   teeVerified: boolean;
   proofHash: string;
+  inferenceMode: "tee" | "real" | "mock";
 }
 
 export interface InferenceResult {
@@ -41,6 +43,7 @@ function buildProof(
   input: string,
   output: string,
   teeVerified: boolean,
+  inferenceMode: "tee" | "real" | "mock",
   signature?: string
 ): InferenceProof {
   const timestamp = Date.now();
@@ -48,7 +51,7 @@ function buildProof(
   const inputHash = hashContent(input);
   const outputHash = hashContent(output);
   const proofHash = hashContent(`${inputHash}${outputHash}${modelHash}${timestamp}`);
-  return { modelHash, inputHash, outputHash, signature, timestamp, teeVerified, proofHash };
+  return { modelHash, inputHash, outputHash, signature, timestamp, teeVerified, proofHash, inferenceMode };
 }
 
 // ─── Service ──────────────────────────────────────────────────────────────────
@@ -61,7 +64,7 @@ export async function inference(
 ): Promise<InferenceResult> {
   const clients = await initialize0GClients();
 
-  // Attempt live 0G Compute Broker inference
+  // ── Layer 1: 0G Compute Broker (TeeML) ────────────────────────────────────
   if (clients.brokerStatus === "ready" && clients.signer) {
     try {
       const { createZGComputeNetworkBroker } = await import("@0glabs/0g-serving-broker");
@@ -114,19 +117,55 @@ export async function inference(
             prompt,
             text,
             true,
+            "tee",
             data.signatures?.attestation
           );
           return { response: text, proof };
         }
       }
     } catch (err) {
-      console.warn("[SealedInference] Broker inference failed, falling back to mock:", err);
+      console.warn("[SealedInference] Broker inference failed, falling back to DeepSeek:", err);
     }
   }
 
-  // ── Mock fallback ──────────────────────────────────────────────────────────
+  // ── Layer 2: DeepSeek API ──────────────────────────────────────────────────
+  if (env.DEEPSEEK_API_KEY) {
+    try {
+      const response = await fetch(`${env.DEEPSEEK_BASE_URL}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${env.DEEPSEEK_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: "deepseek-chat",
+          messages: [
+            { role: "system", content: context || "You are a helpful AI agent." },
+            { role: "user", content: userMessage }
+          ],
+          max_tokens: 1024,
+          temperature: 0.7
+        })
+      });
+
+      if (response.ok) {
+        const data = (await response.json()) as {
+          choices: Array<{ message: { content: string } }>;
+        };
+        const text = data.choices?.[0]?.message?.content ?? "";
+        const proof = buildProof("deepseek-chat", userMessage, text, false, "real");
+        return { response: text, proof };
+      } else {
+        console.warn("[SealedInference] DeepSeek API returned non-OK status:", response.status);
+      }
+    } catch (err) {
+      console.warn("[SealedInference] DeepSeek inference failed, falling back to mock:", err);
+    }
+  }
+
+  // ── Layer 3: Mock fallback ─────────────────────────────────────────────────
   const mockResponse = generateMockResponse(agentId, userMessage, context);
-  const proof = buildProof(model, userMessage, mockResponse, false);
+  const proof = buildProof(model, userMessage, mockResponse, false, "mock");
   return { response: mockResponse, proof };
 }
 
@@ -152,6 +191,7 @@ export async function listAvailableModels(): Promise<ModelInfo[]> {
 
   return [
     { id: "teeml-llama3", name: "LLaMA-3 (TeeML)", provider: "0G-TeeML", teeSupported: true },
+    { id: "deepseek-chat", name: "DeepSeek Chat", provider: "DeepSeek", teeSupported: false },
     { id: "mock-gpt", name: "Mock GPT (Dev)", provider: "local", teeSupported: false }
   ];
 }
