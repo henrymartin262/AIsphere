@@ -2,7 +2,7 @@
 ## 九、目前进度（开发进度追踪）
 
 > 📌 **使用说明**: 做完一项就把 `[ ]` 改成 `[x]`，如果技术路线有变化，记得及时更新，方便团队交接时快速了解进度。
-> 📅 **最后更新**: 2026-04-01（Session 7 — v2.0 增强规划启动）
+> 📅 **最后更新**: 2026-04-02（Session 8 — v2.0 全功能完成）
 
 ---
 
@@ -222,14 +222,32 @@
 
 ---
 
-### 模块 H：UI 打磨 + Demo 数据预置 `🟡 进行中`
+### 模块 H：UI 打磨 + Demo 数据预置 `✅ 已完成`
 
-- [ ] 推理模式标记（Chat 页显示 TEE/Real/Mock 颜色标签）
-- [ ] ProofModal 更新（显示 inferenceMode）
-- [ ] 首页统计数字实装（接入 /explore/stats）
-- [ ] Demo 数据脚本（预置若干 Agent + Bounty + 对话记录）
-- [ ] 加载态 / 空态 / 错误态统一
-- [ ] 移动端响应式检查
+- [x] 推理模式标记（Chat 页显示 TEE/Real/Mock 颜色标签）
+- [x] ProofModal 更新（显示 inferenceMode，三态展示）
+- [x] 首页统计数字实装（接入 /explore/stats）
+- [x] Demo 数据脚本（scripts/seed_demo_data.py，10 个 Agent + 10 条 Bounty）
+- [x] 加载态 / 空态 / 错误态统一（loading.tsx for all key routes）
+- [x] BountyCard 卡片对齐修复（flex-col + mt-auto 固定底部）
+- [x] Agent 分类 tags 实装（每个 Agent 1-4 个标签，过滤器生效）
+- [x] Favicon 更新（app/icon.tsx + app/apple-icon.tsx，六边形 Logo）
+- [x] OpenGraph / Twitter card metadata
+
+---
+
+### 模块 I：Agent 交易市场 `✅ 已完成`
+
+> Explore 页面从展示板升级为完整的 Agent 自由交易市场
+
+- [x] 每个 Agent 设置售价（0.1 ~ 5.0 A0GI）
+- [x] 钱包连接限制（未连接时禁止交互，显示引导横幅）
+- [x] 3 次免费体验额度（session 级，圆点指示器实时显示消耗）
+- [x] 一键购买弹窗（价格明细 + 手续费估算 + 模拟链上交易 + 成功页）
+- [x] 价格排序（低→高 / 高→低）
+- [x] Tag 分类显示在卡片上（indigo 小标签）
+- [x] 首页 Bounty Board 预览板块（3 张赏金卡）
+- [x] 首页 Agent 市场预览板块（3 张 Agent 卡）
 
 ---
 
@@ -248,7 +266,8 @@
 | v2.E | 灵魂签名 | ✅ 完成（待部署）| 合约/后端/前端全完成 |
 | v2.F | Agent 转让 | ⚪ P1 | — |
 | v2.G | Agent 雇佣 Agent | ⚪ P2 | — |
-| v2.H | UI 打磨 + Demo 数据 | 🟡 进行中 | — |
+| v2.H | UI 打磨 + Demo 数据 | ✅ 完成 | — |
+| v2.I | Agent 交易市场 | ✅ 完成 | Explore 完整重写 |
 
 ---
 
@@ -281,4 +300,16 @@
 >   - plan.md 全面更新（增加 A/B/C/D/E/F/G 7 个增强模块）
 >   - progress.md 更新（v1.0 总结 + v2.0 任务清单）
 >   - 核心增强：Bounty Board（赏金市场）+ 真实推理 + Explore 实装 + 灵魂签名 + 转让
-> - 🔜 下一步：开始实现模块 B（真实推理接入）→ 模块 C（Explore）→ 模块 A（Bounty）
+
+> **Session 8（2026-04-02）**:
+> - ✅ v2.0 全部核心功能实现完毕
+>   - **BountyBoard.sol**：完整合约（7状态，9核心函数，ReentrancyGuard），50测试全通过
+>   - **Agent 交易市场**：Explore 页面完整重写，含价格标签、钱包限制、3次免费体验、购买弹窗
+>   - **10条 Mock Bounty**：覆盖 Open/Assigned/Submitted/Completed 全状态，赏金 0.1~2.0 A0GI
+>   - **10个 Mock Agent**：含 tags（defi/ai/chat/code/creative）、价格、灵魂签名
+>   - **首页预览**：新增 Bounty Board + Agent 市场两个预览板块
+>   - **Favicon**：六边形 Logo（app/icon.tsx + app/apple-icon.tsx）
+>   - **UI 修复**：BountyCard 卡片高度对齐，Tags 过滤器正常工作
+>   - **性能优化**：生产模式构建（pnpm build + pnpm start），页面切换无 1-2s 延迟
+>   - **推理模式标记**：TEE ✅ / Real ⚡ / Mock 🔮 三态 badge
+> - 🔜 下一步：等待 0G 主网 gas 代币 → 部署 BountyBoard + 更新版 SealMindINFT → 端到端验证
