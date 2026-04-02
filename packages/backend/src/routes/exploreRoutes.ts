@@ -20,9 +20,11 @@ router.get("/agents", async (req, res) => {
 });
 
 // GET /api/explore/stats — Network-wide statistics
+// Uses a small page (limit=20) to avoid slow RPC — total comes from the paginated response
 router.get("/stats", async (req, res) => {
   try {
-    const agentResult = await AgentService.listPublicAgents(0, 1000);
+    // Reuse the cached first-page result — avoids a second slow RPC call
+    const agentResult = await AgentService.listPublicAgents(0, 20);
     const totalAgents = agentResult.total;
     const totalInferences = agentResult.agents.reduce(
       (sum, a) => sum + (a.stats?.totalInferences ?? 0),

@@ -142,10 +142,26 @@ const mockAgents: Map<number, AgentInfo> = new Map([
 ]);
 
 // ─── TTL Cache (avoid repeated RPC calls) ─────────────────────────────────────
-const CACHE_TTL_MS = 30_000; // 30 seconds
+const CACHE_TTL_MS = 60_000; // 60 seconds
+const RPC_TIMEOUT_MS = 3_000; // 3s max for any single RPC call — fallback to mock if exceeded
+
 interface CacheEntry { data: AgentInfo; expiresAt: number; }
 const agentCache: Map<number, CacheEntry> = new Map();
 const ownerCache: Map<string, { ids: number[]; expiresAt: number }> = new Map();
+
+// List-level cache: cache the full paginated result so repeated loads are instant
+interface ListCacheEntry { data: { agents: AgentInfo[]; total: number }; expiresAt: number; }
+const listCache: Map<string, ListCacheEntry> = new Map();
+
+/** Wraps a promise with a hard timeout — rejects if not resolved in time */
+function withTimeout<T>(promise: Promise<T>, ms: number, label = "RPC"): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms)
+    )
+  ]);
+}
 
 function getCachedAgent(agentId: number): AgentInfo | null {
   const entry = agentCache.get(agentId);
@@ -259,7 +275,11 @@ export async function getAgent(agentId: number): Promise<AgentInfo | null> {
   try {
     const contract = await getContract();
     if (contract) {
-      const [owner, profile, stats] = await contract.getAgentInfo(agentId);
+      const [owner, profile, stats] = await withTimeout(
+        contract.getAgentInfo(agentId),
+        RPC_TIMEOUT_MS,
+        `getAgentInfo(${agentId})`
+      );
       const result: AgentInfo = {
         agentId,
         owner,
@@ -307,7 +327,11 @@ export async function getAgentsByOwner(address: string): Promise<AgentInfo[]> {
   try {
     const contract = await getContract();
     if (contract) {
-      const ids: bigint[] = await contract.getAgentsByOwner(address);
+      const ids: bigint[] = await withTimeout(
+        contract.getAgentsByOwner(address),
+        RPC_TIMEOUT_MS,
+        "getAgentsByOwner"
+      );
       const numIds = ids.map(Number);
       ownerCache.set(address.toLowerCase(), { ids: numIds, expiresAt: Date.now() + CACHE_TTL_MS });
       const infos = await Promise.all(numIds.map((id) => getAgent(id)));
@@ -341,16 +365,30 @@ export async function listPublicAgents(
   offset = 0,
   limit = 20
 ): Promise<{ agents: AgentInfo[]; total: number }> {
-  // Try on-chain AgentRegistry first — only use if it returns actual agents
+  // Check list-level cache first
+  const cacheKey = `${offset}:${limit}`;
+  const cached = listCache.get(cacheKey);
+  if (cached && Date.now() < cached.expiresAt) {
+    return cached.data;
+  }
+
+  // Try on-chain AgentRegistry first — with strict timeout
   try {
     const registryContract = await getRegistryContract();
     if (registryContract) {
-      const [ids, total]: [bigint[], bigint] = await registryContract.getPublicAgents(offset, limit);
+      const [ids, total]: [bigint[], bigint] = await withTimeout(
+        registryContract.getPublicAgents(offset, limit),
+        RPC_TIMEOUT_MS,
+        "getPublicAgents"
+      );
       const numIds = ids.map(Number);
       if (numIds.length > 0) {
+        // Fetch agent details with per-item timeout, collect all in parallel
         const infos = await Promise.all(numIds.map((id) => getAgent(id)));
         const agents = infos.filter((a): a is AgentInfo => a !== null);
-        return { agents, total: Number(total) };
+        const result = { agents, total: Number(total) };
+        listCache.set(cacheKey, { data: result, expiresAt: Date.now() + CACHE_TTL_MS });
+        return result;
       }
     }
   } catch (err) {
@@ -360,5 +398,7 @@ export async function listPublicAgents(
   // Fallback: return all known mock agents paginated
   const all = Array.from(mockAgents.values());
   const page = all.slice(offset, offset + limit);
-  return { agents: page, total: all.length };
+  const result = { agents: page, total: all.length };
+  listCache.set(cacheKey, { data: result, expiresAt: Date.now() + CACHE_TTL_MS });
+  return result;
 }

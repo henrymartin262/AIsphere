@@ -2,6 +2,21 @@ import { ethers } from "ethers";
 import { contracts, BOUNTY_BOARD_ABI } from "../config/contracts.js";
 import { initialize0GClients } from "../config/og.js";
 
+const RPC_TIMEOUT_MS = 3_000;
+const BOUNTY_CACHE_TTL_MS = 30_000;
+
+interface BountyListCache { data: { bounties: BountyInfo[]; total: number }; expiresAt: number; }
+const bountyListCache: Map<string, BountyListCache> = new Map();
+
+function withTimeout<T>(promise: Promise<T>, ms: number, label = "RPC"): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms)
+    )
+  ]);
+}
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export enum BountyStatus {
@@ -536,18 +551,25 @@ export async function getBounties(
   limit = 20,
   statusFilter?: number
 ): Promise<{ bounties: BountyInfo[]; total: number }> {
+  const cacheKey = `${offset}:${limit}:${statusFilter ?? "all"}`;
+  const cached = bountyListCache.get(cacheKey);
+  if (cached && Date.now() < cached.expiresAt) return cached.data;
+
   try {
     const contract = await getBountyContract();
     if (contract) {
-      const [rawBounties, total]: [any[], bigint] = await contract.getBounties(
-        BigInt(offset),
-        BigInt(limit)
+      const [rawBounties, total]: [any[], bigint] = await withTimeout(
+        contract.getBounties(BigInt(offset), BigInt(limit)),
+        RPC_TIMEOUT_MS,
+        "getBounties"
       );
       let bounties = rawBounties.map(formatBounty);
       if (statusFilter !== undefined) {
         bounties = bounties.filter((b) => b.status === statusFilter);
       }
-      return { bounties, total: Number(total) };
+      const result = { bounties, total: Number(total) };
+      bountyListCache.set(cacheKey, { data: result, expiresAt: Date.now() + BOUNTY_CACHE_TTL_MS });
+      return result;
     }
   } catch (err) {
     console.warn("[BountyService] getBounties contract call failed, falling back to mock:", err);
