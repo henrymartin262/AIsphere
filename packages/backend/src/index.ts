@@ -4,6 +4,8 @@ import express from "express";
 import { env } from "./config/index.js";
 import { initialize0GClients } from "./config/og.js";
 import * as OpenClawService from "./services/OpenClawService.js";
+import * as AgentService from "./services/AgentService.js";
+import * as BountyService from "./services/BountyService.js";
 import { passportService } from "./services/PassportService.js";
 import { soulService } from "./services/SoulService.js";
 import { walletAuth } from "./middleware/auth.js";
@@ -80,6 +82,16 @@ async function bootstrap() {
   await initialize0GClients();
   await passportService.init();
   await soulService.init();
+
+  // Pre-warm caches so first user request is instant (not RPC timeout)
+  // Warm both limit=20 (stats page) and limit=100 (explore page uses this)
+  console.log("[Bootstrap] Pre-warming caches...");
+  await Promise.allSettled([
+    AgentService.listPublicAgents(0, 20),
+    AgentService.listPublicAgents(0, 100),
+    BountyService.getBounties(0, 50),
+  ]);
+  console.log("[Bootstrap] Cache warm-up complete");
 
   app.listen(env.PORT, () => {
     console.log(`SealMind backend v3.0 listening on http://localhost:${env.PORT}`);
