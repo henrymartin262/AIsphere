@@ -193,6 +193,133 @@ SealMind integrates **all four core 0G components** for a complete agent infrast
 
 ---
 
+## 🔧 Official 0G SDK & Skills Integration
+
+SealMind deeply integrates **official 0G resources** — SDKs, Agent Skills, and Starter Kits — to maximise protocol-native functionality and reduce custom code.
+
+### 📦 Official SDKs Used
+
+| SDK | Package | Usage in SealMind |
+|-----|---------|-------------------|
+| **0G TypeScript SDK** | `@0gfoundation/0g-ts-sdk ^0.3.3` | KV Storage for Agent Memory Vault, Indexer for node discovery, Batcher for batch writes |
+| **0G Serving Broker** | `@0glabs/0g-serving-broker ^0.6.5` | Sealed inference via TEE providers, provider discovery, fee settlement |
+
+### 🤖 Official 0G Agent Skills Integrated
+
+SealMind uses the [0G Agent Skills](https://github.com/0gfoundation/0g-agent-skills) repository (cloned to `.agent-skills/`) as the authoritative reference for all 0G integrations. The following skills are directly implemented:
+
+#### Skill #7 — Provider Discovery (`compute/provider-discovery`)
+Dynamically discovers and ranks TEE-verified inference providers from the 0G Compute Network instead of hardcoding addresses.
+
+```typescript
+// SealedInferenceService.ts — discoverProviders()
+const services = await broker.inference.listService();
+// service tuple: [0]=address, [1]=type, [2]=url, [6]=model, [10]=teeVerified
+const teeProviders = services.filter((s) => s[1] === 'chatbot' && s[10] === true);
+const provider = teeProviders[0] ?? anyProviders[0];
+await broker.inference.acknowledgeProviderSigner(provider[0]);
+```
+
+**API**: `GET /api/compute/providers` — returns live provider list with TEE status
+
+#### Skill #8 — Account Management (`compute/account-management`)
+Full 0G Compute account lifecycle: deposit, transfer to providers, balance query, and 2-step refund.
+
+```typescript
+// ComputeAccountService.ts
+const ledger = await broker.inference.getLedger();
+// ledger tuple: [1]=total, [2]=available (in wei)
+const available = ethers.formatEther(ledger[2]);
+await broker.inference.depositFund(ethers.parseEther(amount));
+await broker.inference.transferFund(providerAddress, 'inference', wei);
+```
+
+**APIs**:
+- `GET /api/compute/account` — balance and provider sub-accounts
+- `POST /api/compute/deposit` — top up main account
+- `POST /api/compute/transfer` — fund a specific provider
+- `POST /api/compute/refund/initiate` — start 24h refund process
+
+#### Skill #5 — Text to Image (`compute/text-to-image`)
+AI image generation using **Flux Turbo** via 0G Compute Network with automatic fee settlement.
+
+```typescript
+// MediaService.ts — textToImage()
+const requestBody = JSON.stringify({ model: "flux-turbo", prompt, size: "512x512" });
+const headers = await broker.inference.getRequestHeaders(provider[0], requestBody);
+const res = await fetch(`${provider[2]}/images/generations`, { method: "POST", headers, body: requestBody });
+const chatID = res.headers.get("ZG-Res-Key") ?? "";
+await broker.inference.processResponse(provider[0], chatID, data.usage); // required fee settlement
+```
+
+**API**: `POST /api/media/text-to-image` — `{ prompt, width?, height?, n? }`
+
+#### Skill #6 — Speech to Text (`compute/speech-to-text`)
+Audio transcription using **Whisper Large V3** via 0G Compute, supporting mp3/wav/ogg/flac/webm.
+
+```typescript
+// MediaService.ts — speechToText()
+const formData = new FormData();
+formData.append("file", new Blob([audioBuffer], { type: mimeType }), filename);
+formData.append("model", "whisper-large-v3");
+// Note: DO NOT set Content-Type header — let FormData set boundary automatically
+const res = await fetch(`${provider[2]}/audio/transcriptions`, { method: "POST", headers, body: formData });
+```
+
+**API**: `POST /api/media/speech-to-text` — multipart/form-data with `audio` field
+
+#### Skill #13 — Storage + Chain Cross-Layer (`cross-layer/storage-chain`)
+Agent metadata is uploaded to 0G Storage on creation and the resulting hash is stored in the INFT contract, creating a verifiable on-chain ↔ off-chain link.
+
+```typescript
+// AgentService.ts — uploadMetadataTo0G()
+const metadataHash = keccak256(toUtf8Bytes(JSON.stringify(metadata)));
+await kvBatchWrite(clients, streamId, key, data); // persist to 0G KV Storage
+// metadataHash written into SealMindINFT.createAgent() on-chain
+```
+
+#### Skill #14 — Compute + Storage Pipeline (`cross-layer/compute-storage`)
+Inference results and agent experiences are automatically persisted to 0G Storage, creating a decentralised audit trail that outlives the backend.
+
+#### Skill #4 — Streaming Chat with processResponse (`compute/streaming-chat`)
+Every inference call correctly calls `broker.inference.processResponse()` after receiving the response, using the `ZG-Res-Key` header for fee settlement — as mandated by the official skill.
+
+```typescript
+const chatID = response.headers.get("ZG-Res-Key") ?? "";
+await broker.inference.processResponse(providerAddress, chatID, data.usage);
+```
+
+### 🚀 Official Starter Kits Referenced
+
+| Kit | Repo | How Used |
+|-----|------|----------|
+| Compute TypeScript Starter | `0gfoundation/0g-compute-ts-starter-kit` | Reference for broker initialisation pattern |
+| Storage TypeScript Starter | `0gfoundation/0g-storage-ts-starter-kit` | Reference for KvClient + Batcher pattern |
+
+### 📂 Agent Skills Directory
+
+```
+.agent-skills/          ← official 0g-agent-skills repo (auto-detected by Claude Code)
+  skills/
+    compute/
+      provider-discovery/   ← Skill #7  ✅ integrated
+      account-management/   ← Skill #8  ✅ integrated
+      text-to-image/        ← Skill #5  ✅ integrated
+      speech-to-text/       ← Skill #6  ✅ integrated
+      streaming-chat/       ← Skill #4  ✅ integrated
+    cross-layer/
+      storage-chain/        ← Skill #13 ✅ integrated
+      compute-storage/      ← Skill #14 ✅ integrated
+    storage/
+      upload-file/          ← Skill #1  (KV write pattern used)
+      merkle-verification/  ← Skill #3  (hash verification used)
+    chain/
+      deploy-contract/      ← Skill #10 ✅ contracts deployed
+      interact-contract/    ← Skill #11 ✅ all service interactions
+```
+
+---
+
 ## 📋 Smart Contracts (0G Testnet)
 
 All contracts deployed and verified on 0G Testnet (Chain ID: 16602).

@@ -19,6 +19,8 @@ import passportRoutes from "./routes/passportRoutes.js";
 import soulRoutes from "./routes/soulRoutes.js";
 import hiveMindRoutes from "./routes/hiveMindRoutes.js";
 import gatewayRoutes from "./routes/gatewayRoutes.js";
+import mediaRoutes from "./routes/mediaRoutes.js";
+import computeRoutes from "./routes/computeRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
@@ -40,11 +42,17 @@ app.get("/api/health", async (_req, res) => {
       "0g-chain": clients.brokerStatus,
       "0g-kv-storage": clients.kvReady ? "ready" : "unavailable",
       "0g-compute-broker": clients.brokerStatus,
+      "0g-provider-discovery": clients.brokerStatus,
+      "0g-text-to-image": clients.brokerStatus,
+      "0g-speech-to-text": clients.brokerStatus,
+      "0g-compute-account": clients.brokerStatus,
+      "0g-storage-chain-crosslayer": clients.kvReady ? "ready" : "unavailable",
       "openclaw": openclawStatus.registered ? "active" : "standby",
       "multi-agent": "enabled",
       "passport": "enabled",
       "living-soul": "enabled",
       "hive-mind": "enabled",
+      "mcp-server": "enabled",
     },
     openclaw: openclawStatus,
     timestamp: new Date().toISOString()
@@ -64,6 +72,8 @@ app.use("/api/passport",    passportRoutes);
 app.use("/api/soul",        soulRoutes);
 app.use("/api/hivemind",    hiveMindRoutes);
 app.use("/api/gateway",     gatewayRoutes);
+app.use("/api/compute",     computeRoutes);
+app.use("/api/media",       mediaRoutes);
 app.use(errorHandler);
 
 async function bootstrap() {

@@ -27,13 +27,12 @@ export interface ModelInfo {
   teeSupported: boolean;
 }
 
-// Internal shape of a service entry returned by the broker
-interface BrokerService {
-  provider: string;
+export interface ProviderInfo {
+  address: string;
   serviceType: string;
   url: string;
   model: string;
-  verifiability: string;
+  teeVerified: boolean;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -54,6 +53,44 @@ function buildProof(
   return { modelHash, inputHash, outputHash, signature, timestamp, teeVerified, proofHash, inferenceMode };
 }
 
+// ─── Provider Discovery ───────────────────────────────────────────────────────
+
+/**
+ * Discover all available inference providers from the 0G Compute broker.
+ * Returns an empty array when broker is unavailable (mock mode).
+ *
+ * listService() returns a tuple array where each tuple is:
+ *   [0]=address, [1]=serviceType, [2]=url, [3]=name, [4]=..., [5]=...,
+ *   [6]=model, [7]=..., [8]=..., [9]=..., [10]=teeVerified (boolean)
+ */
+export async function discoverProviders(): Promise<ProviderInfo[]> {
+  const clients = await initialize0GClients();
+
+  if (clients.brokerStatus !== "ready" || !clients.signer) {
+    return [];
+  }
+
+  try {
+    const { createZGComputeNetworkBroker } = await import("@0glabs/0g-serving-broker");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const broker = await createZGComputeNetworkBroker(clients.signer as any);
+    const services = (await broker.inference.listService()) as unknown[][];
+
+    return services
+      .filter((s) => Array.isArray(s) && s.length > 1)
+      .map((s) => ({
+        address: (s[0] as string) ?? "",
+        serviceType: (s[1] as string) ?? "",
+        url: (s[2] as string) ?? "",
+        model: (s[6] as string) ?? (s[3] as string) ?? "",
+        teeVerified: s[10] === true
+      }));
+  } catch (err) {
+    console.warn("[SealedInference] discoverProviders failed:", err);
+    return [];
+  }
+}
+
 // ─── Service ──────────────────────────────────────────────────────────────────
 
 export async function inference(
@@ -68,7 +105,6 @@ export async function inference(
   if (clients.brokerStatus === "ready" && clients.signer) {
     try {
       const { createZGComputeNetworkBroker } = await import("@0glabs/0g-serving-broker");
-      // Use unknown cast to bridge ESM vs CJS ethers Wallet type mismatch
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const broker = await createZGComputeNetworkBroker(clients.signer as any);
 
@@ -76,48 +112,72 @@ export async function inference(
         ? `System context:\n${context}\n\nUser: ${userMessage}\nAssistant:`
         : `User: ${userMessage}\nAssistant:`;
 
-      // listService returns available providers; pick the first TEE-verified one
-      const services = (await broker.inference.listService()) as BrokerService[];
-      const teeService = services.find(
-        (s) =>
-          s.verifiability?.toLowerCase().includes("tee") ||
-          s.model?.toLowerCase().includes("llama") ||
-          s.serviceType?.toLowerCase().includes("teeml")
+      // listService returns tuple arrays; pick TEE provider first, fall back to any chatbot
+      const services = (await broker.inference.listService()) as unknown[][];
+      const chatbotServices = services.filter(
+        (s) => Array.isArray(s) && (s[1] as string) === "chatbot"
       );
+      const teeProviders = chatbotServices.filter((s) => s[10] === true);
+      const anyProviders = chatbotServices;
 
-      if (teeService) {
-        const rawHeaders = await broker.inference.getRequestHeaders(
-          teeService.provider,
-          prompt
-        );
+      const provider = teeProviders[0] ?? anyProviders[0] ?? null;
+
+      if (provider) {
+        const providerAddress = provider[0] as string;
+        const providerUrl = provider[2] as string;
+        const providerModel = (provider[6] as string) ?? (provider[3] as string) ?? model;
+        const isTeeVerified = provider[10] === true;
+
+        // Acknowledge provider signer before first use
+        try {
+          await broker.inference.acknowledgeProviderSigner(providerAddress);
+        } catch (ackErr) {
+          console.warn("[SealedInference] acknowledgeProviderSigner failed (non-fatal):", ackErr);
+        }
+
+        const rawHeaders = await broker.inference.getRequestHeaders(providerAddress, prompt);
         // ServingRequestHeaders doesn't have an index signature — spread via unknown
         const headers = rawHeaders as unknown as Record<string, string>;
 
-        const response = await fetch(`${teeService.url}/v1/chat/completions`, {
+        const response = await fetch(`${providerUrl}/v1/chat/completions`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             ...headers
           },
           body: JSON.stringify({
-            model: teeService.model || model,
+            model: providerModel,
             messages: [{ role: "user", content: prompt }],
             max_tokens: 512
           })
         });
 
         if (response.ok) {
+          // Extract chatID from response header for fee settlement
+          const chatID = response.headers.get("ZG-Res-Key") ?? "";
+
           const data = (await response.json()) as {
             choices: Array<{ message: { content: string } }>;
+            usage?: unknown;
             signatures?: { attestation: string };
           };
           const text = data.choices?.[0]?.message?.content ?? "";
+
+          // processResponse is required for fee settlement — must be called after inference
+          if (chatID) {
+            try {
+              await broker.inference.processResponse(providerAddress, chatID, data.usage as string | undefined);
+            } catch (processErr) {
+              console.warn("[SealedInference] processResponse failed (non-fatal):", processErr);
+            }
+          }
+
           const proof = buildProof(
-            teeService.model || model,
+            providerModel,
             prompt,
             text,
-            true,
-            "tee",
+            isTeeVerified,
+            isTeeVerified ? "tee" : "real",
             data.signatures?.attestation
           );
           return { response: text, proof };
@@ -170,23 +230,15 @@ export async function inference(
 }
 
 export async function listAvailableModels(): Promise<ModelInfo[]> {
-  const clients = await initialize0GClients();
+  const providers = await discoverProviders();
 
-  if (clients.brokerStatus === "ready" && clients.signer) {
-    try {
-      const { createZGComputeNetworkBroker } = await import("@0glabs/0g-serving-broker");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const broker = await createZGComputeNetworkBroker(clients.signer as any);
-      const services = (await broker.inference.listService()) as BrokerService[];
-      return services.map((s) => ({
-        id: s.provider,
-        name: s.model || s.provider,
-        provider: "0G-TeeML",
-        teeSupported: s.verifiability?.toLowerCase().includes("tee") ?? false
-      }));
-    } catch (err) {
-      console.warn("[SealedInference] listAvailableModels failed:", err);
-    }
+  if (providers.length > 0) {
+    return providers.map((p) => ({
+      id: p.address,
+      name: p.model || p.address,
+      provider: "0G-TeeML",
+      teeSupported: p.teeVerified
+    }));
   }
 
   return [

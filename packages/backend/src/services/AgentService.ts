@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { contracts } from "../config/contracts.js";
-import { initialize0GClients } from "../config/og.js";
+import { initialize0GClients, kvBatchWrite } from "../config/og.js";
 import { hashContent } from "../utils/encryption.js";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -168,12 +168,51 @@ async function getContract(): Promise<ethers.Contract | null> {
   return new ethers.Contract(contracts.inft, INFT_ABI, clients.signer);
 }
 
+// ─── 0G Storage metadata upload ───────────────────────────────────────────────
+
+async function uploadMetadataTo0G(metadata: Record<string, unknown>): Promise<string> {
+  try {
+    const clients = await initialize0GClients();
+    const metadataStr = JSON.stringify(metadata);
+    const { keccak256, toUtf8Bytes } = ethers;
+    const metadataHash = keccak256(toUtf8Bytes(metadataStr));
+
+    if (!clients.kvReady || !clients.signer) {
+      console.warn("[AgentService] 0G KV not ready, using local keccak256 hash");
+      return metadataHash;
+    }
+
+    // Persist metadata to 0G KV storage asynchronously
+    const streamId = keccak256(toUtf8Bytes(`SealMind:AgentMetadata:${String(metadata.name ?? "unknown")}`));
+    const key = new TextEncoder().encode(`metadata:${metadataHash}`);
+    const data = new TextEncoder().encode(metadataStr);
+
+    // Fire-and-forget — don't block agent creation on storage write
+    kvBatchWrite(clients, streamId, key, data).then((ok) => {
+      if (ok) {
+        console.log(`[AgentService] Metadata persisted to 0G KV, hash: ${metadataHash}`);
+      } else {
+        console.warn("[AgentService] 0G KV write returned false (nodes unavailable)");
+      }
+    }).catch((err: unknown) => {
+      console.warn("[AgentService] 0G KV write error:", err);
+    });
+
+    console.log(`[AgentService] Metadata hash computed, 0G KV write initiated: ${metadataHash}`);
+    return metadataHash;
+  } catch (err) {
+    console.warn("[AgentService] uploadMetadataTo0G failed, falling back to local hash:", err);
+    const { keccak256, toUtf8Bytes } = ethers;
+    return keccak256(toUtf8Bytes(JSON.stringify(metadata)));
+  }
+}
+
 // ─── Service ──────────────────────────────────────────────────────────────────
 
 export async function createAgent(params: CreateAgentParams): Promise<CreateAgentResult> {
   const { name, model, metadata = {}, walletAddress } = params;
-  const metadataJson = JSON.stringify({ ...metadata, name, model });
-  const metadataHash = hashContent(metadataJson);
+  const fullMetadata = { ...metadata, name, model };
+  const metadataHash = await uploadMetadataTo0G(fullMetadata);
 
   try {
     const contract = await getContract();
