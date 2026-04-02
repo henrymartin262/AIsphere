@@ -1,0 +1,22 @@
+{
+  "name": "@sealmind/mcp-server",
+  "version": "3.0.0",
+  "description": "SealMind MCP Server — lets AI agents self-onboard to SealMind via Model Context Protocol",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": { "sealmind-mcp": "dist/index.js" },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "tsx": "^4.7.0",
+    "@types/node": "^20.11.0"
+  }
+}

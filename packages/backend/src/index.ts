@@ -4,6 +4,8 @@ import express from "express";
 import { env } from "./config/index.js";
 import { initialize0GClients } from "./config/og.js";
 import * as OpenClawService from "./services/OpenClawService.js";
+import { passportService } from "./services/PassportService.js";
+import { soulService } from "./services/SoulService.js";
 import { walletAuth } from "./middleware/auth.js";
 import agentRoutes from "./routes/agentRoutes.js";
 import bountyRoutes from "./routes/bountyRoutes.js";
@@ -13,6 +15,10 @@ import exploreRoutes from "./routes/exploreRoutes.js";
 import memoryRoutes from "./routes/memoryRoutes.js";
 import multiAgentRoutes from "./routes/multiAgentRoutes.js";
 import openclawRoutes from "./routes/openclawRoutes.js";
+import passportRoutes from "./routes/passportRoutes.js";
+import soulRoutes from "./routes/soulRoutes.js";
+import hiveMindRoutes from "./routes/hiveMindRoutes.js";
+import gatewayRoutes from "./routes/gatewayRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
@@ -26,6 +32,7 @@ app.get("/api/health", async (_req, res) => {
 
   res.status(200).json({
     service: "@sealmind/backend",
+    version: "3.0.0",
     status: "ok",
     chainId: env.CHAIN_ID,
     providerUrl: clients.providerUrl,
@@ -34,28 +41,38 @@ app.get("/api/health", async (_req, res) => {
       "0g-kv-storage": clients.kvReady ? "ready" : "unavailable",
       "0g-compute-broker": clients.brokerStatus,
       "openclaw": openclawStatus.registered ? "active" : "standby",
-      "multi-agent": "enabled"
+      "multi-agent": "enabled",
+      "passport": "enabled",
+      "living-soul": "enabled",
+      "hive-mind": "enabled",
     },
     openclaw: openclawStatus,
     timestamp: new Date().toISOString()
   });
 });
 
-app.use("/api/agents", walletAuth, agentRoutes);
-app.use("/api/bounty", bountyRoutes);
-app.use("/api/chat", walletAuth, chatRoutes);
-app.use("/api/memory", walletAuth, memoryRoutes);
-app.use("/api/decisions", decisionRoutes);
-app.use("/api/explore", exploreRoutes);
+app.use("/api/agents",      walletAuth, agentRoutes);
+app.use("/api/bounty",      bountyRoutes);
+app.use("/api/chat",        walletAuth, chatRoutes);
+app.use("/api/memory",      walletAuth, memoryRoutes);
+app.use("/api/decisions",   decisionRoutes);
+app.use("/api/explore",     exploreRoutes);
 app.use("/api/multi-agent", walletAuth, multiAgentRoutes);
-app.use("/api/openclaw", openclawRoutes);
+app.use("/api/openclaw",    openclawRoutes);
+// v3.0 routes
+app.use("/api/passport",    passportRoutes);
+app.use("/api/soul",        soulRoutes);
+app.use("/api/hivemind",    hiveMindRoutes);
+app.use("/api/gateway",     gatewayRoutes);
 app.use(errorHandler);
 
 async function bootstrap() {
   await initialize0GClients();
+  await passportService.init();
+  await soulService.init();
 
   app.listen(env.PORT, () => {
-    console.log(`SealMind backend listening on http://localhost:${env.PORT}`);
+    console.log(`SealMind backend v3.0 listening on http://localhost:${env.PORT}`);
   });
 }
 

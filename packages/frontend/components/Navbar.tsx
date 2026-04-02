@@ -86,6 +86,8 @@ export function Navbar() {
     { href: "/openclaw", label: "OpenClaw" },
     { href: "/bounty", label: lang === "zh" ? "赏金" : "Bounty" },
     { href: "/explore", label: t("nav_explore") },
+    { href: "/hivemind", label: lang === "zh" ? "🧠 蜂巢" : "🧠 Hive Mind" },
+    { href: "/passport", label: lang === "zh" ? "🎫 护照" : "🎫 Passport" },
     { href: "/verify", label: t("nav_verify") },
   ];
 

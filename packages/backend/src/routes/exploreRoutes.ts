@@ -1,5 +1,6 @@
 import { Router, type Router as ExpressRouter } from "express";
 import * as AgentService from "../services/AgentService.js";
+import { hiveMindService } from "../services/HiveMindService.js";
 
 const router: ExpressRouter = Router();
 
@@ -27,9 +28,11 @@ router.get("/stats", async (req, res) => {
       (sum, a) => sum + (a.stats?.totalInferences ?? 0),
       0
     );
-    res.json({ success: true, data: { totalAgents, totalInferences, totalBounties: 0 } });
+    const hiveMindStats = hiveMindService.getStats();
+    const hiveMindContributions = hiveMindStats.totalContributions ?? 0;
+    res.json({ success: true, data: { totalAgents, totalInferences, totalBounties: 0, hiveMindContributions } });
   } catch (_err) {
-    res.json({ success: true, data: { totalAgents: 0, totalInferences: 0, totalBounties: 0 } });
+    res.json({ success: true, data: { totalAgents: 0, totalInferences: 0, totalBounties: 0, hiveMindContributions: 0 } });
   }
 });
 

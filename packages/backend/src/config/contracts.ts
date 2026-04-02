@@ -7,6 +7,21 @@ export const contracts = {
   bountyBoard: env.BOUNTY_BOARD_ADDRESS || ""
 } as const;
 
+// v3.0: additional INFT ABI entries for Passport + Living Soul
+export const INFT_EXTRA_ABI = [
+  // Passport
+  "function certifyAgent(uint256 tokenId, bytes32 capabilityProof)",
+  "function revokePassport(uint256 tokenId)",
+  "function isAgentCertified(uint256 tokenId) view returns (bool)",
+  "function getPassport(uint256 tokenId) view returns (tuple(bytes32 passportHash, bytes32 capabilityProof, uint256 certifiedAt, bool isActive))",
+  "event AgentCertified(uint256 indexed tokenId, bytes32 passportHash, uint256 timestamp)",
+  "event PassportRevoked(uint256 indexed tokenId, uint256 timestamp)",
+  // Living Soul
+  "function recordExperience(uint256 tokenId, bytes32 experienceHash)",
+  "function getSoulState(uint256 tokenId) view returns (tuple(bytes32 currentHash, uint256 experienceCount, uint256 lastExperienceAt))",
+  "event ExperienceRecorded(uint256 indexed tokenId, bytes32 experienceHash, bytes32 newSoulHash, uint256 experienceCount)",
+];
+
 export const BOUNTY_BOARD_ABI = [
   "function createBounty(string title, string description, uint256 deadline, bytes32 criteriaHash) payable returns (uint256 id)",
   "function acceptBounty(uint256 bountyId, uint256 agentId, address agentOwner)",

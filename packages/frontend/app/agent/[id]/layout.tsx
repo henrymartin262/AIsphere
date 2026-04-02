@@ -24,6 +24,7 @@ export default function AgentLayout({ children }: { children: React.ReactNode })
     { href: "profile",   label: `🪪 ${isEn ? "Profile" : "档案"}` },
     { href: "memory",    label: `🧠 ${isEn ? "Memory" : "记忆"}` },
     { href: "decisions", label: `⛓ ${isEn ? "Decisions" : "决策"}` },
+    { href: "soul",      label: `🧬 ${isEn ? "Soul" : "灵魂"}` },
   ];
 
   return (

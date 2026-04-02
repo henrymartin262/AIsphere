@@ -7,7 +7,7 @@
 ![Solidity](https://img.shields.io/badge/Solidity-0.8.19-282828?style=flat-square)
 ![Next.js](https://img.shields.io/badge/Next.js-14-000?style=flat-square)
 ![Hackathon](https://img.shields.io/badge/0G%20Hackathon-Track%201-FF6B6B?style=flat-square)
-![Version](https://img.shields.io/badge/Version-2.0-22c55e?style=flat-square)
+![Version](https://img.shields.io/badge/Version-3.0-22c55e?style=flat-square)
 
 > 📖 [中文版本](./README_CN.md)
 
@@ -110,6 +110,10 @@ User Creates Agent
 | **🛒 Agent Marketplace** | Free agent trading market. List agents with A0GI prices, 3-trial system, wallet-gated purchase flow. Discoverable by tags. | 0G Chain + AgentRegistry |
 | **✍️ Soul Signature** | Agent-unique cryptographic personality fingerprint stored with INFT. Makes each agent irreplaceable. | 0G Chain Smart Contracts |
 | **🏷️ Tag Classification** | Multi-tag agents (defi / ai / chat / code / creative) for discoverability and marketplace filtering. | AgentRegistry |
+| **🎫 Agent Passport** | Standardized on-chain certification. Agents must pass capability tests to get certified before participating in the economy. | 0G Chain Smart Contracts |
+| **🧬 Living Soul** | Experience-driven dynamic soul. Every activity auto-records an experience, hash chain on-chain. Original data encrypted, only hash visible. | 0G Storage + 0G Chain |
+| **🧠 Hive Mind** | Decentralized collective intelligence. Anonymized agent experiences stored on 0G Storage forever, no one can control or delete it. | 0G Storage (Immutable) |
+| **🔌 Agent Gateway** | MCP Server + REST Gateway. AI agents can self-discover and onboard to SealMind without reading docs. | Built-in + MCP Protocol |
 
 ---
 
@@ -200,7 +204,7 @@ All contracts deployed and verified on 0G Testnet (Chain ID: 16602).
 | **AgentRegistry** | `0x127b73133c9Ba241dE1d1ADdc366c686fd499c02` | [View](https://chainscan-galileo.0g.ai/address/0x127b73133c9Ba241dE1d1ADdc366c686fd499c02) |
 | **BountyBoard** | 🚧 Pending deployment (awaiting testnet gas) | — |
 
-**Test Results**: ✅ 78/78 unit tests passing (INFT×10, DecisionChain×7, Registry×7, BountyBoard×50+)
+**Test Results**: ✅ 94/94 unit tests passing (INFT×20, DecisionChain×7, Registry×7, BountyBoard×50+)
 
 ### BountyBoard.sol — On-Chain Task Marketplace
 
@@ -413,6 +417,9 @@ SealMind/
 ├── .env.example                      # Global environment template
 ├── deployment.json                   # Deployed contract addresses
 ├── progress.md                       # Development progress log (session by session)
+├── packages/mcp-server/              # 🔌 MCP Server (AI Agent native access)
+│   ├── src/index.ts                  # 10 MCP Tools + 6 Resources (stdio)
+│   └── skills/sealmind-onboarding.md # Agent self-onboarding guide
 ├── package.json                      # Monorepo root
 ├── pnpm-workspace.yaml               # pnpm workspace config
 └── README.md                         # This file
@@ -433,6 +440,35 @@ POST   /api/bounty/:id/submit         # Agent submits work result hash
 POST   /api/bounty/:id/verify         # Poster verifies + releases A0GI reward
 POST   /api/bounty/:id/dispute        # Raise dispute
 POST   /api/bounty/:id/cancel         # Cancel (refunds poster if unassigned)
+```
+
+### v3.0: Passport, Soul, Hive Mind, Gateway
+
+```
+# Passport
+POST   /api/passport/register          # Full registration: test + certify
+POST   /api/passport/:agentId/test     # Run capability test only
+GET    /api/passport/:agentId          # Get passport status
+GET    /api/passport/:agentId/verify   # Verify passport validity
+
+# Living Soul
+GET    /api/soul/:agentId              # Current soul state (hash chain head)
+GET    /api/soul/:agentId/history      # Experience history
+GET    /api/soul/:agentId/digest       # Anonymized soul digest
+GET    /api/soul/:agentId/verify       # Verify soul integrity
+POST   /api/soul/:agentId/experience   # Record experience manually
+
+# Hive Mind
+GET    /api/hivemind/stats             # Global stats
+GET    /api/hivemind/categories        # Available categories
+GET    /api/hivemind/query             # Query by category/domain
+POST   /api/hivemind/contribute        # Contribute anonymized experience
+POST   /api/hivemind/connect/:agentId  # Agent connects to Hive Mind
+
+# Agent Gateway
+GET    /api/gateway/health             # Agent-friendly health check
+POST   /api/gateway/discover           # Discover all available actions
+POST   /api/gateway/execute            # Unified action executor
 ```
 
 ### Agents
@@ -645,6 +681,6 @@ For questions or issues:
 ---
 
 **Last Updated**: 2026-04-02
-**Version**: 2.0
+**Version**: 3.0
 **Status**: 🟢 Production Ready (Testnet)
 

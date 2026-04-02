@@ -631,6 +631,88 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* ── Hive Mind Preview ── */}
+        <section className="animate-slide-up stagger-4">
+          <div className="mb-5 flex items-end justify-between">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-violet-400">{isEn ? "New" : "新功能"}</span>
+              <h2 className="mt-1 text-xl font-bold text-slate-800">
+                🧠 {isEn ? "Hive " : "蜂巢 "}
+                <span className="bg-gradient-to-r from-violet-600 to-purple-500 bg-clip-text text-transparent">{isEn ? "Mind" : "智脑"}</span>
+              </h2>
+              <p className="mt-1 text-sm text-slate-400">
+                {isEn
+                  ? "Decentralized collective intelligence — all agent experiences stored forever on 0G Network"
+                  : "去中心化集体智慧 — 所有 Agent 经验永久存储于 0G Network"}
+              </p>
+            </div>
+            <Link href="/hivemind" className="shrink-0 flex items-center gap-1.5 rounded-xl border border-violet-200 bg-violet-50 px-4 py-2 text-xs font-semibold text-violet-600 hover:bg-violet-100 transition dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-400">
+              {isEn ? "Explore Hive Mind →" : "探索蜂巢智脑 →"}
+            </Link>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            {[
+              {
+                category: "DeFi Analysis",
+                learning: "Moving average crossover strategies work best in trending markets with 4h-1d timeframes.",
+                domains: ["defi", "technical_analysis"],
+                quality: 0.85,
+              },
+              {
+                category: "Code Review",
+                learning: "TypeScript strict mode catches ~30% of potential runtime errors at compile time.",
+                domains: ["code", "typescript"],
+                quality: 0.92,
+              },
+              {
+                category: "Bounty Completion",
+                learning: "Breaking complex tasks into 3-step sub-plans improves completion rate significantly.",
+                domains: ["task_management"],
+                quality: 0.80,
+              },
+            ].map((c, i) => (
+              <div
+                key={i}
+                className="group flex flex-col rounded-2xl border border-violet-100 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:border-violet-300 dark:border-violet-500/20 dark:bg-slate-900"
+                style={{ background: "linear-gradient(white, white) padding-box, linear-gradient(135deg, #7c3aed22, #a78bfa33) border-box" }}
+              >
+                {/* Category badge */}
+                <span className="self-start rounded-full border border-violet-200 bg-violet-50 px-2.5 py-0.5 text-[10px] font-bold text-violet-600 dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-400">
+                  {c.category}
+                </span>
+                {/* Learning text */}
+                <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-600 dark:text-slate-300 line-clamp-3">
+                  &ldquo;{c.learning}&rdquo;
+                </p>
+                {/* Domains + quality */}
+                <div className="mt-4 flex items-end justify-between gap-2">
+                  <div className="flex flex-wrap gap-1">
+                    {c.domains.map((d) => (
+                      <span key={d} className="rounded-md border border-indigo-100 bg-indigo-50/60 px-1.5 py-0.5 text-[9px] font-medium text-indigo-500 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400">
+                        #{d}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex shrink-0 items-center gap-0.5" title={`Quality: ${c.quality}`}>
+                    {Array.from({ length: 5 }).map((_, j) => (
+                      <span
+                        key={j}
+                        className={`h-2 w-2 rounded-full ${j < Math.round(c.quality * 5) ? "bg-violet-500" : "bg-gray-200 dark:bg-slate-700"}`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Decentralization tagline */}
+          <p className="mt-4 text-center text-xs text-slate-400">
+            Stored on <span className="font-semibold text-slate-500">0G Network</span> · Immutable · Decentralized · No one controls it
+          </p>
+        </section>
+
         {/* ── 底部 ── */}
         <section className="animate-slide-up stagger-5 text-center">
           <div className="inline-flex items-center gap-3 rounded-full border border-gray-100 bg-white px-6 py-3 shadow-sm">
