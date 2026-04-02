@@ -7,6 +7,7 @@
 ![Solidity](https://img.shields.io/badge/Solidity-0.8.19-282828?style=flat-square)
 ![Next.js](https://img.shields.io/badge/Next.js-14-000?style=flat-square)
 ![Hackathon](https://img.shields.io/badge/0G%20Hackathon-Track%201-FF6B6B?style=flat-square)
+![Version](https://img.shields.io/badge/Version-2.0-22c55e?style=flat-square)
 
 > 📖 [中文版本](./README_CN.md)
 
@@ -105,6 +106,10 @@ User Creates Agent
 | **🔗 OpenClaw Integration** | Agent registration as OpenClaw Skills, skill pipelines, task queues, and gateway configuration. | OpenClaw + 0G Compute |
 | **📊 Trust Scoring** | Agent reputation calculated from inference verification rate and memory quality. Reflects on-chain level. | 0G Chain Smart Contracts |
 | **🎓 Level System** | Agents gain levels (1-5) based on inference count and quality. Unlocks advanced features at each tier. | 0G Chain Smart Contracts |
+| **🏆 Bounty Board** | On-chain task marketplace. Post bounties, assign agents, submit/verify proofs, release rewards in A0GI. 7-state lifecycle with dispute resolution. | 0G Chain (BountyBoard.sol) |
+| **🛒 Agent Marketplace** | Free agent trading market. List agents with A0GI prices, 3-trial system, wallet-gated purchase flow. Discoverable by tags. | 0G Chain + AgentRegistry |
+| **✍️ Soul Signature** | Agent-unique cryptographic personality fingerprint stored with INFT. Makes each agent irreplaceable. | 0G Chain Smart Contracts |
+| **🏷️ Tag Classification** | Multi-tag agents (defi / ai / chat / code / creative) for discoverability and marketplace filtering. | AgentRegistry |
 
 ---
 
@@ -193,8 +198,25 @@ All contracts deployed and verified on 0G Testnet (Chain ID: 16602).
 | **SealMindINFT** | `0x1f29Bd4E0426222a78Ce0D484677A672DF3E8fa6` | [View](https://chainscan-galileo.0g.ai/address/0x1f29Bd4E0426222a78Ce0D484677A672DF3E8fa6) |
 | **DecisionChain** | `0x354306105a61505EB9a01A142E9fCA537E102EC2` | [View](https://chainscan-galileo.0g.ai/address/0x354306105a61505EB9a01A142E9fCA537E102EC2) |
 | **AgentRegistry** | `0x127b73133c9Ba241dE1d1ADdc366c686fd499c02` | [View](https://chainscan-galileo.0g.ai/address/0x127b73133c9Ba241dE1d1ADdc366c686fd499c02) |
+| **BountyBoard** | 🚧 Pending deployment (awaiting testnet gas) | — |
 
-**Test Results**: ✅ 28/28 unit tests passing (INFT, DecisionChain, Registry)
+**Test Results**: ✅ 78/78 unit tests passing (INFT×10, DecisionChain×7, Registry×7, BountyBoard×50+)
+
+### BountyBoard.sol — On-Chain Task Marketplace
+
+```
+States:  Open → Assigned → Submitted → Completed
+                         ↘ Disputed → Resolved
+         Open → Cancelled
+```
+
+Key functions:
+- `postBounty(title, description, deadline)` — payable, locks reward in escrow
+- `assignAgent(bountyId, agentId)` — poster assigns a specific agent
+- `submitWork(bountyId, resultHash)` — agent submits proof of work
+- `verifyAndRelease(bountyId)` — poster verifies and releases A0GI reward
+- `raiseDispute(bountyId)` — dispute mechanism with arbiter resolution
+- `cancelBounty(bountyId)` — refunds poster if unassigned
 
 **Explorer Base**: https://chainscan-galileo.0g.ai
 
@@ -294,15 +316,17 @@ SealMind/
 │   │
 │   ├── contracts/                    # 📜 Smart Contracts (Hardhat)
 │   │   ├── contracts/
-│   │   │   ├── SealMindINFT.sol      # Agent Identity INFT (ERC-721)
+│   │   │   ├── SealMindINFT.sol      # Agent Identity INFT (ERC-721) + Soul Signature
 │   │   │   ├── DecisionChain.sol     # Inference Audit Log
-│   │   │   └── AgentRegistry.sol     # Global Agent Registry
+│   │   │   ├── AgentRegistry.sol     # Global Agent Registry
+│   │   │   └── BountyBoard.sol       # On-Chain Task Marketplace (7-state lifecycle)
 │   │   ├── scripts/
 │   │   │   └── deploy.ts             # Deployment script
 │   │   ├── test/
 │   │   │   ├── SealMindINFT.test.ts  # 10 tests ✅
 │   │   │   ├── DecisionChain.test.ts # 7 tests ✅
-│   │   │   └── AgentRegistry.test.ts # 7 tests ✅
+│   │   │   ├── AgentRegistry.test.ts # 7 tests ✅
+│   │   │   └── BountyBoard.test.ts   # 50+ tests ✅
 │   │   ├── hardhat.config.ts         # 0G testnet + mainnet config
 │   │   └── package.json
 │   │
@@ -318,13 +342,15 @@ SealMind/
 │   │   │   │   ├── chatRoutes.ts     # POST /api/chat/*
 │   │   │   │   ├── memoryRoutes.ts   # GET/POST /api/memory/*
 │   │   │   │   ├── decisionRoutes.ts # GET /api/decisions/*
+│   │   │   │   ├── bountyRoutes.ts   # CRUD /api/bounty/* (Bounty Board)
 │   │   │   │   ├── multiAgentRoutes.ts  # Multi-Agent collaboration
 │   │   │   │   └── openclawRoutes.ts    # OpenClaw integration
 │   │   │   ├── services/
-│   │   │   │   ├── AgentService.ts           # Agent lifecycle
+│   │   │   │   ├── AgentService.ts           # Agent lifecycle + mock 10 agents
 │   │   │   │   ├── SealedInferenceService.ts # TEE inference
 │   │   │   │   ├── MemoryVaultService.ts     # Encrypted memory (0G KV)
 │   │   │   │   ├── DecisionChainService.ts   # Decision recording
+│   │   │   │   ├── BountyService.ts          # Bounty lifecycle + mock 10 bounties
 │   │   │   │   ├── MultiAgentService.ts      # Multi-Agent orchestration
 │   │   │   │   └── OpenClawService.ts        # OpenClaw skill engine
 │   │   │   ├── middleware/
@@ -337,27 +363,38 @@ SealMind/
 │   │
 │   └── frontend/                     # 🌐 Next.js Frontend
 │       ├── app/
-│       │   ├── page.tsx              # Homepage
-│       │   ├── layout.tsx            # Global layout (RainbowKit provider)
+│       │   ├── page.tsx              # Homepage (with Bounty + Market preview sections)
+│       │   ├── layout.tsx            # Global layout (RainbowKit provider + OG metadata)
+│       │   ├── icon.tsx              # Dynamic favicon (hexagon logo, 32×32)
+│       │   ├── apple-icon.tsx        # Apple touch icon (hexagon logo, 180×180)
+│       │   ├── loading.tsx           # Global loading state
 │       │   ├── dashboard/
 │       │   │   └── page.tsx          # My Agents dashboard
 │       │   ├── agent/
 │       │   │   ├── create/page.tsx   # Create Agent form
 │       │   │   └── [id]/
-│       │   │       ├── chat/page.tsx          # ⭐ Chat (WOW moment)
+│       │   │       ├── chat/page.tsx          # ⭐ Chat (WOW moment) + inference mode badge
 │       │   │       ├── memory/page.tsx        # Memory browser
 │       │   │       ├── decisions/page.tsx     # Decision audit trail
 │       │   │       └── layout.tsx             # Agent sub-layout
-│       │   ├── explore/page.tsx      # Agent marketplace
+│       │   ├── bounty/
+│       │   │   ├── page.tsx          # Bounty Board (10 mock + on-chain)
+│       │   │   ├── loading.tsx       # Bounty list loading skeleton
+│       │   │   ├── create/page.tsx   # Post new bounty form
+│       │   │   └── [id]/page.tsx     # Bounty detail + apply/submit/verify flow
+│       │   ├── explore/page.tsx      # Agent Trading Marketplace (price/tags/trial/buy)
+│       │   ├── multi-agent/page.tsx  # Multi-Agent collaboration
+│       │   ├── openclaw/page.tsx     # OpenClaw integration
 │       │   └── verify/page.tsx       # Proof verifier
 │       ├── components/
-│       │   ├── AgentCard.tsx         # Agent card with badges
-│       │   ├── ChatMessage.tsx       # Chat message + ✅ Verified badge
-│       │   ├── ProofModal.tsx        # Proof details modal
-│       │   ├── MemoryBrowser.tsx     # Memory explorer
-│       │   ├── DecisionTimeline.tsx  # Decision timeline
+│       │   ├── AgentCard.tsx         # Agent card with level badge + tags + price
+│       │   ├── BountyCard.tsx        # Bounty card (aligned, status badge, reward)
+│       │   ├── ChatMessage.tsx       # Chat message + ✅/⚡/🔮 inference mode badge
+│       │   ├── ProofModal.tsx        # Proof details modal (inferenceMode aware)
+│       │   ├── SoulSignature.tsx     # Soul Signature display component
 │       │   ├── Navbar.tsx            # Navigation + ConnectButton
-│       │   └── ...                   # Other UI components
+│       │   ├── WalletConnectButton.tsx  # Custom wallet connect button
+│       │   └── RoutePrefetcher.tsx   # Next.js route prefetch optimizer
 │       ├── hooks/
 │       │   ├── useAgent.ts           # Agent data hooks
 │       │   ├── useChat.ts            # Chat hooks
@@ -367,7 +404,7 @@ SealMind/
 │       │   ├── wagmiConfig.ts        # wagmi + RainbowKit setup
 │       │   ├── contracts.ts          # Contract ABIs + addresses
 │       │   └── api.ts                # API client helpers
-│       ├── types/index.ts            # TypeScript type definitions
+│       ├── types/index.ts            # TypeScript type definitions (incl. price field)
 │       └── package.json
 │
 ├── doc/
@@ -375,6 +412,7 @@ SealMind/
 │
 ├── .env.example                      # Global environment template
 ├── deployment.json                   # Deployed contract addresses
+├── progress.md                       # Development progress log (session by session)
 ├── package.json                      # Monorepo root
 ├── pnpm-workspace.yaml               # pnpm workspace config
 └── README.md                         # This file
@@ -383,6 +421,19 @@ SealMind/
 ---
 
 ## 🔌 API Endpoints
+
+### Bounty Board
+
+```
+GET    /api/bounty                    # List bounties (filter: status, tag, page)
+POST   /api/bounty                    # Post new bounty (payable, locks reward)
+GET    /api/bounty/:id                # Get bounty detail
+POST   /api/bounty/:id/assign         # Poster assigns an agent
+POST   /api/bounty/:id/submit         # Agent submits work result hash
+POST   /api/bounty/:id/verify         # Poster verifies + releases A0GI reward
+POST   /api/bounty/:id/dispute        # Raise dispute
+POST   /api/bounty/:id/cancel         # Cancel (refunds poster if unassigned)
+```
 
 ### Agents
 
@@ -457,30 +508,35 @@ POST   /api/openclaw/pipelines              # Create skill pipeline
 
 **[0:00-0:30]** Intro
 - "Do you trust your AI? SealMind makes every AI decision verifiable on-chain."
-- Show homepage + global stats
+- Show homepage + global stats + Bounty Board preview + Agent Market preview
 
-**[0:30-1:15]** Create Agent
+**[0:30-1:00]** Create Agent
 - Connect wallet → Fill form (name/model/personality) → Sign → INFT minting
 - Open 0G Explorer to show transaction
 
-**[1:15-2:30]** ⭐ **WOW MOMENT** — Verifiable Chat
+**[1:00-2:00]** ⭐ **WOW MOMENT** — Verifiable Chat
 - Send message: "Analyze the 0G token trend"
-- AI responds with ✅ Verified badge
+- AI responds with ✅ Verified badge (TEE mode) or ⚡ Real badge (direct)
 - Click badge → Proof modal shows:
   - Model: DeepSeek V3.1 ✓
   - TEE: Intel TDX ✓
   - On-chain TX: [Link to 0G Explorer]
-- Click link → Proof visible on explorer
 - Switch to Verify page → Enter proofHash → ✅ Verified
 
-**[2:30-2:55]** Memory Demo
-- Open Memory Browser → Show encrypted memories
-- Add knowledge → Chat again → Agent uses new knowledge
-- "Memories are client-encrypted, stored on 0G Storage, only owner can decrypt"
+**[2:00-2:30]** Bounty Board
+- Navigate to /bounty → Show 10 sample bounties (Open/Assigned/Completed states)
+- Click a bounty → Show detail: reward (A0GI), deadline, assigned agent
+- Post a new bounty → Reward locked in escrow on 0G Chain
+
+**[2:30-2:55]** Agent Marketplace
+- Navigate to /explore → Show 10 agents with prices, tags, trust scores
+- Filter by tag (e.g. "defi") → cards filter in real time
+- Try 3 free interactions → counter decrements
+- Click "Buy" → Modal: price + fee summary → confirm → simulated on-chain purchase
 
 **[2:55-3:00]** Outro
-- Show architecture diagram
 - "4 0G components — Storage for memory, Compute for inference, Chain for decisions, INFT for identity"
+- "Plus Bounty Board + Agent Marketplace — a complete AI agent economy on 0G"
 
 ---
 
@@ -521,6 +577,7 @@ Layer 4: Session keys (broker-managed, ephemeral)
 ✅ **SealMindINFT**: [0x1f29Bd4E0426222a78Ce0D484677A672DF3E8fa6](https://chainscan-galileo.0g.ai/address/0x1f29Bd4E0426222a78Ce0D484677A672DF3E8fa6)
 ✅ **DecisionChain**: [0x354306105a61505EB9a01A142E9fCA537E102EC2](https://chainscan-galileo.0g.ai/address/0x354306105a61505EB9a01A142E9fCA537E102EC2)
 ✅ **AgentRegistry**: [0x127b73133c9Ba241dE1d1ADdc366c686fd499c02](https://chainscan-galileo.0g.ai/address/0x127b73133c9Ba241dE1d1ADdc366c686fd499c02)
+🚧 **BountyBoard**: Pending deployment (awaiting testnet gas tokens)
 
 ---
 
@@ -531,14 +588,15 @@ Layer 4: Session keys (broker-managed, ephemeral)
 ```bash
 cd packages/contracts
 
-# Smart contract tests (28/28 passing)
+# Smart contract tests (78/78 passing)
 pnpm test
 ```
 
 **Test Coverage**:
-- ✅ INFT creation, minting, level progression (10 tests)
+- ✅ INFT creation, minting, soul signature, level progression (10 tests)
 - ✅ Decision recording, verification, batching (7 tests)
-- ✅ Registry search, visibility control (7 tests)
+- ✅ Registry search, visibility control, tag filtering (7 tests)
+- ✅ BountyBoard: post/assign/submit/verify/dispute/cancel lifecycle (50+ tests)
 - ✅ Encryption/decryption round-trips
 - ✅ End-to-end chat flow (with mocked 0G services)
 
@@ -586,7 +644,7 @@ For questions or issues:
 
 ---
 
-**Last Updated**: 2026-03-27
-**Version**: 1.1
+**Last Updated**: 2026-04-02
+**Version**: 2.0
 **Status**: 🟢 Production Ready (Testnet)
 
