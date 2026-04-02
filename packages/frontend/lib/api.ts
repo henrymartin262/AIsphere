@@ -20,6 +20,29 @@ function createTimeoutSignal(timeoutMs: number): AbortSignal {
   return controller.signal;
 }
 
+/** 构建完整 URL，兼容相对路径（如 /api）和绝对路径 */
+function buildUrl(path: string, params?: Record<string, string>): string {
+  let fullUrl: URL;
+  const base = `${API_BASE}${path}`;
+
+  if (base.startsWith("http")) {
+    // 绝对 URL
+    fullUrl = new URL(base);
+  } else {
+    // 相对 URL（如 /api/explore/agents）— 需要 origin 作为 base
+    const origin =
+      typeof window !== "undefined"
+        ? window.location.origin
+        : "http://localhost:3000";
+    fullUrl = new URL(base, origin);
+  }
+
+  if (params) {
+    Object.entries(params).forEach(([k, v]) => fullUrl.searchParams.set(k, v));
+  }
+  return fullUrl.toString();
+}
+
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
     let errorMsg = `HTTP ${res.status}`;
@@ -47,11 +70,8 @@ export async function apiGet<T>(
   params?: Record<string, string>,
   timeoutMs: number = DEFAULT_TIMEOUT
 ): Promise<T> {
-  const url = new URL(`${API_BASE}${path}`);
-  if (params) {
-    Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-  }
-  const res = await fetch(url.toString(), {
+  const url = buildUrl(path, params);
+  const res = await fetch(url, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
     signal: createTimeoutSignal(timeoutMs),
@@ -64,7 +84,8 @@ export async function apiPost<T>(
   body: unknown,
   timeoutMs: number = DEFAULT_TIMEOUT
 ): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
+  const url = buildUrl(path);
+  const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -77,10 +98,12 @@ export async function apiDelete<T>(
   path: string,
   timeoutMs: number = DEFAULT_TIMEOUT
 ): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
+  const url = buildUrl(path);
+  const res = await fetch(url, {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
     signal: createTimeoutSignal(timeoutMs),
   });
   return handleResponse<T>(res);
 }
+

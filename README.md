@@ -598,6 +598,38 @@ POST   /api/gateway/discover           # Discover all available actions
 POST   /api/gateway/execute            # Unified action executor
 ```
 
+### v3.1: 0G Compute Account & Media (Official Skills #5-8)
+
+```
+# Compute Account Management (Skill #8)
+GET    /api/compute/account            # Balance + provider sub-accounts
+GET    /api/compute/providers          # Live provider list with TEE status
+POST   /api/compute/deposit            # Top up main account { amount }
+POST   /api/compute/transfer           # Fund a provider { providerAddress, serviceType, amount }
+POST   /api/compute/refund/initiate    # Start 24h refund process { amount }
+
+# AI Media Generation (Skills #5 & #6)
+POST   /api/media/text-to-image        # Flux Turbo image gen { prompt, width?, height?, n? }
+POST   /api/media/speech-to-text       # Whisper transcription (multipart, field: audio)
+GET    /api/media/providers            # Available media providers
+```
+
+### v3.1: 0G Compute Account & Media (Official Skills #5-8)
+
+```
+# Compute Account Management (Skill #8)
+GET    /api/compute/account            # Balance + provider sub-accounts
+GET    /api/compute/providers          # Live provider list with TEE status
+POST   /api/compute/deposit            # Top up main account { amount }
+POST   /api/compute/transfer           # Fund a provider { providerAddress, serviceType, amount }
+POST   /api/compute/refund/initiate    # Start 24h refund process { amount }
+
+# AI Media Generation (Skills #5 & #6)
+POST   /api/media/text-to-image        # Flux Turbo image gen { prompt, width?, height?, n? }
+POST   /api/media/speech-to-text       # Whisper transcription (multipart, field: audio)
+GET    /api/media/providers            # Available media providers
+```
+
 ### Agents
 
 ```

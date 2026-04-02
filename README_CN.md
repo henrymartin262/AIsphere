@@ -593,6 +593,22 @@ POST   /api/gateway/discover           # 自动发现所有可用操作
 POST   /api/gateway/execute            # 统一操作执行入口
 ```
 
+### v3.1：0G 计算账户 & 媒体生成（官方 Skills #5-8）
+
+```
+# 计算账户管理（Skill #8）
+GET    /api/compute/account            # 余额 + Provider 子账户信息
+GET    /api/compute/providers          # 实时 Provider 列表（含 TEE 状态）
+POST   /api/compute/deposit            # 主账户充值 { amount }
+POST   /api/compute/transfer           # 向 Provider 转账 { providerAddress, serviceType, amount }
+POST   /api/compute/refund/initiate    # 发起 24 小时退款流程 { amount }
+
+# AI 媒体生成（Skills #5 & #6）
+POST   /api/media/text-to-image        # Flux Turbo 图像生成 { prompt, width?, height?, n? }
+POST   /api/media/speech-to-text       # Whisper 语音转录（multipart，字段名：audio）
+GET    /api/media/providers            # 可用媒体 Provider 列表
+```
+
 ### Agent 管理
 
 ```

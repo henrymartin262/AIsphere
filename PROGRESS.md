@@ -486,3 +486,25 @@
 >   - **Navbar 更新**：新增 🧠 Hive Mind + 🎫 Passport 导航
 >   - **前端构建**：pnpm build 全部通过（16个页面）
 > - 🔜 下一步：等待 0G 主网 gas 代币 → 部署所有合约 → 端到端验证
+
+> **Session 11（2026-04-02）**:
+> - ✅ 集成 0G 官方 Agent Skills（7个 Skill，Skills #4-8, #13-14）
+>   - **ComputeAccountService.ts**：充值/转账/余额/退款完整账户管理，对接 Skill #8
+>   - **MediaService.ts**：Text-to-Image（Flux Turbo）+ Speech-to-Text（Whisper Large V3），对接 Skill #5/#6
+>   - **SealedInferenceService 升级**：动态 Provider Discovery + acknowledgeProviderSigner + processResponse 费用结算，对接 Skill #4/#7
+>   - **AgentService 升级**：Agent 创建时 metadata 上传 0G KV Storage，root hash 写入 INFT 合约，对接 Skill #13/#14
+>   - **新路由**：computeRoutes（5个端点）+ mediaRoutes（3个端点）
+>   - **health 接口**：新增 8 个 0G 集成状态字段
+>   - **.agent-skills**：官方 0g-agent-skills 仓库作为 git submodule 添加
+>   - **README 更新**：新增「0G 官方 SDK 与 Agent Skills 深度集成」章节（中英文），含代码示例
+> - ✅ 修复前端页面加载问题（所有子页面加载 skeleton 不消失）
+>   - **根本原因**：`new URL('/api/path')` 在没有 base 时抛出 Invalid URL，导致所有 apiGet/apiPost 静默失败
+>   - **lib/api.ts 修复**：新增 `buildUrl()` 函数，自动区分绝对/相对路径，相对路径用 `window.location.origin` 作为 base
+>   - **后端性能修复**：AgentService/BountyService 加 3s RPC 超时 + 列表缓存（60s/30s），避免区块链慢响应导致前端 timeout
+>   - **exploreRoutes 修复**：stats 接口从 limit=1000 改为 limit=20，消除额外 2s RPC 调用
+>   - **效果**：explore/agents 冷启动 1.3s，缓存命中 <10ms；bounty/hivemind/dashboard 全部 <100ms
+> - ✅ 前端 UI 修复
+>   - Hive Mind / Passport / Soul 页面风格统一为浅色+dark mode，与其他页面一致
+>   - Navbar 去掉 emoji，纯文字导航，解决拥挤问题
+>   - Next.js rewrites 代理配置，解决远程访问时浏览器无法连接 localhost:4000
+> - 🔜 下一步：Demo 录制 + HackQuest 最终提交（deadline 2026-05-09）
