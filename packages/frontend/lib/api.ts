@@ -3,6 +3,25 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
 /** 默认请求超时时间（毫秒） */
 const DEFAULT_TIMEOUT = 15_000; // 15 秒
 
+/** ── 全局钱包地址（自动附带到需要认证的请求） ── */
+let _walletAddress: string | null = null;
+
+export function setApiWalletAddress(address: string | null | undefined) {
+  _walletAddress = address?.toLowerCase() ?? null;
+}
+
+export function getApiWalletAddress(): string | null {
+  return _walletAddress;
+}
+
+function buildAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (_walletAddress) {
+    headers["x-wallet-address"] = _walletAddress;
+  }
+  return headers;
+}
+
 interface ApiEnvelope<T> {
   success: boolean;
   data?: T;
@@ -73,7 +92,7 @@ export async function apiGet<T>(
   const url = buildUrl(path, params);
   const res = await fetch(url, {
     method: "GET",
-    headers: { "Content-Type": "application/json" },
+    headers: buildAuthHeaders(),
     signal: createTimeoutSignal(timeoutMs),
   });
   return handleResponse<T>(res);
@@ -87,7 +106,7 @@ export async function apiPost<T>(
   const url = buildUrl(path);
   const res = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: buildAuthHeaders(),
     body: JSON.stringify(body),
     signal: createTimeoutSignal(timeoutMs),
   });
@@ -101,7 +120,7 @@ export async function apiDelete<T>(
   const url = buildUrl(path);
   const res = await fetch(url, {
     method: "DELETE",
-    headers: { "Content-Type": "application/json" },
+    headers: buildAuthHeaders(),
     signal: createTimeoutSignal(timeoutMs),
   });
   return handleResponse<T>(res);
