@@ -67,33 +67,35 @@ export class PassportService {
   async runCapabilityTest(agentId: number, ownerAddress?: string): Promise<CapabilityTestResult> {
     const testedAt = Math.floor(Date.now() / 1000);
 
-    // Test 1: Inference check (can the service call the inference layer)
+    // Test 1: Inference check — actually call the inference layer
     let inferenceOk = false;
     try {
-      // Simple deterministic check: hash of agentId must be non-zero
-      const h = ethers.keccak256(ethers.toUtf8Bytes(`inference-test-${agentId}`));
-      inferenceOk = h !== ethers.ZeroHash;
-    } catch { inferenceOk = false; }
+      const { inference } = await import("./SealedInferenceService.js");
+      const { response } = await inference(agentId, "Hello, confirm you are operational.", "Capability test");
+      inferenceOk = typeof response === "string" && response.length > 0;
+    } catch {
+      // Inference layer unavailable — test fails
+      inferenceOk = false;
+    }
 
-    // Test 2: 0G Storage availability
+    // Test 2: 0G Storage availability — verify KV client is ready
     let storageOk = false;
     try {
       const clients = await initialize0GClients();
-      storageOk = !!(clients?.kvClient || clients?.storageNodes?.length);
+      storageOk = !!(clients?.kvReady && (clients?.kvClient || clients?.storageNodes?.length));
     } catch { storageOk = false; }
 
-    // Test 3: Signature / identity check
+    // Test 3: Signature / identity check — verify address is valid EVM address
     let signatureOk = false;
     try {
       if (ownerAddress && ethers.isAddress(ownerAddress)) {
-        signatureOk = true;
-      } else {
-        // In mock mode, always pass
-        signatureOk = true;
+        // Verify it's a proper checksummed address, not a zero address
+        signatureOk = ownerAddress !== ethers.ZeroAddress;
       }
     } catch { signatureOk = false; }
 
-    const passed = inferenceOk || storageOk || signatureOk; // at least one must pass
+    // All three tests must pass for certification
+    const passed = inferenceOk && storageOk && signatureOk;
 
     // Build capability proof: deterministic hash of test outcomes
     const proof = ethers.keccak256(

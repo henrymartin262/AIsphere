@@ -1,3 +1,4 @@
+import { ethers } from "ethers";
 import { initialize0GClients } from "../config/og.js";
 import { discoverProviders } from "./SealedInferenceService.js";
 import type { ProviderInfo } from "./SealedInferenceService.js";
@@ -26,7 +27,7 @@ export type { ProviderInfo };
 
 /** Convert wei (bigint) to A0GI string with 6 decimal places */
 function weiToA0GI(wei: bigint): string {
-  return (Number(wei) / 1e18).toFixed(6);
+  return parseFloat(ethers.formatEther(wei)).toFixed(6);
 }
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
@@ -162,7 +163,7 @@ export async function transferToProvider(
   const broker = await createZGComputeNetworkBroker(clients.signer as any);
 
   // Convert A0GI to neuron (wei, bigint)
-  const amountNeuron = BigInt(Math.round(parseFloat(amountA0GI) * 1e18));
+  const amountNeuron = ethers.parseEther(amountA0GI);
   await broker.ledger.transferFund(providerAddress, normalisedType, amountNeuron);
 
   return { amount: amountA0GI };

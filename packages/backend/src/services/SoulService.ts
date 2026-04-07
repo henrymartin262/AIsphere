@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { contracts } from "../config/contracts.js";
-import { initialize0GClients } from "../config/og.js";
-import { deriveAgentKey, hashContent } from "../utils/encryption.js";
+import { initialize0GClients, kvBatchWrite } from "../config/og.js";
+import { deriveAgentKey, encryptMemory, hashContent } from "../utils/encryption.js";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -94,9 +94,26 @@ export class SoulService {
     // Try to store encrypted experience in 0G KV
     try {
       const clients = await initialize0GClients();
-      if (clients?.kvClient) {
-        const key  = deriveAgentKey("soul-service", agentId);
-        void key; // key derived; actual KV write follows MemoryVaultService pattern
+      if (clients?.kvReady) {
+        const key = deriveAgentKey("soul-service", agentId);
+        const { encryptedData, iv } = encryptMemory(JSON.stringify(experience), key);
+        const streamId = ethers.keccak256(ethers.toUtf8Bytes(`SealMind:Soul:${agentId}`));
+        const kvKey = new TextEncoder().encode(`soul:experience:${experience.id}`);
+        const kvData = new TextEncoder().encode(JSON.stringify({ encryptedData, iv, experienceHash }));
+
+        // Fire-and-forget — don't block on storage write
+        kvBatchWrite(clients, streamId, kvKey, kvData)
+          .then(ok => {
+            if (ok) console.log(`[SoulService] Experience ${experience.id} persisted to 0G KV`);
+          })
+          .catch(err => console.warn("[SoulService] 0G KV write failed:", err));
+
+        // Also persist the experience index
+        const indexKey = new TextEncoder().encode("soul:experience_index");
+        const allExps = mockExperiences.get(agentId) ?? [];
+        const index = [...allExps, experience].map(e => ({ id: e.id, type: e.type, timestamp: e.timestamp }));
+        const indexData = new TextEncoder().encode(JSON.stringify(index));
+        kvBatchWrite(clients, streamId, indexKey, indexData).catch(() => {});
       }
     } catch { /* non-critical */ }
 

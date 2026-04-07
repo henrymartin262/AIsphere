@@ -8,6 +8,7 @@ import * as AgentService from "./services/AgentService.js";
 import * as BountyService from "./services/BountyService.js";
 import { passportService } from "./services/PassportService.js";
 import { soulService } from "./services/SoulService.js";
+import { hiveMindService } from "./services/HiveMindService.js";
 import { walletAuth } from "./middleware/auth.js";
 import agentRoutes from "./routes/agentRoutes.js";
 import bountyRoutes from "./routes/bountyRoutes.js";
@@ -82,6 +83,7 @@ async function bootstrap() {
   await initialize0GClients();
   await passportService.init();
   await soulService.init();
+  await hiveMindService.init();
 
   // Pre-warm caches so first user request is instant (not RPC timeout)
   // Warm both limit=20 (stats page) and limit=100 (explore page uses this)

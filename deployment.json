@@ -1,11 +1,11 @@
 {
-  "network": "og-testnet",
-  "chainId": 16602,
-  "deployedAt": "2026-03-26T07:24:05.210Z",
-  "deployer": "0x30e31C6E8179f7aAb6E19B26a3F46B10E4Ce7f92",
+  "network": "og-mainnet",
+  "chainId": 16661,
+  "deployedAt": "2026-04-07T00:00:00.000Z",
+  "deployer": "0xc2a5548C420917244DA018A956DD33C551d42A93",
   "contracts": {
-    "DecisionChain": "0x354306105a61505EB9a01A142E9fCA537E102EC2",
-    "SealMindINFT": "0x1f29Bd4E0426222a78Ce0D484677A672DF3E8fa6",
-    "AgentRegistry": "0x127b73133c9Ba241dE1d1ADdc366c686fd499c02"
+    "DecisionChain": "0xaF39a3D2E2d8656490F8f2AB1fF0106f1acB867C",
+    "SealMindINFT": "0xc0238FEb50072797555098DfD529145c86Ab5b59",
+    "AgentRegistry": "0xa930B5059aE91C073684f0D2AFB0bBf5d84167C9"
   }
 }

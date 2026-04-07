@@ -100,12 +100,25 @@ router.post("/connect/:agentId", async (req: Request, res: Response) => {
 
 /**
  * GET /api/hivemind/verify/:id
- * Verify a specific contribution
+ * Verify a specific contribution with Merkle proof
  */
 router.get("/verify/:id", (req: Request, res: Response) => {
   try {
     const result = hiveMindService.verifyContribution(req.params.id);
     res.json({ success: true, data: result });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * GET /api/hivemind/merkle-root
+ * Get the current Merkle root of the Hive Mind
+ */
+router.get("/merkle-root", (_req: Request, res: Response) => {
+  try {
+    const root = hiveMindService.getMerkleRoot();
+    res.json({ success: true, data: { merkleRoot: root } });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
   }
