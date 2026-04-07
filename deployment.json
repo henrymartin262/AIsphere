@@ -6,6 +6,7 @@
   "contracts": {
     "DecisionChain": "0xaF39a3D2E2d8656490F8f2AB1fF0106f1acB867C",
     "SealMindINFT": "0xc0238FEb50072797555098DfD529145c86Ab5b59",
-    "AgentRegistry": "0xa930B5059aE91C073684f0D2AFB0bBf5d84167C9"
+    "AgentRegistry": "0xa930B5059aE91C073684f0D2AFB0bBf5d84167C9",
+    "BountyBoard": "0x8604482d75aFe56E376cdEE41Caf27599a926E1d"
   }
 }

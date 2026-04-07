@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { useAccount } from "wagmi";
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
 import { useLang } from "../../contexts/LangContext";
@@ -70,14 +70,61 @@ function SkeletonCard() {
 
 // ─── Buy Modal ─────────────────────────────────────────────────────────────────
 
+// ERC-721 ABI for safeTransferFrom
+const ERC721_ABI = [
+  {
+    name: "safeTransferFrom",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "from", type: "address" },
+      { name: "to", type: "address" },
+      { name: "tokenId", type: "uint256" },
+    ],
+    outputs: [],
+  },
+] as const;
+
+const INFT_ADDRESS = (process.env.NEXT_PUBLIC_INFT_ADDRESS ?? "") as `0x${string}`;
+
 function BuyModal({ agent, onClose, lang }: { agent: Agent; onClose: () => void; lang: string }) {
-  const [status, setStatus] = useState<"confirm" | "pending" | "done">("confirm");
+  const [status, setStatus] = useState<"confirm" | "pending" | "done" | "error">("confirm");
+  const [errorMsg, setErrorMsg] = useState("");
   const isEn = lang === "en";
+  const { address } = useAccount();
+
+  const { writeContract, data: txHash, error: writeError } = useWriteContract();
+  const { isSuccess: txConfirmed, isLoading: txPending } = useWaitForTransactionReceipt({ hash: txHash });
+
+  // Watch for tx confirmation
+  useEffect(() => {
+    if (txConfirmed) setStatus("done");
+  }, [txConfirmed]);
+
+  // Watch for write errors
+  useEffect(() => {
+    if (writeError) {
+      setStatus("error");
+      setErrorMsg(writeError.message?.slice(0, 120) ?? "Transaction failed");
+    }
+  }, [writeError]);
 
   function handleBuy() {
+    if (!address || !agent.owner) return;
     setStatus("pending");
-    // Simulate tx (no real contract interaction in demo)
-    setTimeout(() => setStatus("done"), 1800);
+    setErrorMsg("");
+
+    try {
+      writeContract({
+        address: INFT_ADDRESS,
+        abi: ERC721_ABI,
+        functionName: "safeTransferFrom",
+        args: [agent.owner as `0x${string}`, address, BigInt(agent.agentId)],
+      });
+    } catch (err: any) {
+      setStatus("error");
+      setErrorMsg(err.message?.slice(0, 120) ?? "Failed to send transaction");
+    }
   }
 
   return (
@@ -98,6 +145,9 @@ function BuyModal({ agent, onClose, lang }: { agent: Agent; onClose: () => void;
                 ? `${agent.profile.name} has been transferred to your wallet.`
                 : `${agent.profile.name} 已转入你的钱包。`}
             </p>
+            {txHash && (
+              <p className="mt-1 text-xs text-slate-400 break-all">tx: {txHash}</p>
+            )}
             <Link
               href={`/agent/${agent.agentId}/chat`}
               className="mt-5 block w-full rounded-xl bg-indigo-600 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-indigo-700"
@@ -105,6 +155,21 @@ function BuyModal({ agent, onClose, lang }: { agent: Agent; onClose: () => void;
             >
               {isEn ? "Start Chatting →" : "立即对话 →"}
             </Link>
+          </div>
+        ) : status === "error" ? (
+          <div className="text-center py-4">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-50 dark:bg-red-500/10">
+              <svg className="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+            <h3 className="mt-4 text-lg font-bold text-slate-800 dark:text-white">
+              {isEn ? "Transaction Failed" : "交易失败"}
+            </h3>
+            <p className="mt-2 text-xs text-slate-500 break-all">{errorMsg}</p>
+            <button onClick={() => setStatus("confirm")} className="mt-4 rounded-xl bg-slate-100 px-4 py-2 text-sm text-slate-600 hover:bg-slate-200 dark:bg-white/10 dark:text-slate-300">
+              {isEn ? "Try Again" : "重试"}
+            </button>
           </div>
         ) : (
           <>
@@ -149,10 +214,10 @@ function BuyModal({ agent, onClose, lang }: { agent: Agent; onClose: () => void;
               </button>
               <button
                 onClick={handleBuy}
-                disabled={status === "pending"}
+                disabled={status === "pending" || txPending}
                 className="flex-1 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-70 flex items-center justify-center gap-2"
               >
-                {status === "pending" ? (
+                {(status === "pending" || txPending) ? (
                   <>
                     <svg className="h-3.5 w-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />

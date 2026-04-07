@@ -153,6 +153,20 @@ const ownerCache: Map<string, { ids: number[]; expiresAt: number }> = new Map();
 interface ListCacheEntry { data: { agents: AgentInfo[]; total: number }; expiresAt: number; }
 const listCache: Map<string, ListCacheEntry> = new Map();
 
+/**
+ * Compute trust score from real stats instead of hardcoding.
+ * Formula: min(100, inference_factor + memory_factor + level_factor)
+ *   - inference_factor: min(40, totalInferences * 0.1)
+ *   - memory_factor:    min(30, totalMemories * 0.5)
+ *   - level_factor:     level * 6
+ */
+function computeTrustScore(stats: { totalInferences: number; totalMemories: number; level: number }): number {
+  const inferenceFactor = Math.min(40, stats.totalInferences * 0.1);
+  const memoryFactor    = Math.min(30, stats.totalMemories * 0.5);
+  const levelFactor     = stats.level * 6;
+  return Math.min(100, Math.round(inferenceFactor + memoryFactor + levelFactor));
+}
+
 /** Wraps a promise with a hard timeout — rejects if not resolved in time */
 function withTimeout<T>(promise: Promise<T>, ms: number, label = "RPC"): Promise<T> {
   return Promise.race([
@@ -261,7 +275,7 @@ export async function createAgent(params: CreateAgentParams): Promise<CreateAgen
     agentId,
     owner: walletAddress,
     profile: { name, model, metadataHash, encryptedURI: "" },
-    stats: { totalInferences: 0, totalMemories: 0, trustScore: 0, level: 1, lastActiveAt: Date.now() }
+    stats: { totalInferences: 0, totalMemories: 0, trustScore: computeTrustScore({ totalInferences: 0, totalMemories: 0, level: 1 }), level: 1, lastActiveAt: Date.now() }
   };
   mockAgents.set(agentId, agent);
   return { agentId, txHash: `0xmock_${Date.now().toString(16)}`, mock: true };
@@ -292,7 +306,11 @@ export async function getAgent(agentId: number): Promise<AgentInfo | null> {
         stats: {
           totalInferences: Number(stats.totalInferences),
           totalMemories: Number(stats.totalMemories),
-          trustScore: Number(stats.trustScore),
+          trustScore: Number(stats.trustScore) || computeTrustScore({
+            totalInferences: Number(stats.totalInferences),
+            totalMemories: Number(stats.totalMemories),
+            level: Number(stats.level)
+          }),
           level: Number(stats.level),
           lastActiveAt: Number(stats.lastActiveAt)
         }

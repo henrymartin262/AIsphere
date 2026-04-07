@@ -1,5 +1,7 @@
 import { randomUUID } from "crypto";
+import { ethers } from "ethers";
 import { hashContent } from "../utils/encryption.js";
+import { initialize0GClients, kvBatchWrite } from "../config/og.js";
 import * as SealedInferenceService from "./SealedInferenceService.js";
 import * as MemoryVaultService from "./MemoryVaultService.js";
 
@@ -59,11 +61,52 @@ export interface OrchestrationResult {
   routingDecisions: string[];
 }
 
-// ─── In-memory stores ────────────────────────────────────────────────────────
+// ─── In-memory stores (dual-layer with 0G KV persistence) ────────────────────
 
 const messageQueue: Map<number, AgentMessage[]> = new Map();  // agentId → inbox
 const sessions: Map<string, CollaborationSession> = new Map();
 const tasks: Map<string, AgentTask> = new Map();
+
+// ─── 0G KV persistence ──────────────────────────────────────────────────────
+
+const MULTI_AGENT_STREAM = ethers.keccak256(ethers.toUtf8Bytes("SealMind:MultiAgent:Global"));
+function toKvKey(key: string): Uint8Array { return new TextEncoder().encode(key); }
+
+/** Persist a session to 0G KV (fire-and-forget) */
+async function persistSession(session: CollaborationSession): Promise<void> {
+  try {
+    const clients = await initialize0GClients();
+    if (!clients.kvReady) return;
+    const kvKey = toKvKey(`multiagent:session:${session.id}`);
+    const kvData = new TextEncoder().encode(JSON.stringify(session));
+    await kvBatchWrite(clients, MULTI_AGENT_STREAM, kvKey, kvData);
+  } catch { /* non-critical */ }
+}
+
+/** Persist a task to 0G KV (fire-and-forget) */
+async function persistTask(task: AgentTask): Promise<void> {
+  try {
+    const clients = await initialize0GClients();
+    if (!clients.kvReady) return;
+    const kvKey = toKvKey(`multiagent:task:${task.id}`);
+    const kvData = new TextEncoder().encode(JSON.stringify(task));
+    await kvBatchWrite(clients, MULTI_AGENT_STREAM, kvKey, kvData);
+  } catch { /* non-critical */ }
+}
+
+/** Persist session+task indexes to 0G KV */
+async function persistIndexes(): Promise<void> {
+  try {
+    const clients = await initialize0GClients();
+    if (!clients.kvReady) return;
+    const sessionIdx = [...sessions.keys()];
+    const taskIdx = [...tasks.keys()];
+    await kvBatchWrite(clients, MULTI_AGENT_STREAM, toKvKey("multiagent:index:sessions"),
+      new TextEncoder().encode(JSON.stringify(sessionIdx)));
+    await kvBatchWrite(clients, MULTI_AGENT_STREAM, toKvKey("multiagent:index:tasks"),
+      new TextEncoder().encode(JSON.stringify(taskIdx)));
+  } catch { /* non-critical */ }
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -198,6 +241,11 @@ export async function delegateTask(
   task.messages.push(msg);
 
   console.log(`[MultiAgent] Task ${task.id}: Agent #${initiatorAgentId} delegated to Agent #${delegateAgentId}`);
+
+  // Persist to 0G KV
+  persistTask(task).catch(() => {});
+  persistIndexes().catch(() => {});
+
   return task;
 }
 
@@ -267,6 +315,9 @@ export async function executeTask(
     task.updatedAt = Date.now();
   }
 
+  // Persist updated task
+  persistTask(task).catch(() => {});
+
   return task;
 }
 
@@ -291,6 +342,11 @@ export async function createSession(
 
   sessions.set(session.id, session);
   console.log(`[MultiAgent] Session ${session.id} created: "${name}" with agents [${agentIds.join(", ")}]`);
+
+  // Persist to 0G KV
+  persistSession(session).catch(() => {});
+  persistIndexes().catch(() => {});
+
   return session;
 }
 
@@ -397,6 +453,9 @@ export async function orchestrate(
   }
 
   session.updatedAt = Date.now();
+
+  // Persist session
+  persistSession(session).catch(() => {});
 
   const proofHashes = responses.map((r) => r.proofHash);
   const orchestrationHash = hashContent(proofHashes.join(":"));
