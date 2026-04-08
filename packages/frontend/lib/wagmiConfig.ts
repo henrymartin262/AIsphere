@@ -74,10 +74,10 @@ export function createWagmiConfig() {
     /* 没有 projectId 时传 undefined，RainbowKit 会跳过 WalletConnect 初始化，避免假 ID 超时 */
     projectId: walletConnectProjectId ?? "placeholder",
     ssr: true,
-    chains: [ogTestnet, ogMainnet],
+    chains: [ogMainnet, ogTestnet],
     transports: {
-      [ogTestnet.id]: testnetTransport,
-      [ogMainnet.id]: mainnetTransport
+      [ogMainnet.id]: mainnetTransport,
+      [ogTestnet.id]: testnetTransport
     }
   });
 }

@@ -7,8 +7,8 @@ loadEnv({ path: "../../.env.local" });
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().default(4000),
-  RPC_URL: z.string().url().default("https://evmrpc-testnet.0g.ai"),
-  CHAIN_ID: z.coerce.number().default(16602),
+  RPC_URL: z.string().url().default("https://evmrpc.0g.ai"),
+  CHAIN_ID: z.coerce.number().default(16661),
   STORAGE_INDEXER_URL: z.string().url().default("https://indexer-storage-testnet-turbo.0g.ai"),
   KV_NODE_URL: z.string().url().default("http://3.101.147.150:6789"),
   PRIVATE_KEY: z.string().optional(),

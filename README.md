@@ -4,10 +4,10 @@
 
 ![Built on 0G](https://img.shields.io/badge/Built%20on-0G%20Network-blue?style=flat-square)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square)
-![Solidity](https://img.shields.io/badge/Solidity-0.8.19-282828?style=flat-square)
+![Solidity](https://img.shields.io/badge/Solidity-0.8.26-282828?style=flat-square)
 ![Next.js](https://img.shields.io/badge/Next.js-14-000?style=flat-square)
 ![Hackathon](https://img.shields.io/badge/0G%20Hackathon-Track%201-FF6B6B?style=flat-square)
-![Version](https://img.shields.io/badge/Version-3.0-22c55e?style=flat-square)
+![Version](https://img.shields.io/badge/Version-3.2-22c55e?style=flat-square)
 
 > 📖 [中文版本](./README_CN.md)
 
@@ -129,11 +129,11 @@ User Creates Agent
 | **Backend** | Node.js | 18+ | Runtime |
 | | Express | 4.x | HTTP server |
 | | ethers.js | v6 | On-chain interaction |
-| **0G Integration** | @0gfoundation/0g-ts-sdk | ^0.3.3 | Storage + KV |
-| | @0glabs/0g-serving-broker | ^0.6.5 | Compute (TEE) |
-| **Smart Contracts** | Solidity | ^0.8.19 | Contracts |
-| | Hardhat | latest | Compile/test/deploy |
-| | OpenZeppelin | 4.x | Contract standards |
+| **0G Integration** | @0gfoundation/0g-ts-sdk | ^1.2.1 | Storage + KV |
+| | @0glabs/0g-serving-broker | ^0.7.4 | Compute (TEE) |
+| **Smart Contracts** | Solidity | ^0.8.26 | Contracts |
+| | Hardhat | ^2.28.6 | Compile/test/deploy |
+| | OpenZeppelin | ^5.6.1 | Contract standards |
 | **AI Models** | DeepSeek V3.1 | — | Primary (TeeML) |
 | | Qwen 2.5 VL 72B | — | Fallback |
 
@@ -201,8 +201,8 @@ SealMind deeply integrates **official 0G resources** — SDKs, Agent Skills, and
 
 | SDK | Package | Usage in SealMind |
 |-----|---------|-------------------|
-| **0G TypeScript SDK** | `@0gfoundation/0g-ts-sdk ^0.3.3` | KV Storage for Agent Memory Vault, Indexer for node discovery, Batcher for batch writes |
-| **0G Serving Broker** | `@0glabs/0g-serving-broker ^0.6.5` | Sealed inference via TEE providers, provider discovery, fee settlement |
+| **0G TypeScript SDK** | `@0gfoundation/0g-ts-sdk ^1.2.1` | KV Storage for Agent Memory Vault, Indexer for node discovery, Batcher for batch writes |
+| **0G Serving Broker** | `@0glabs/0g-serving-broker ^0.7.4` | Sealed inference via TEE providers, provider discovery, fee settlement |
 
 ### 🤖 Official 0G Agent Skills Integrated
 
@@ -320,18 +320,18 @@ await broker.inference.processResponse(providerAddress, chatID, data.usage);
 
 ---
 
-## 📋 Smart Contracts (0G Testnet)
+## 📋 Smart Contracts (0G Mainnet)
 
-All contracts deployed and verified on 0G Testnet (Chain ID: 16602).
+All contracts deployed and verified on 0G Mainnet (Chain ID: 16661).
 
 | Contract | Address | Explorer |
 |----------|---------|----------|
-| **SealMindINFT** | `0x1f29Bd4E0426222a78Ce0D484677A672DF3E8fa6` | [View](https://chainscan-galileo.0g.ai/address/0x1f29Bd4E0426222a78Ce0D484677A672DF3E8fa6) |
-| **DecisionChain** | `0x354306105a61505EB9a01A142E9fCA537E102EC2` | [View](https://chainscan-galileo.0g.ai/address/0x354306105a61505EB9a01A142E9fCA537E102EC2) |
-| **AgentRegistry** | `0x127b73133c9Ba241dE1d1ADdc366c686fd499c02` | [View](https://chainscan-galileo.0g.ai/address/0x127b73133c9Ba241dE1d1ADdc366c686fd499c02) |
-| **BountyBoard** | 🚧 Pending deployment (awaiting testnet gas) | — |
+| **SealMindINFT** | `0xc0238FEb50072797555098DfD529145c86Ab5b59` | [View](https://chainscan.0g.ai/address/0xc0238FEb50072797555098DfD529145c86Ab5b59) |
+| **DecisionChain** | `0xaF39a3D2E2d8656490F8f2AB1fF0106f1acB867C` | [View](https://chainscan.0g.ai/address/0xaF39a3D2E2d8656490F8f2AB1fF0106f1acB867C) |
+| **AgentRegistry** | `0xa930B5059aE91C073684f0D2AFB0bBf5d84167C9` | [View](https://chainscan.0g.ai/address/0xa930B5059aE91C073684f0D2AFB0bBf5d84167C9) |
+| **BountyBoard** | `0x8604482d75aFe56E376cdEE41Caf27599a926E1d` | [View](https://chainscan.0g.ai/address/0x8604482d75aFe56E376cdEE41Caf27599a926E1d) |
 
-**Test Results**: ✅ 94/94 unit tests passing (INFT×20, DecisionChain×7, Registry×7, BountyBoard×50+)
+**Test Results**: ✅ 94/94 unit tests passing (INFT×28, DecisionChain×8, Registry×7, BountyBoard×50, Placeholder×1)
 
 ### BountyBoard.sol — On-Chain Task Marketplace
 
@@ -349,7 +349,7 @@ Key functions:
 - `raiseDispute(bountyId)` — dispute mechanism with arbiter resolution
 - `cancelBounty(bountyId)` — refunds poster if unassigned
 
-**Explorer Base**: https://chainscan-galileo.0g.ai
+**Explorer Base**: https://chainscan.0g.ai
 
 ---
 
@@ -420,7 +420,7 @@ cd packages/contracts
 # Compile
 pnpm compile
 
-# Run tests (28/28 passing)
+# Run tests (94/94 passing)
 pnpm test
 
 # Deploy to testnet (if redeploying)
@@ -454,7 +454,7 @@ SealMind/
 │   │   ├── scripts/
 │   │   │   └── deploy.ts             # Deployment script
 │   │   ├── test/
-│   │   │   ├── SealMindINFT.test.ts  # 10 tests ✅
+│   │   │   ├── SealMindINFT.test.ts  # 28 tests ✅
 │   │   │   ├── DecisionChain.test.ts # 7 tests ✅
 │   │   │   ├── AgentRegistry.test.ts # 7 tests ✅
 │   │   │   └── BountyBoard.test.ts   # 50+ tests ✅
@@ -542,7 +542,7 @@ SealMind/
 │   └── SealMind_Implementation.md    # Technical design document
 │
 ├── .env.example                      # Global environment template
-├── deployment.json                   # Deployed contract addresses
+├── deployment.json                   # Deployed contract addresses (mainnet)
 ├── progress.md                       # Development progress log (session by session)
 ├── packages/mcp-server/              # 🔌 MCP Server (AI Agent native access)
 │   ├── src/index.ts                  # 10 MCP Tools + 6 Resources (stdio)
@@ -596,22 +596,6 @@ POST   /api/hivemind/connect/:agentId  # Agent connects to Hive Mind
 GET    /api/gateway/health             # Agent-friendly health check
 POST   /api/gateway/discover           # Discover all available actions
 POST   /api/gateway/execute            # Unified action executor
-```
-
-### v3.1: 0G Compute Account & Media (Official Skills #5-8)
-
-```
-# Compute Account Management (Skill #8)
-GET    /api/compute/account            # Balance + provider sub-accounts
-GET    /api/compute/providers          # Live provider list with TEE status
-POST   /api/compute/deposit            # Top up main account { amount }
-POST   /api/compute/transfer           # Fund a provider { providerAddress, serviceType, amount }
-POST   /api/compute/refund/initiate    # Start 24h refund process { amount }
-
-# AI Media Generation (Skills #5 & #6)
-POST   /api/media/text-to-image        # Flux Turbo image gen { prompt, width?, height?, n? }
-POST   /api/media/speech-to-text       # Whisper transcription (multipart, field: audio)
-GET    /api/media/providers            # Available media providers
 ```
 
 ### v3.1: 0G Compute Account & Media (Official Skills #5-8)
@@ -764,15 +748,15 @@ Layer 4: Session keys (broker-managed, ephemeral)
 
 | Environment | Status | Chain ID | RPC |
 |------------|--------|----------|-----|
-| **0G Testnet** | ✅ Live | 16602 | https://evmrpc-testnet.0g.ai |
-| **0G Mainnet** | 🚧 Ready | 16661 | https://evmrpc.0g.ai |
+| **0G Mainnet** | ✅ Live | 16661 | https://evmrpc.0g.ai |
+| **0G Testnet** | ✅ Available | 16602 | https://evmrpc-testnet.0g.ai |
 
-### Deployed Contracts (Testnet)
+### Deployed Contracts (Mainnet)
 
-✅ **SealMindINFT**: [0x1f29Bd4E0426222a78Ce0D484677A672DF3E8fa6](https://chainscan-galileo.0g.ai/address/0x1f29Bd4E0426222a78Ce0D484677A672DF3E8fa6)
-✅ **DecisionChain**: [0x354306105a61505EB9a01A142E9fCA537E102EC2](https://chainscan-galileo.0g.ai/address/0x354306105a61505EB9a01A142E9fCA537E102EC2)
-✅ **AgentRegistry**: [0x127b73133c9Ba241dE1d1ADdc366c686fd499c02](https://chainscan-galileo.0g.ai/address/0x127b73133c9Ba241dE1d1ADdc366c686fd499c02)
-🚧 **BountyBoard**: Pending deployment (awaiting testnet gas tokens)
+✅ **SealMindINFT**: [0xc0238FEb50072797555098DfD529145c86Ab5b59](https://chainscan.0g.ai/address/0xc0238FEb50072797555098DfD529145c86Ab5b59)
+✅ **DecisionChain**: [0xaF39a3D2E2d8656490F8f2AB1fF0106f1acB867C](https://chainscan.0g.ai/address/0xaF39a3D2E2d8656490F8f2AB1fF0106f1acB867C)
+✅ **AgentRegistry**: [0xa930B5059aE91C073684f0D2AFB0bBf5d84167C9](https://chainscan.0g.ai/address/0xa930B5059aE91C073684f0D2AFB0bBf5d84167C9)
+✅ **BountyBoard**: [0x8604482d75aFe56E376cdEE41Caf27599a926E1d](https://chainscan.0g.ai/address/0x8604482d75aFe56E376cdEE41Caf27599a926E1d)
 
 ---
 
@@ -783,12 +767,12 @@ Layer 4: Session keys (broker-managed, ephemeral)
 ```bash
 cd packages/contracts
 
-# Smart contract tests (78/78 passing)
+# Smart contract tests (94/94 passing)
 pnpm test
 ```
 
 **Test Coverage**:
-- ✅ INFT creation, minting, soul signature, level progression (10 tests)
+- ✅ INFT creation, minting, soul signature, level progression, passport, living soul (28 tests)
 - ✅ Decision recording, verification, batching (7 tests)
 - ✅ Registry search, visibility control, tag filtering (7 tests)
 - ✅ BountyBoard: post/assign/submit/verify/dispute/cancel lifecycle (50+ tests)
@@ -839,7 +823,7 @@ For questions or issues:
 
 ---
 
-**Last Updated**: 2026-04-02
-**Version**: 3.0
-**Status**: 🟢 Production Ready (Testnet)
+**Last Updated**: 2026-04-07
+**Version**: 3.2
+**Status**: 🟢 Production Ready (Mainnet)
 

@@ -319,16 +319,16 @@ await broker.inference.processResponse(providerAddress, chatID, data.usage);
 
 ---
 
-所有合约已在 0G 测试网（Chain ID: 16602）部署并验证。
+所有合约已在 0G 主网（Chain ID: 16661）部署并验证。
 
 | 合约 | 地址 | 浏览器链接 |
 |------|------|-----------|
-| **SealMindINFT** | `0x1f29Bd4E0426222a78Ce0D484677A672DF3E8fa6` | [查看](https://chainscan-galileo.0g.ai/address/0x1f29Bd4E0426222a78Ce0D484677A672DF3E8fa6) |
-| **DecisionChain** | `0x354306105a61505EB9a01A142E9fCA537E102EC2` | [查看](https://chainscan-galileo.0g.ai/address/0x354306105a61505EB9a01A142E9fCA537E102EC2) |
-| **AgentRegistry** | `0x127b73133c9Ba241dE1d1ADdc366c686fd499c02` | [查看](https://chainscan-galileo.0g.ai/address/0x127b73133c9Ba241dE1d1ADdc366c686fd499c02) |
-| **BountyBoard** | 🚧 待部署（等待测试网 gas 代币） | — |
+| **SealMindINFT** | `0xc0238FEb50072797555098DfD529145c86Ab5b59` | [查看](https://chainscan.0g.ai/address/0xc0238FEb50072797555098DfD529145c86Ab5b59) |
+| **DecisionChain** | `0xaF39a3D2E2d8656490F8f2AB1fF0106f1acB867C` | [查看](https://chainscan.0g.ai/address/0xaF39a3D2E2d8656490F8f2AB1fF0106f1acB867C) |
+| **AgentRegistry** | `0xa930B5059aE91C073684f0D2AFB0bBf5d84167C9` | [查看](https://chainscan.0g.ai/address/0xa930B5059aE91C073684f0D2AFB0bBf5d84167C9) |
+| **BountyBoard** | `0x8604482d75aFe56E376cdEE41Caf27599a926E1d` | [查看](https://chainscan.0g.ai/address/0x8604482d75aFe56E376cdEE41Caf27599a926E1d) |
 
-**测试结果**：✅ 94/94 单元测试全部通过（INFT×20、DecisionChain×7、Registry×7、BountyBoard×50+）
+**测试结果**：✅ 94/94 单元测试全部通过（INFT×28、DecisionChain×8、Registry×7、BountyBoard×50、Placeholder×1）
 
 ### BountyBoard.sol — 链上任务市场
 
