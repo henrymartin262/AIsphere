@@ -637,7 +637,7 @@ export default function HomePage() {
             <div>
               <span className="text-[10px] font-bold uppercase tracking-widest text-violet-400">{isEn ? "New" : "新功能"}</span>
               <h2 className="mt-1 text-xl font-bold text-slate-800">
-                🧠 {isEn ? "Hive " : "蜂巢 "}
+                🔮 {isEn ? "Hive " : "蜂巢 "}
                 <span className="bg-gradient-to-r from-violet-600 to-purple-500 bg-clip-text text-transparent">{isEn ? "Mind" : "智脑"}</span>
               </h2>
               <p className="mt-1 text-sm text-slate-400">
