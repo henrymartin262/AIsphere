@@ -224,8 +224,11 @@ SealMind integrates **all core 0G components** + **7 official Agent Skills**:
 | ![](https://img.shields.io/badge/-Chain%20EVM-22c55e?style=flat-square) | 4 smart contracts + Decision audit + INFT identity | ethers.js v6 |
 | ![](https://img.shields.io/badge/-INFT%20Standard-8B5CF6?style=flat-square) | Agent ownership + Passport + Living Soul state | ERC-721 + custom extensions |
 
-<details>
-<summary><strong>Official 0G Agent Skills Integrated (7 skills)</strong></summary>
+### Official 0G Agent Skills Integrated
+
+<p>
+  <img src="https://img.shields.io/badge/0G%20Agent%20Skills-7%20Integrated-8B5CF6?style=for-the-badge" alt="7 Skills" />
+</p>
 
 | Skill | ID | Implementation |
 |:------|:---|:---------------|
@@ -237,9 +240,7 @@ SealMind integrates **all core 0G components** + **7 official Agent Skills**:
 | ![](https://img.shields.io/badge/-Storage%20×%20Chain-06B6D4?style=flat-square) | #13 | `AgentService.ts` — metadata hash on-chain ↔ data in KV |
 | ![](https://img.shields.io/badge/-Compute%20×%20Storage-10B981?style=flat-square) | #14 | Inference results auto-persisted to 0G Storage |
 
-Referenced starter kits: [`0g-compute-ts-starter-kit`](https://github.com/0gfoundation/0g-compute-ts-starter-kit) · [`0g-storage-ts-starter-kit`](https://github.com/0gfoundation/0g-storage-ts-starter-kit)
-
-</details>
+> Referenced starter kits: [`0g-compute-ts-starter-kit`](https://github.com/0gfoundation/0g-compute-ts-starter-kit) · [`0g-storage-ts-starter-kit`](https://github.com/0gfoundation/0g-storage-ts-starter-kit)
 
 ---
 
