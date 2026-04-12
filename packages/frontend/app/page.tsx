@@ -216,8 +216,8 @@ export default function HomePage() {
           <path d="M7 18c0-2.8 2.2-5 5-5s5 2.2 5 5" strokeLinecap="round" />
         </svg>
       ),
-      bg: "bg-indigo-50",
-      text: "text-indigo-600",
+      bg: "bg-indigo-50 dark:bg-indigo-500/10",
+      text: "text-indigo-600 dark:text-indigo-400",
       link: "/dashboard",
     },
     {
@@ -228,8 +228,8 @@ export default function HomePage() {
           <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
         </svg>
       ),
-      bg: "bg-violet-50",
-      text: "text-violet-600",
+      bg: "bg-violet-50 dark:bg-violet-500/10",
+      text: "text-violet-600 dark:text-violet-400",
       link: "/verify",
     },
     {
@@ -240,8 +240,8 @@ export default function HomePage() {
           <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
         </svg>
       ),
-      bg: "bg-blue-50",
-      text: "text-blue-600",
+      bg: "bg-blue-50 dark:bg-blue-500/10",
+      text: "text-blue-600 dark:text-blue-400",
       link: "/dashboard",
     },
     {
@@ -252,8 +252,8 @@ export default function HomePage() {
           <path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
         </svg>
       ),
-      bg: "bg-orange-50",
-      text: "text-orange-600",
+      bg: "bg-orange-50 dark:bg-orange-500/10",
+      text: "text-orange-600 dark:text-orange-400",
       link: "/dashboard",
     },
     {
@@ -266,8 +266,8 @@ export default function HomePage() {
           <path d="M3 18c0-3 2.7-5 6-5 1.2 0 2.3.3 3.2.7M14 18c0-2.2 1.3-4 3-4s3 1.8 3 4" strokeLinecap="round" />
         </svg>
       ),
-      bg: "bg-emerald-50",
-      text: "text-emerald-600",
+      bg: "bg-emerald-50 dark:bg-emerald-500/10",
+      text: "text-emerald-600 dark:text-emerald-400",
       link: "/multi-agent",
     },
     {
@@ -278,8 +278,8 @@ export default function HomePage() {
           <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
         </svg>
       ),
-      bg: "bg-cyan-50",
-      text: "text-cyan-600",
+      bg: "bg-cyan-50 dark:bg-cyan-500/10",
+      text: "text-cyan-600 dark:text-cyan-400",
       link: "/openclaw",
     },
     {
@@ -292,8 +292,8 @@ export default function HomePage() {
           <path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6" />
         </svg>
       ),
-      bg: "bg-purple-50",
-      text: "text-purple-600",
+      bg: "bg-purple-50 dark:bg-purple-500/10",
+      text: "text-purple-600 dark:text-purple-400",
       link: "/dashboard",
     },
     {
@@ -306,8 +306,8 @@ export default function HomePage() {
           <circle cx="18" cy="14" r="1" fill="currentColor" />
         </svg>
       ),
-      bg: "bg-amber-50",
-      text: "text-amber-600",
+      bg: "bg-amber-50 dark:bg-amber-500/10",
+      text: "text-amber-600 dark:text-amber-400",
       link: "/dashboard",
     },
   ];
@@ -460,9 +460,9 @@ export default function HomePage() {
 
           <div className="grid gap-4 sm:grid-cols-3">
             {[
-              { id: 1, title: isEn ? "Analyze 0G Network Performance" : "分析 0G 网络性能指标", reward: "0.1", status: 0, statusLabel: isEn ? "Open" : "开放", statusColor: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "bg-emerald-500", deadline: isEn ? "7d left" : "剩余 7 天" },
-              { id: 4, title: isEn ? "Generate Solidity Security Audit" : "生成 Solidity 安全审计报告", reward: "0.8", status: 2, statusLabel: isEn ? "Submitted" : "已提交", statusColor: "bg-amber-50 text-amber-700 border-amber-200", dot: "bg-amber-500", deadline: isEn ? "10d left" : "剩余 10 天" },
-              { id: 5, title: isEn ? "Build ChatGPT Plugin for 0G Storage" : "构建 0G Storage ChatGPT 插件", reward: "1.5", status: 0, statusLabel: isEn ? "Open" : "开放", statusColor: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "bg-emerald-500", deadline: isEn ? "14d left" : "剩余 14 天" },
+              { id: 1, title: isEn ? "Analyze 0G Network Performance" : "分析 0G 网络性能指标", reward: "0.1", status: 0, statusLabel: isEn ? "Open" : "开放", statusColor: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20", dot: "bg-emerald-500", deadline: isEn ? "7d left" : "剩余 7 天" },
+              { id: 4, title: isEn ? "Generate Solidity Security Audit" : "生成 Solidity 安全审计报告", reward: "0.8", status: 2, statusLabel: isEn ? "Submitted" : "已提交", statusColor: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20", dot: "bg-amber-500", deadline: isEn ? "10d left" : "剩余 10 天" },
+              { id: 5, title: isEn ? "Build ChatGPT Plugin for 0G Storage" : "构建 0G Storage ChatGPT 插件", reward: "1.5", status: 0, statusLabel: isEn ? "Open" : "开放", statusColor: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20", dot: "bg-emerald-500", deadline: isEn ? "14d left" : "剩余 14 天" },
             ].map((b) => (
               <Link key={b.id} href={`/bounty/${b.id}`} className="group flex flex-col rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:border-indigo-200 dark:border-white/8 dark:bg-slate-900">
                 <div className="flex items-start justify-between gap-2">
@@ -510,15 +510,15 @@ export default function HomePage() {
 
           <div className="grid gap-4 sm:grid-cols-3">
             {[
-              { id: 3, name: "Orion", model: "qwen-2.5-72b", level: 5, inferences: 524, trust: 96, price: "3.0", tags: ["defi", "ai", "code"], levelColor: "border-amber-200 bg-amber-50 text-amber-700" },
-              { id: 10, name: "Lyra", model: "qwen-2.5-72b", level: 5, inferences: 612, trust: 99, price: "5.0", tags: ["creative", "chat", "ai"], levelColor: "border-amber-200 bg-amber-50 text-amber-700" },
-              { id: 9, name: "Vega", model: "deepseek-v3", level: 4, inferences: 389, trust: 92, price: "2.5", tags: ["defi", "code", "ai"], levelColor: "border-purple-200 bg-purple-50 text-purple-700" },
+              { id: 3, name: "Orion", model: "qwen-2.5-72b", level: 5, inferences: 524, trust: 96, price: "3.0", tags: ["defi", "ai", "code"], levelColor: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400" },
+              { id: 10, name: "Lyra", model: "qwen-2.5-72b", level: 5, inferences: 612, trust: 99, price: "5.0", tags: ["creative", "chat", "ai"], levelColor: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400" },
+              { id: 9, name: "Vega", model: "deepseek-v3", level: 4, inferences: 389, trust: 92, price: "2.5", tags: ["defi", "code", "ai"], levelColor: "border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-500/20 dark:bg-purple-500/10 dark:text-purple-400" },
             ].map((a) => (
               <Link key={a.id} href="/explore" className="group flex flex-col rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:border-orange-200 dark:border-white/8 dark:bg-slate-900">
                 {/* Header */}
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-orange-200/60 bg-gradient-to-br from-orange-50 to-amber-50 group-hover:scale-105 transition-transform">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-orange-200/60 bg-gradient-to-br from-orange-50 to-amber-50 group-hover:scale-105 transition-transform dark:border-orange-500/20 dark:from-orange-500/10 dark:to-amber-500/10">
                       <svg className="h-5 w-5 text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.3}>
                         <rect x="3" y="3" width="18" height="18" rx="4" />
                         <circle cx="12" cy="10" r="3" />
@@ -535,7 +535,7 @@ export default function HomePage() {
                 {/* Tags */}
                 <div className="mt-3 flex flex-wrap gap-1">
                   {a.tags.map(t => (
-                    <span key={t} className="rounded-md border border-orange-100 bg-orange-50/60 px-1.5 py-0.5 text-[9px] font-medium text-orange-500">#{t}</span>
+                    <span key={t} className="rounded-md border border-orange-100 bg-orange-50/60 px-1.5 py-0.5 text-[9px] font-medium text-orange-500 dark:border-orange-500/20 dark:bg-orange-500/10 dark:text-orange-400">#{t}</span>
                   ))}
                 </div>
                 {/* Stats + price */}
@@ -628,14 +628,14 @@ export default function HomePage() {
           {/* 统计指标 — 横向紧凑排列 */}
           <div className="flex items-stretch gap-3 overflow-x-auto pb-1">
             {[
-              { value: "3", label: "Smart Contracts", icon: "M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1", color: "text-indigo-600", bg: "bg-indigo-50" },
-              { value: "TEE", label: "Sealed Inference", icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z", color: "text-violet-600", bg: "bg-violet-50" },
-              { value: "AES-256", label: "Memory Encryption", icon: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z", color: "text-blue-600", bg: "bg-blue-50" },
-              { value: "21+", label: "API Endpoints", icon: "M4 6h16M4 12h16M4 18h16", color: "text-emerald-600", bg: "bg-emerald-50" },
-              { value: "5", label: "OpenClaw Skills", icon: "M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4", color: "text-cyan-600", bg: "bg-cyan-50" },
-              { value: "0G", label: "Native Integration", icon: "M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8", color: "text-orange-600", bg: "bg-orange-50" },
+              { value: "3", label: "Smart Contracts", icon: "M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1", color: "text-indigo-600 dark:text-indigo-400", bg: "bg-indigo-50 dark:bg-indigo-500/10" },
+              { value: "TEE", label: "Sealed Inference", icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z", color: "text-violet-600 dark:text-violet-400", bg: "bg-violet-50 dark:bg-violet-500/10" },
+              { value: "AES-256", label: "Memory Encryption", icon: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z", color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-500/10" },
+              { value: "21+", label: "API Endpoints", icon: "M4 6h16M4 12h16M4 18h16", color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10" },
+              { value: "5", label: "OpenClaw Skills", icon: "M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4", color: "text-cyan-600 dark:text-cyan-400", bg: "bg-cyan-50 dark:bg-cyan-500/10" },
+              { value: "0G", label: "Native Integration", icon: "M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8", color: "text-orange-600 dark:text-orange-400", bg: "bg-orange-50 dark:bg-orange-500/10" },
             ].map((stat, i) => (
-              <div key={i} className="group flex-1 min-w-[130px] rounded-xl border border-gray-100 bg-white px-3.5 py-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:border-gray-200">
+              <div key={i} className="group flex-1 min-w-[130px] rounded-xl border border-gray-100 bg-white px-3.5 py-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:border-gray-200 dark:border-white/[0.06] dark:bg-white/[0.03] dark:hover:border-white/10">
                 <div className="flex items-center gap-2.5">
                   <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${stat.bg} ${stat.color} transition-transform group-hover:scale-105`}>
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -643,8 +643,8 @@ export default function HomePage() {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-gray-900 leading-tight">{stat.value}</p>
-                    <p className="text-[10px] font-medium text-gray-400 leading-tight">{stat.label}</p>
+                    <p className="text-sm font-bold text-gray-900 leading-tight dark:text-white">{stat.value}</p>
+                    <p className="text-[10px] font-medium text-gray-400 leading-tight dark:text-slate-500">{stat.label}</p>
                   </div>
                 </div>
               </div>
@@ -657,11 +657,11 @@ export default function HomePage() {
             <Link
               key={i}
               href={item.link}
-              className="animate-slide-up-stagger group relative cursor-pointer rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg hover:border-gray-200"
+              className="animate-slide-up-stagger group relative cursor-pointer rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg hover:border-gray-200 dark:border-white/[0.06] dark:bg-white/[0.03] dark:hover:border-white/10"
               style={{ animationDelay: `${0.1 + i * 0.06}s` }}
             >
               <div className="absolute top-3 right-3">
-                <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[9px] font-semibold text-green-600">
+                <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[9px] font-semibold text-green-600 dark:bg-green-500/10 dark:text-green-400">
                   <span className="h-1 w-1 rounded-full bg-green-500" />
                   Live
                 </span>
@@ -669,13 +669,13 @@ export default function HomePage() {
               <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${item.bg} ${item.text} transition-transform group-hover:scale-110`}>
                 {item.icon}
               </div>
-              <p className="mt-3 text-[10px] font-bold uppercase tracking-widest text-gray-300">
+              <p className="mt-3 text-[10px] font-bold uppercase tracking-widest text-gray-300 dark:text-slate-600">
                 {t("home_feature_label")}
               </p>
-              <h2 className="mt-1 text-sm font-bold text-gray-800 leading-snug">
+              <h2 className="mt-1 text-sm font-bold text-gray-800 leading-snug dark:text-white">
                 {item.title}
               </h2>
-              <p className="mt-1.5 text-xs leading-relaxed text-gray-400 line-clamp-2">
+              <p className="mt-1.5 text-xs leading-relaxed text-gray-400 line-clamp-2 dark:text-slate-500">
                 {item.desc}
               </p>
             </Link>
