@@ -434,83 +434,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── 统计条 + 特性卡片 — 紧凑布局 ── */}
-        <section className="animate-slide-up stagger-2 space-y-6">
-          {/* 统计指标 — 横向紧凑排列 */}
-          <div className="flex items-stretch gap-3 overflow-x-auto pb-1">
-            {[
-              { value: "3", label: "Smart Contracts", icon: "M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1", color: "text-indigo-600", bg: "bg-indigo-50" },
-              { value: "TEE", label: "Sealed Inference", icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z", color: "text-violet-600", bg: "bg-violet-50" },
-              { value: "AES-256", label: "Memory Encryption", icon: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z", color: "text-blue-600", bg: "bg-blue-50" },
-              { value: "21+", label: "API Endpoints", icon: "M4 6h16M4 12h16M4 18h16", color: "text-emerald-600", bg: "bg-emerald-50" },
-              { value: "5", label: "OpenClaw Skills", icon: "M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4", color: "text-cyan-600", bg: "bg-cyan-50" },
-              { value: "0G", label: "Native Integration", icon: "M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8", color: "text-orange-600", bg: "bg-orange-50" },
-            ].map((stat, i) => (
-              <div key={i} className="group flex-1 min-w-[130px] rounded-xl border border-gray-100 bg-white px-3.5 py-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:border-gray-200">
-                <div className="flex items-center gap-2.5">
-                  <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${stat.bg} ${stat.color} transition-transform group-hover:scale-105`}>
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d={stat.icon} />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-gray-900 leading-tight">{stat.value}</p>
-                    <p className="text-[10px] font-medium text-gray-400 leading-tight">{stat.label}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* 特性卡片 — 8 个功能展示 */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {features.map((item, i) => (
-            <Link
-              key={i}
-              href={item.link}
-              className="animate-slide-up-stagger group relative cursor-pointer rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg hover:border-gray-200"
-              style={{ animationDelay: `${0.1 + i * 0.06}s` }}
-            >
-              {/* 顶部角标 — 标识已实现 */}
-              <div className="absolute top-3 right-3">
-                <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[9px] font-semibold text-green-600">
-                  <span className="h-1 w-1 rounded-full bg-green-500" />
-                  Live
-                </span>
-              </div>
-              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${item.bg} ${item.text} transition-transform group-hover:scale-110`}>
-                {item.icon}
-              </div>
-              <p className="mt-3 text-[10px] font-bold uppercase tracking-widest text-gray-300">
-                {t("home_feature_label")}
-              </p>
-              <h2 className="mt-1 text-sm font-bold text-gray-800 leading-snug">
-                {item.title}
-              </h2>
-              <p className="mt-1.5 text-xs leading-relaxed text-gray-400 line-clamp-2">
-                {item.desc}
-              </p>
-            </Link>
-          ))}
-          </div>
-
-          {/* 全网统计 */}
-          <div className="mt-12 flex flex-wrap justify-center gap-8">
-            {[
-              { value: stats.totalAgents, label: "Agents Created", labelZh: "已创建 Agent" },
-              { value: stats.totalInferences, label: "Inferences Run", labelZh: "推理次数" },
-              { value: stats.totalBounties, label: "Bounties Posted", labelZh: "赏金任务" },
-            ].map(({ value, label, labelZh }) => (
-              <div key={label} className="text-center">
-                <p className="text-3xl font-bold bg-gradient-to-r from-indigo-600 via-violet-500 to-indigo-600 bg-clip-text text-transparent">
-                  {value > 0 ? value.toLocaleString() : "—"}
-                </p>
-                <p className="mt-1 text-xs text-slate-500">{isEn ? label : labelZh}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
         {/* ── Bounty Board Preview ── */}
         <section className="animate-slide-up stagger-3">
           <div className="mb-5 flex items-end justify-between">
@@ -722,6 +645,82 @@ export default function HomePage() {
                 ))}
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* ── 统计条 + 特性卡片 — 紧凑布局 ── */}
+        <section className="animate-slide-up stagger-5 space-y-6">
+          {/* 统计指标 — 横向紧凑排列 */}
+          <div className="flex items-stretch gap-3 overflow-x-auto pb-1">
+            {[
+              { value: "3", label: "Smart Contracts", icon: "M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1", color: "text-indigo-600", bg: "bg-indigo-50" },
+              { value: "TEE", label: "Sealed Inference", icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z", color: "text-violet-600", bg: "bg-violet-50" },
+              { value: "AES-256", label: "Memory Encryption", icon: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z", color: "text-blue-600", bg: "bg-blue-50" },
+              { value: "21+", label: "API Endpoints", icon: "M4 6h16M4 12h16M4 18h16", color: "text-emerald-600", bg: "bg-emerald-50" },
+              { value: "5", label: "OpenClaw Skills", icon: "M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4", color: "text-cyan-600", bg: "bg-cyan-50" },
+              { value: "0G", label: "Native Integration", icon: "M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8", color: "text-orange-600", bg: "bg-orange-50" },
+            ].map((stat, i) => (
+              <div key={i} className="group flex-1 min-w-[130px] rounded-xl border border-gray-100 bg-white px-3.5 py-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:border-gray-200">
+                <div className="flex items-center gap-2.5">
+                  <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${stat.bg} ${stat.color} transition-transform group-hover:scale-105`}>
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d={stat.icon} />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-gray-900 leading-tight">{stat.value}</p>
+                    <p className="text-[10px] font-medium text-gray-400 leading-tight">{stat.label}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* 特性卡片 — 8 个功能展示 */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {features.map((item, i) => (
+            <Link
+              key={i}
+              href={item.link}
+              className="animate-slide-up-stagger group relative cursor-pointer rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg hover:border-gray-200"
+              style={{ animationDelay: `${0.1 + i * 0.06}s` }}
+            >
+              <div className="absolute top-3 right-3">
+                <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[9px] font-semibold text-green-600">
+                  <span className="h-1 w-1 rounded-full bg-green-500" />
+                  Live
+                </span>
+              </div>
+              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${item.bg} ${item.text} transition-transform group-hover:scale-110`}>
+                {item.icon}
+              </div>
+              <p className="mt-3 text-[10px] font-bold uppercase tracking-widest text-gray-300">
+                {t("home_feature_label")}
+              </p>
+              <h2 className="mt-1 text-sm font-bold text-gray-800 leading-snug">
+                {item.title}
+              </h2>
+              <p className="mt-1.5 text-xs leading-relaxed text-gray-400 line-clamp-2">
+                {item.desc}
+              </p>
+            </Link>
+          ))}
+          </div>
+
+          {/* 全网统计 */}
+          <div className="mt-12 flex flex-wrap justify-center gap-8">
+            {[
+              { value: stats.totalAgents, label: "Agents Created", labelZh: "已创建 Agent" },
+              { value: stats.totalInferences, label: "Inferences Run", labelZh: "推理次数" },
+              { value: stats.totalBounties, label: "Bounties Posted", labelZh: "赏金任务" },
+            ].map(({ value, label, labelZh }) => (
+              <div key={label} className="text-center">
+                <p className="text-3xl font-bold bg-gradient-to-r from-indigo-600 via-violet-500 to-indigo-600 bg-clip-text text-transparent">
+                  {value > 0 ? value.toLocaleString() : "—"}
+                </p>
+                <p className="mt-1 text-xs text-slate-500">{isEn ? label : labelZh}</p>
+              </div>
+            ))}
           </div>
         </section>
 
