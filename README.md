@@ -1,27 +1,38 @@
+<!-- Logo -->
 <p align="center">
-  <img src="https://img.shields.io/badge/Built%20on-0G%20Network-7C3AED?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCI+PHRleHQgeD0iNCIgeT0iMTgiIGZvbnQtc2l6ZT0iMTYiPjBHPC90ZXh0Pjwvc3ZnPg==" alt="0G Network" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/%F0%9F%94%90%20SealMind-Privacy--Sovereign%20AI%20Agent%20OS-7C3AED?style=for-the-badge&labelColor=1e1b4b" />
+    <img src="https://img.shields.io/badge/%F0%9F%94%90%20SealMind-Privacy--Sovereign%20AI%20Agent%20OS-7C3AED?style=for-the-badge&labelColor=1e1b4b" alt="SealMind Logo" height="60" />
+  </picture>
+</p>
+
+<!-- Tech Badges -->
+<p align="center">
+  <img src="https://img.shields.io/badge/Built%20on-0G%20Network-7C3AED?style=for-the-badge" alt="0G Network" />
+  <img src="https://img.shields.io/badge/OpenClaw-Integrated-FF6B35?style=for-the-badge" alt="OpenClaw" />
   <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Solidity-0.8.26-363636?style=for-the-badge&logo=solidity&logoColor=white" alt="Solidity" />
   <img src="https://img.shields.io/badge/Next.js-14-000000?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js" />
 </p>
 
+<!-- Status Badges -->
 <p align="center">
   <img src="https://img.shields.io/badge/Smart%20Contracts-4%20Deployed-blue?style=flat-square&logo=ethereum&logoColor=white" alt="Contracts" />
   <img src="https://img.shields.io/badge/Tests-94%2F94%20Passing-22c55e?style=flat-square&logo=checkmarx&logoColor=white" alt="Tests" />
   <img src="https://img.shields.io/badge/0G%20Mainnet-Live-22c55e?style=flat-square" alt="Mainnet" />
   <img src="https://img.shields.io/badge/0G%20Skills-7%20Integrated-8B5CF6?style=flat-square" alt="Skills" />
+  <img src="https://img.shields.io/badge/OpenClaw%20Skills-5%20Built--in-FF6B35?style=flat-square" alt="OpenClaw Skills" />
   <img src="https://img.shields.io/badge/MCP%20Server-10%20Tools-F59E0B?style=flat-square" alt="MCP" />
   <img src="https://img.shields.io/badge/API%20Endpoints-50%2B-06B6D4?style=flat-square" alt="API" />
   <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License" />
 </p>
 
-<h1 align="center">
-  SealMind
-</h1>
+<h1 align="center">SealMind</h1>
 
 <p align="center">
   <strong>Privacy-Sovereign AI Agent Operating System</strong><br/>
-  <em>Give your AI agent a soul — encrypted memory, provable inference, blockchain identity.</em>
+  <em>Give your AI agent a soul — encrypted memory, provable inference, blockchain identity.</em><br/><br/>
+  <img src="https://img.shields.io/badge/Track%201-Agent%20Infrastructure%20%26%20OpenClaw%20Lab-FF6B35?style=flat-square" alt="Track 1" />
 </p>
 
 <p align="center">
@@ -29,6 +40,7 @@
   <a href="#-quick-start"><img src="https://img.shields.io/badge/-Quick%20Start-blue?style=flat-square" alt="Quick Start" /></a>&nbsp;
   <a href="#-architecture"><img src="https://img.shields.io/badge/-Architecture-purple?style=flat-square" alt="Architecture" /></a>&nbsp;
   <a href="#-smart-contracts"><img src="https://img.shields.io/badge/-Contracts-orange?style=flat-square" alt="Contracts" /></a>&nbsp;
+  <a href="#-openclaw-integration"><img src="https://img.shields.io/badge/-OpenClaw-FF6B35?style=flat-square" alt="OpenClaw" /></a>&nbsp;
   <a href="#-api-reference"><img src="https://img.shields.io/badge/-API%20Docs-06B6D4?style=flat-square" alt="API" /></a>&nbsp;
   <a href="https://chainscan.0g.ai/address/0xc0238FEb50072797555098DfD529145c86Ab5b59"><img src="https://img.shields.io/badge/-Explorer%20↗-22c55e?style=flat-square" alt="Explorer" /></a>
 </p>
@@ -48,7 +60,7 @@ AI Agents today have **no soul**. Their memories sit on centralized servers — 
 > | ![](https://img.shields.io/badge/3-Agent%20Identity-8B5CF6?style=flat-square) | **On-Chain INFT** | ERC-721 — ownable, transferable, tradeable | 0G Chain |
 > | ![](https://img.shields.io/badge/4-Decision%20Chain-F59E0B?style=flat-square) | **Audit Log** | Immutable on-chain record of every decision | 0G Chain |
 
-Plus: ![](https://img.shields.io/badge/Living%20Soul-22c55e?style=flat-square) ![](https://img.shields.io/badge/Hive%20Mind-06B6D4?style=flat-square) ![](https://img.shields.io/badge/Bounty%20Board-F59E0B?style=flat-square) ![](https://img.shields.io/badge/Agent%20Passport-8B5CF6?style=flat-square) ![](https://img.shields.io/badge/MCP%20Gateway-EF4444?style=flat-square) ![](https://img.shields.io/badge/Marketplace-3B82F6?style=flat-square)
+Plus: ![](https://img.shields.io/badge/Living%20Soul-22c55e?style=flat-square) ![](https://img.shields.io/badge/Hive%20Mind-06B6D4?style=flat-square) ![](https://img.shields.io/badge/Bounty%20Board-F59E0B?style=flat-square) ![](https://img.shields.io/badge/Agent%20Passport-8B5CF6?style=flat-square) ![](https://img.shields.io/badge/OpenClaw%20Skills-FF6B35?style=flat-square) ![](https://img.shields.io/badge/MCP%20Gateway-EF4444?style=flat-square) ![](https://img.shields.io/badge/Marketplace-3B82F6?style=flat-square)
 
 ---
 
@@ -64,6 +76,7 @@ graph TB
     subgraph Service["⚙️ Service Layer"]
         BE["<b>Backend API</b><br/>Express · 12 Services · 15 Routes"]
         AUTH["walletAuth (SIWE)<br/>CORS · Rate Limit"]
+        OC["<b>OpenClaw Engine</b><br/>5 Built-in Skills · Pipelines · Task Queue"]
     end
 
     subgraph ZeroG["🟣 0G Network"]
@@ -75,9 +88,11 @@ graph TB
     FE --> BE
     MCP --> BE
     BE --> AUTH
+    BE --> OC
     AUTH --> CHAIN
     AUTH --> STORAGE
     AUTH --> COMPUTE
+    OC --> COMPUTE
 
     style Client fill:#1e1b4b,stroke:#7c3aed,color:#fff
     style Service fill:#1e293b,stroke:#3b82f6,color:#fff
@@ -86,6 +101,7 @@ graph TB
     style MCP fill:#f59e0b,stroke:#fbbf24,color:#000
     style BE fill:#3b82f6,stroke:#60a5fa,color:#fff
     style AUTH fill:#64748b,stroke:#94a3b8,color:#fff
+    style OC fill:#ff6b35,stroke:#ff8c5a,color:#fff
     style CHAIN fill:#22c55e,stroke:#4ade80,color:#000
     style STORAGE fill:#06b6d4,stroke:#22d3ee,color:#000
     style COMPUTE fill:#ef4444,stroke:#f87171,color:#fff
@@ -242,6 +258,72 @@ Referenced starter kits: [`0g-compute-ts-starter-kit`](https://github.com/0gfoun
 
 ---
 
+## OpenClaw Integration
+
+<p>
+  <img src="https://img.shields.io/badge/OpenClaw-Agent%20Skill%20Framework-FF6B35?style=for-the-badge" alt="OpenClaw" />
+  <img src="https://img.shields.io/badge/Built--in%20Skills-5-FF6B35?style=flat-square" alt="Skills" />
+  <img src="https://img.shields.io/badge/Pipelines-Supported-FF8C5A?style=flat-square" alt="Pipelines" />
+  <img src="https://img.shields.io/badge/Task%20Queue-Enabled-FF6B35?style=flat-square" alt="Task Queue" />
+</p>
+
+SealMind deeply integrates **OpenClaw** — the 0G ecosystem's agent skill framework. Every SealMind Agent can be registered as an OpenClaw Skill, enabling cross-platform discoverability and composable agent workflows.
+
+### How SealMind Uses OpenClaw
+
+```mermaid
+graph LR
+    A["🤖 SealMind Agent"] --> B["📋 Register as<br/>OpenClaw Skill"]
+    B --> C["🔧 Skill Pipeline<br/>chain multiple skills"]
+    C --> D["📮 Task Queue<br/>orchestration"]
+    D --> E["⚡ Execute via<br/>0G Compute TEE"]
+    E --> F["📊 Result + Proof<br/>on-chain audit"]
+
+    style A fill:#8b5cf6,stroke:#a78bfa,color:#fff
+    style B fill:#ff6b35,stroke:#ff8c5a,color:#fff
+    style C fill:#ff6b35,stroke:#ff8c5a,color:#fff
+    style D fill:#ff6b35,stroke:#ff8c5a,color:#fff
+    style E fill:#ef4444,stroke:#f87171,color:#fff
+    style F fill:#22c55e,stroke:#4ade80,color:#000
+```
+
+### Built-in OpenClaw Skills
+
+| Skill | Type | Description |
+|:------|:-----|:------------|
+| ![](https://img.shields.io/badge/-DeFi%20Analysis-FF6B35?style=flat-square) | `defi-analysis` | Token trend analysis, yield farming evaluation, on-chain metrics |
+| ![](https://img.shields.io/badge/-Code%20Review-FF6B35?style=flat-square) | `code-review` | Smart contract audit, TypeScript review, security scanning |
+| ![](https://img.shields.io/badge/-Content%20Creation-FF6B35?style=flat-square) | `content-creation` | Technical writing, documentation, whitepaper generation |
+| ![](https://img.shields.io/badge/-Data%20Research-FF6B35?style=flat-square) | `data-research` | Market research, competitor analysis, trend reports |
+| ![](https://img.shields.io/badge/-Translation-FF6B35?style=flat-square) | `translation` | Multi-language translation with domain-specific terminology |
+
+### OpenClaw API Endpoints
+
+```
+GET    /api/openclaw/status              # Integration status
+POST   /api/openclaw/agents              # Register agent as OpenClaw Skill
+GET    /api/openclaw/agents              # List OpenClaw-registered agents
+GET    /api/openclaw/skills              # List all skills (built-in + custom)
+POST   /api/openclaw/skills              # Register custom skill
+POST   /api/openclaw/skills/:id/execute  # Execute skill on agent
+POST   /api/openclaw/tasks               # Submit task to orchestration queue
+GET    /api/openclaw/tasks/:taskId       # Get task status + result
+GET    /api/openclaw/config              # Generate gateway configuration
+POST   /api/openclaw/pipelines           # Create multi-skill pipeline
+```
+
+### OpenClaw × SealMind Architecture
+
+> **Key Differentiator**: SealMind is one of the few hackathon projects that treats OpenClaw not as an afterthought, but as a **first-class citizen** in its architecture. Every SealMind Agent can:
+>
+> 1. **Register** as an OpenClaw Skill — discoverable by any OpenClaw-compatible client
+> 2. **Chain** into Skill Pipelines — combine DeFi analysis → content creation → translation in one flow
+> 3. **Queue** tasks for orchestration — the backend's task queue manages execution order and failover
+> 4. **Verify** results on-chain — every skill execution produces a `proofHash` recorded on DecisionChain
+> 5. **Earn** via Bounty Board — OpenClaw skills can autonomously accept and complete bounties
+
+---
+
 ## Features
 
 ### Core (v1.0–v2.0)
@@ -254,6 +336,7 @@ Referenced starter kits: [`0g-compute-ts-starter-kit`](https://github.com/0gfoun
 | ![](https://img.shields.io/badge/🛒-Marketplace-8B5CF6?style=flat-square) | Price listing, tag filtering, 3-trial system, wallet-gated purchase flow. |
 | ![](https://img.shields.io/badge/🏆-Bounty%20Board-22c55e?style=flat-square) | 7-state lifecycle, A0GI escrow, sub-tasks, dispute resolution, auto-refund on expiry. |
 | ![](https://img.shields.io/badge/🤖-Multi--Agent-06B6D4?style=flat-square) | Orchestration, delegation, handoff, inter-agent messaging, session management. |
+| ![](https://img.shields.io/badge/🔗-OpenClaw-FF6B35?style=flat-square) | 5 built-in skills, skill pipelines, task queue orchestration, gateway configuration. Agents register as OpenClaw Skills. |
 
 ### Soul System (v3.0)
 
@@ -362,6 +445,25 @@ POST   /api/multi-agent/orchestrate   # Route to best agent(s)
 POST   /api/multi-agent/delegate      # Delegate task
 POST   /api/multi-agent/handoff       # Transfer conversation
 POST   /api/multi-agent/sessions      # Create collab session
+```
+
+</details>
+
+<details>
+<summary><img src="https://img.shields.io/badge/OpenClaw-10%20endpoints-FF6B35?style=flat-square" /></summary>
+
+```
+GET    /api/openclaw/status              # Integration status
+POST   /api/openclaw/agents              # Register agent as OpenClaw Skill
+GET    /api/openclaw/agents              # List OpenClaw agents
+GET    /api/openclaw/agents/:agentId     # Get OpenClaw agent details
+GET    /api/openclaw/skills              # List all skills (built-in + custom)
+POST   /api/openclaw/skills              # Register custom skill
+POST   /api/openclaw/skills/:id/execute  # Execute skill on agent
+POST   /api/openclaw/tasks               # Submit to task queue
+GET    /api/openclaw/tasks/:taskId       # Get task status
+GET    /api/openclaw/config              # Generate gateway config
+POST   /api/openclaw/pipelines           # Create skill pipeline
 ```
 
 </details>
