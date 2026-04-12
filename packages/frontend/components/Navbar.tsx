@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import type React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
@@ -17,10 +18,10 @@ const WalletConnectButton = dynamic(
   }
 );
 
-const THEME_OPTIONS: { value: ThemeMode; icon: string; labelZh: string; labelEn: string }[] = [
-  { value: "system", icon: "◐", labelZh: "跟随系统", labelEn: "System" },
-  { value: "light",  icon: "○", labelZh: "日间",     labelEn: "Light"  },
-  { value: "dark",   icon: "●", labelZh: "夜间",     labelEn: "Dark"   },
+const THEME_OPTIONS: { value: ThemeMode; icon: React.ReactNode; labelZh: string; labelEn: string }[] = [
+  { value: "system", icon: <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25A2.25 2.25 0 015.25 3h13.5A2.25 2.25 0 0121 5.25z" /></svg>, labelZh: "跟随系统", labelEn: "System" },
+  { value: "light",  icon: <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /></svg>, labelZh: "日间",     labelEn: "Light"  },
+  { value: "dark",   icon: <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>, labelZh: "夜间",     labelEn: "Dark"   },
 ];
 
 function ThemeToggle() {
@@ -95,7 +96,9 @@ export function Navbar() {
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-gray-100 bg-white/80 backdrop-blur-2xl dark:border-white/8 dark:bg-slate-950/80">
+    <header className="sticky top-0 z-40 border-b border-gray-100 bg-white/80 backdrop-blur-2xl dark:border-white/[0.06] dark:bg-slate-950/80">
+      {/* Gradient accent line */}
+      <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent" />
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
         {/* Logo */}
         <Link href="/" className="group flex items-center gap-3">

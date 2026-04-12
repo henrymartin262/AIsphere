@@ -251,6 +251,41 @@ html.dark .glass {
   display: none;
 }
 
+/* ── Stagger animations for lists ── */
+.stagger-in > * {
+  opacity: 0;
+  animation: fade-slide-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.stagger-in > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-in > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger-in > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-in > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger-in > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-in > *:nth-child(6) { animation-delay: 0.3s; }
+.stagger-in > *:nth-child(7) { animation-delay: 0.35s; }
+.stagger-in > *:nth-child(8) { animation-delay: 0.4s; }
+.stagger-in > *:nth-child(9) { animation-delay: 0.45s; }
+
+/* ── Border gradient effect ── */
+.border-glow {
+  position: relative;
+}
+.border-glow::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(139,92,246,0.3), transparent 40%, rgba(99,102,241,0.2));
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  padding: 1px;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.border-glow:hover::before {
+  opacity: 1;
+}
+
 /* ── 封面背景 blob ── */
 .blob {
   position: absolute;

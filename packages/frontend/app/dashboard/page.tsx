@@ -121,7 +121,7 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="animate-slide-up flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">{t("dash_title")}</h1>
+          <h1 className="font-display text-2xl font-extrabold tracking-tight text-slate-800 dark:text-white">{t("dash_title")}</h1>
           <div className="mt-1.5 flex items-center gap-2">
             <span className="inline-block h-2 w-2 rounded-full bg-mint shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
             <p className="text-sm text-slate-400 font-mono truncate max-w-xs">{address}</p>

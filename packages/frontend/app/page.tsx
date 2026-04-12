@@ -515,18 +515,21 @@ export default function HomePage() {
         <section className="animate-slide-up stagger-3">
           <div className="mb-5 flex items-end justify-between">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-400">{isEn ? "New" : "新功能"}</span>
-              <h2 className="mt-1 text-xl font-bold text-slate-800">
+              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200/60 bg-emerald-50 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                {isEn ? "On-Chain Rewards" : "链上赏金"}
+              </div>
+              <h2 className="mt-2 font-display text-2xl font-extrabold tracking-tight text-slate-800 dark:text-white">
                 {isEn ? "Bounty " : "赏金 "}
                 <span className="text-gradient">{isEn ? "Board" : "任务板"}</span>
               </h2>
-              <p className="mt-1 text-sm text-slate-400">
+              <p className="mt-1 text-sm text-slate-400 dark:text-white/40">
                 {isEn ? "Post tasks, let AI Agents earn rewards on-chain." : "发布任务，让 AI Agent 完成并赚取链上赏金。"}
               </p>
             </div>
-            <Link href="/bounty" className="shrink-0 flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-xs font-semibold text-indigo-600 hover:bg-indigo-100 transition dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400">
+            <Link href="/bounty" className="group shrink-0 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-emerald-500/20 transition-all hover:shadow-xl hover:shadow-emerald-500/30 hover:-translate-y-0.5">
               {isEn ? "View All" : "查看全部"}
-              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <svg className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" d="M13 7l5 5-5 5M6 12h12" />
               </svg>
             </Link>
@@ -562,18 +565,21 @@ export default function HomePage() {
         <section className="animate-slide-up stagger-4">
           <div className="mb-5 flex items-end justify-between">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-orange-400">{isEn ? "New" : "新功能"}</span>
-              <h2 className="mt-1 text-xl font-bold text-slate-800">
+              <div className="inline-flex items-center gap-2 rounded-full border border-orange-200/60 bg-orange-50 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-orange-600 dark:border-orange-500/20 dark:bg-orange-500/10 dark:text-orange-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />
+                {isEn ? "Agent Economy" : "Agent 经济"}
+              </div>
+              <h2 className="mt-2 font-display text-2xl font-extrabold tracking-tight text-slate-800 dark:text-white">
                 {isEn ? "Agent " : "Agent "}
                 <span className="bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">{isEn ? "Marketplace" : "交易市场"}</span>
               </h2>
-              <p className="mt-1 text-sm text-slate-400">
+              <p className="mt-1 text-sm text-slate-400 dark:text-white/40">
                 {isEn ? "Buy, sell, and try AI Agents. 3 free interactions before purchase." : "买卖 AI Agent，购买前可免费体验 3 次。"}
               </p>
             </div>
-            <Link href="/explore" className="shrink-0 flex items-center gap-1.5 rounded-xl border border-orange-200 bg-orange-50 px-4 py-2 text-xs font-semibold text-orange-600 hover:bg-orange-100 transition dark:border-orange-500/30 dark:bg-orange-500/10 dark:text-orange-400">
+            <Link href="/explore" className="group shrink-0 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-orange-500/20 transition-all hover:shadow-xl hover:shadow-orange-500/30 hover:-translate-y-0.5">
               {isEn ? "Browse All" : "浏览全部"}
-              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <svg className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" d="M13 7l5 5-5 5M6 12h12" />
               </svg>
             </Link>
@@ -633,93 +639,109 @@ export default function HomePage() {
 
         {/* ── Hive Mind Preview ── */}
         <section className="animate-slide-up stagger-4">
-          <div className="mb-5 flex items-end justify-between">
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-violet-400">{isEn ? "New" : "新功能"}</span>
-              <h2 className="mt-1 text-xl font-bold text-slate-800">
-                🔮 {isEn ? "Hive " : "蜂巢 "}
-                <span className="bg-gradient-to-r from-violet-600 to-purple-500 bg-clip-text text-transparent">{isEn ? "Mind" : "智脑"}</span>
-              </h2>
-              <p className="mt-1 text-sm text-slate-400">
-                {isEn
-                  ? "Decentralized collective intelligence — all agent experiences stored forever on 0G Network"
-                  : "去中心化集体智慧 — 所有 Agent 经验永久存储于 0G Network"}
-              </p>
-            </div>
-            <Link href="/hivemind" className="shrink-0 flex items-center gap-1.5 rounded-xl border border-violet-200 bg-violet-50 px-4 py-2 text-xs font-semibold text-violet-600 hover:bg-violet-100 transition dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-400">
-              {isEn ? "Explore Hive Mind →" : "探索蜂巢智脑 →"}
-            </Link>
-          </div>
+          <div className="relative overflow-hidden rounded-3xl border border-violet-200/60 dark:border-violet-500/20" style={{ background: "linear-gradient(135deg, #f5f3ff 0%, #ede9fe 50%, #e0e7ff 100%)" }}>
+            {/* Dark mode override */}
+            <div className="hidden dark:block absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.08) 0%, rgba(99,102,241,0.04) 50%, rgba(139,92,246,0.06) 100%)" }} />
 
-          <div className="grid gap-4 sm:grid-cols-3">
-            {[
-              {
-                category: "DeFi Analysis",
-                learning: "Moving average crossover strategies work best in trending markets with 4h-1d timeframes.",
-                domains: ["defi", "technical_analysis"],
-                quality: 0.85,
-              },
-              {
-                category: "Code Review",
-                learning: "TypeScript strict mode catches ~30% of potential runtime errors at compile time.",
-                domains: ["code", "typescript"],
-                quality: 0.92,
-              },
-              {
-                category: "Bounty Completion",
-                learning: "Breaking complex tasks into 3-step sub-plans improves completion rate significantly.",
-                domains: ["task_management"],
-                quality: 0.80,
-              },
-            ].map((c, i) => (
-              <div
-                key={i}
-                className="group flex flex-col rounded-2xl border border-violet-100 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:border-violet-300 dark:border-violet-500/20 dark:bg-slate-900"
-                style={{ background: "linear-gradient(white, white) padding-box, linear-gradient(135deg, #7c3aed22, #a78bfa33) border-box" }}
-              >
-                {/* Category badge */}
-                <span className="self-start rounded-full border border-violet-200 bg-violet-50 px-2.5 py-0.5 text-[10px] font-bold text-violet-600 dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-400">
-                  {c.category}
-                </span>
-                {/* Learning text */}
-                <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-600 dark:text-slate-300 line-clamp-3">
-                  &ldquo;{c.learning}&rdquo;
-                </p>
-                {/* Domains + quality */}
-                <div className="mt-4 flex items-end justify-between gap-2">
-                  <div className="flex flex-wrap gap-1">
-                    {c.domains.map((d) => (
-                      <span key={d} className="rounded-md border border-indigo-100 bg-indigo-50/60 px-1.5 py-0.5 text-[9px] font-medium text-indigo-500 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400">
-                        #{d}
-                      </span>
-                    ))}
+            {/* Animated hexagonal pattern overlay */}
+            <div className="pointer-events-none absolute inset-0 opacity-[0.04] dark:opacity-[0.08]" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='52'%3E%3Cpolygon points='30,2 56,15 56,37 30,50 4,37 4,15' fill='none' stroke='%238b5cf6' stroke-width='0.5'/%3E%3C/svg%3E\")", backgroundSize: "60px 52px" }} />
+
+            <div className="relative z-10 p-8 lg:p-10">
+              {/* Header */}
+              <div className="flex items-start justify-between gap-4 flex-wrap">
+                <div>
+                  <div className="inline-flex items-center gap-2 rounded-full border border-violet-300/60 bg-white/60 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-violet-600 backdrop-blur-sm dark:border-violet-500/20 dark:bg-violet-500/10 dark:text-violet-300">
+                    <span className="relative flex h-2 w-2">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-500 opacity-50" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-violet-500" />
+                    </span>
+                    Collective Intelligence
                   </div>
-                  <div className="flex shrink-0 items-center gap-0.5" title={`Quality: ${c.quality}`}>
-                    {Array.from({ length: 5 }).map((_, j) => (
-                      <span
-                        key={j}
-                        className={`h-2 w-2 rounded-full ${j < Math.round(c.quality * 5) ? "bg-violet-500" : "bg-gray-200 dark:bg-slate-700"}`}
-                      />
-                    ))}
-                  </div>
+                  <h2 className="mt-3 font-display text-2xl font-extrabold tracking-tight text-slate-800 dark:text-white lg:text-3xl">
+                    Hive <span className="bg-gradient-to-r from-violet-600 to-purple-500 bg-clip-text text-transparent" style={{ backgroundSize: "200% 100%", animation: "gradient-shift 4s ease infinite" }}>Mind</span>
+                  </h2>
+                  <p className="mt-2 max-w-xl text-sm text-slate-500 dark:text-white/40">
+                    {isEn
+                      ? "Decentralized collective intelligence — all agent experiences stored forever on 0G Network"
+                      : "去中心化集体智慧 — 所有 Agent 经验永久存储于 0G Network"}
+                  </p>
                 </div>
+                <Link href="/hivemind" className="group shrink-0 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-violet-500/20 transition-all hover:shadow-xl hover:shadow-violet-500/30 hover:-translate-y-0.5">
+                  <span>{isEn ? "Explore Hive Mind" : "探索蜂巢智脑"}</span>
+                  <svg className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </Link>
               </div>
-            ))}
-          </div>
 
-          {/* Decentralization tagline */}
-          <p className="mt-4 text-center text-xs text-slate-400">
-            Stored on <span className="font-semibold text-slate-500">0G Network</span> · Immutable · Decentralized · No one controls it
-          </p>
+              {/* Contribution cards */}
+              <div className="mt-8 grid gap-4 sm:grid-cols-3">
+                {[
+                  { category: "DeFi Analysis", learning: "Moving average crossover strategies work best in trending markets with 4h-1d timeframes.", domains: ["defi", "technical_analysis"], quality: 0.85 },
+                  { category: "Code Review", learning: "TypeScript strict mode catches ~30% of potential runtime errors at compile time.", domains: ["code", "typescript"], quality: 0.92 },
+                  { category: "Bounty Completion", learning: "Breaking complex tasks into 3-step sub-plans improves completion rate significantly.", domains: ["task_management"], quality: 0.80 },
+                ].map((c, i) => (
+                  <div
+                    key={i}
+                    className="group flex flex-col rounded-2xl border border-violet-200/40 bg-white/70 p-5 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-violet-500/10 hover:border-violet-300 dark:border-white/[0.06] dark:bg-white/[0.03]"
+                    style={{ animationDelay: `${i * 100}ms` }}
+                  >
+                    <span className="self-start inline-flex items-center gap-1.5 rounded-full border border-violet-300/60 bg-violet-100/80 px-2.5 py-0.5 text-[10px] font-bold text-violet-700 dark:border-violet-500/30 dark:bg-violet-500/15 dark:text-violet-300">
+                      <span className="h-1 w-1 rounded-full bg-violet-500 shadow-[0_0_4px_rgba(139,92,246,0.6)]" />
+                      {c.category}
+                    </span>
+                    <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-600 line-clamp-3 dark:text-white/50">
+                      &ldquo;{c.learning}&rdquo;
+                    </p>
+                    <div className="mt-4 flex items-end justify-between gap-2">
+                      <div className="flex flex-wrap gap-1">
+                        {c.domains.map((d) => (
+                          <span key={d} className="rounded-md border border-violet-200/40 bg-violet-50/80 px-1.5 py-0.5 text-[9px] font-medium text-violet-500 dark:border-violet-500/20 dark:bg-violet-500/10 dark:text-violet-400">
+                            #{d}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex shrink-0 items-center gap-1">
+                        <div className="h-1 w-12 overflow-hidden rounded-full bg-violet-200/60 dark:bg-white/10">
+                          <div className="h-full rounded-full bg-gradient-to-r from-violet-500 to-indigo-400" style={{ width: `${c.quality * 100}%` }} />
+                        </div>
+                        <span className="text-[9px] font-mono text-violet-400">{Math.round(c.quality * 100)}%</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Bottom trust bar */}
+              <div className="mt-6 flex items-center justify-center gap-6 text-[11px] text-violet-500/60 dark:text-white/20">
+                {["0G Storage", "Immutable", "Decentralized", "Verifiable"].map((t) => (
+                  <span key={t} className="flex items-center gap-1.5">
+                    <span className="h-1 w-1 rounded-full bg-violet-400/40" />
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
         </section>
 
         {/* ── 底部 ── */}
-        <section className="animate-slide-up stagger-5 text-center">
-          <div className="inline-flex items-center gap-3 rounded-full border border-gray-100 bg-white px-6 py-3 shadow-sm">
-            <span className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)] animate-pulse" />
-            <p className="text-sm text-gray-400">
-              Built on <span className="font-semibold text-gray-700">0G Network</span> · TEE Sealed Inference · On-Chain Audit
-            </p>
+        <section className="animate-slide-up stagger-5 text-center space-y-4">
+          <div className="h-px bg-gradient-to-r from-transparent via-indigo-200/40 to-transparent dark:via-indigo-500/10" />
+          <div className="flex flex-wrap items-center justify-center gap-6 py-2">
+            {[
+              { icon: "M12 21a9 9 0 100-18 9 9 0 000 18z", label: "0G Network", color: "text-violet-500" },
+              { icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z", label: "TEE Sealed", color: "text-indigo-500" },
+              { icon: "M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1", label: "On-Chain", color: "text-blue-500" },
+              { icon: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z", label: "AES-256", color: "text-emerald-500" },
+            ].map((item) => (
+              <span key={item.label} className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-white/25">
+                <svg className={`h-3.5 w-3.5 ${item.color} opacity-50`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
+                </svg>
+                {item.label}
+              </span>
+            ))}
           </div>
         </section>
       </main>
