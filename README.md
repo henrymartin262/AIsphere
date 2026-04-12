@@ -246,13 +246,6 @@ SealMind integrates **all core 0G components** + **7 official Agent Skills**:
 
 ## OpenClaw Integration
 
-<p>
-  <img src="https://img.shields.io/badge/OpenClaw-Agent%20Skill%20Framework-FF6B35?style=for-the-badge" alt="OpenClaw" />
-  <img src="https://img.shields.io/badge/Built--in%20Skills-5-FF6B35?style=flat-square" alt="Skills" />
-  <img src="https://img.shields.io/badge/Pipelines-Supported-FF8C5A?style=flat-square" alt="Pipelines" />
-  <img src="https://img.shields.io/badge/Task%20Queue-Enabled-FF6B35?style=flat-square" alt="Task Queue" />
-</p>
-
 SealMind deeply integrates **OpenClaw** — the 0G ecosystem's agent skill framework. Every SealMind Agent can be registered as an OpenClaw Skill, enabling cross-platform discoverability and composable agent workflows.
 
 ### How SealMind Uses OpenClaw
