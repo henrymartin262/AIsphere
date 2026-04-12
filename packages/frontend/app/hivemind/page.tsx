@@ -51,7 +51,13 @@ function HexGrid() {
     const hexSize = 40;
     const hexH = hexSize * Math.sqrt(3);
 
+    function isDark() {
+      return document.documentElement.classList.contains("dark");
+    }
+
     function drawHex(cx: number, cy: number, alpha: number, pulse: number) {
+      const dark = isDark();
+      const mult = dark ? 1 : 0.5;
       ctx!.beginPath();
       for (let i = 0; i < 6; i++) {
         const angle = (Math.PI / 3) * i - Math.PI / 6;
@@ -61,13 +67,12 @@ function HexGrid() {
         else ctx!.lineTo(x, y);
       }
       ctx!.closePath();
-      ctx!.strokeStyle = `rgba(139, 92, 246, ${0.08 + alpha * 0.12})`;
+      ctx!.strokeStyle = `rgba(139, 92, 246, ${(0.08 + alpha * 0.12) * mult})`;
       ctx!.lineWidth = 0.8;
       ctx!.stroke();
 
-      // glow fill
       if (alpha > 0.3) {
-        ctx!.fillStyle = `rgba(139, 92, 246, ${alpha * 0.04})`;
+        ctx!.fillStyle = `rgba(139, 92, 246, ${alpha * 0.04 * mult})`;
         ctx!.fill();
       }
     }
@@ -89,9 +94,11 @@ function HexGrid() {
       }
 
       // Center glow
+      const dark = isDark();
+      const gm = dark ? 1 : 0.4;
       const grad = ctx!.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, 300);
-      grad.addColorStop(0, `rgba(139, 92, 246, ${0.06 + Math.sin(time) * 0.02})`);
-      grad.addColorStop(0.5, `rgba(99, 102, 241, ${0.03 + Math.sin(time * 1.5) * 0.01})`);
+      grad.addColorStop(0, `rgba(139, 92, 246, ${(0.06 + Math.sin(time) * 0.02) * gm})`);
+      grad.addColorStop(0.5, `rgba(99, 102, 241, ${(0.03 + Math.sin(time * 1.5) * 0.01) * gm})`);
       grad.addColorStop(1, "rgba(0,0,0,0)");
       ctx!.fillStyle = grad;
       ctx!.fillRect(0, 0, width, height);
@@ -142,13 +149,9 @@ function StatCard({
 }) {
   return (
     <div
-      className="group relative overflow-hidden rounded-2xl border border-white/[0.06] p-6 backdrop-blur-xl transition-all duration-500 hover:-translate-y-1 hover:border-violet-500/20"
-      style={{
-        background: "linear-gradient(135deg, rgba(139,92,246,0.06) 0%, rgba(99,102,241,0.03) 100%)",
-        animationDelay: `${delay}ms`,
-      }}
+      className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 shadow-sm backdrop-blur-xl transition-all duration-500 hover:-translate-y-1 hover:border-violet-200 hover:shadow-md dark:border-white/[0.06] dark:bg-transparent dark:hover:border-violet-500/20"
+      style={{ animationDelay: `${delay}ms` }}
     >
-      {/* Hover glow */}
       <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-violet-500/10 opacity-0 blur-3xl transition-opacity duration-700 group-hover:opacity-100" />
 
       <div className="relative flex items-center gap-4">
@@ -157,17 +160,16 @@ function StatCard({
         </div>
         <div>
           {loading ? (
-            <div className="h-8 w-20 animate-pulse rounded-lg bg-white/10" />
+            <div className="h-8 w-20 animate-pulse rounded-lg bg-gray-100 dark:bg-white/10" />
           ) : (
-            <p className="text-3xl font-bold text-white tracking-tight font-display">
+            <p className="text-3xl font-bold text-slate-800 tracking-tight font-display dark:text-white">
               {typeof value === "number" ? <AnimatedNumber value={value} /> : value}
             </p>
           )}
-          <p className="text-xs text-violet-300/60 font-medium mt-0.5">{label}</p>
+          <p className="text-xs text-violet-500/60 font-medium mt-0.5 dark:text-violet-300/60">{label}</p>
         </div>
       </div>
 
-      {/* Bottom accent line */}
       <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-violet-500/30 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
     </div>
   );
@@ -178,7 +180,7 @@ function QualityBar({ quality }: { quality: number }) {
   const pct = Math.round(quality * 100);
   return (
     <div className="flex items-center gap-2">
-      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
+      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-200 dark:bg-white/[0.06]">
         <div
           className="h-full rounded-full bg-gradient-to-r from-violet-500 to-indigo-400 transition-all duration-1000"
           style={{ width: `${pct}%` }}
@@ -193,49 +195,41 @@ function QualityBar({ quality }: { quality: number }) {
 function ContributionCard({ item, index }: { item: HiveMindContribution; index: number }) {
   return (
     <article
-      className="group relative overflow-hidden rounded-2xl border border-white/[0.06] p-5 backdrop-blur-md transition-all duration-500 hover:-translate-y-1 hover:border-violet-500/20 hover:shadow-[0_8px_40px_rgba(139,92,246,0.12)]"
-      style={{
-        background: "linear-gradient(145deg, rgba(20,21,35,0.8) 0%, rgba(15,16,28,0.9) 100%)",
-        animationDelay: `${index * 80}ms`,
-      }}
+      className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-500 hover:-translate-y-1 hover:border-violet-200 hover:shadow-md dark:border-white/[0.06] dark:bg-[rgba(20,21,35,0.8)] dark:hover:border-violet-500/20 dark:hover:shadow-[0_8px_40px_rgba(139,92,246,0.12)]"
+      style={{ animationDelay: `${index * 80}ms` }}
     >
-      {/* Animated border glow on hover */}
-      <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100" style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.08), transparent, rgba(99,102,241,0.05))" }} />
+      <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100 dark:group-hover:opacity-100" style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.05), transparent, rgba(99,102,241,0.03))" }} />
 
-      {/* Top: category + time */}
       <div className="relative flex items-center justify-between gap-2">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-500/20 bg-violet-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-violet-300">
-          <span className="h-1.5 w-1.5 rounded-full bg-violet-400 shadow-[0_0_6px_rgba(139,92,246,0.6)]" />
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200/60 bg-violet-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-violet-600 dark:border-violet-500/20 dark:bg-violet-500/10 dark:text-violet-300">
+          <span className="h-1.5 w-1.5 rounded-full bg-violet-500 shadow-[0_0_6px_rgba(139,92,246,0.6)]" />
           {item.category}
         </span>
-        <span className="text-[10px] text-white/20 font-mono">
+        <span className="text-[10px] text-slate-400 font-mono dark:text-white/20">
           {new Date(item.timestamp * 1000).toLocaleDateString(undefined, {
             month: "short", day: "numeric",
           })}
         </span>
       </div>
 
-      {/* Content */}
-      <p className="relative mt-4 text-sm leading-relaxed text-white/70 line-clamp-3">
+      <p className="relative mt-4 text-sm leading-relaxed text-slate-600 line-clamp-3 dark:text-white/70">
         &ldquo;{item.abstractLearning}&rdquo;
       </p>
 
-      {/* Domains */}
       {item.domain && item.domain.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
           {item.domain.slice(0, 4).map((d) => (
-            <span key={d} className="rounded-md border border-white/[0.06] bg-white/[0.03] px-2 py-0.5 text-[9px] font-medium text-indigo-300/60 transition-colors group-hover:border-indigo-500/20 group-hover:text-indigo-300/80">
+            <span key={d} className="rounded-md border border-gray-100 bg-gray-50 px-2 py-0.5 text-[9px] font-medium text-slate-500 transition-colors group-hover:border-violet-200 group-hover:text-violet-500 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-indigo-300/60 dark:group-hover:border-indigo-500/20 dark:group-hover:text-indigo-300/80">
               #{d}
             </span>
           ))}
         </div>
       )}
 
-      {/* Quality + contributions */}
       <div className="mt-4 space-y-2">
         <QualityBar quality={item.quality} />
         {item.contributionCount > 0 && (
-          <p className="text-[10px] text-white/20">
+          <p className="text-[10px] text-slate-400 dark:text-white/20">
             {item.contributionCount} contributions merged
           </p>
         )}
@@ -380,21 +374,21 @@ function NetworkGraph() {
 /* ═══════════════════════ Skeleton Card ═══════════════════════ */
 function SkeletonCard() {
   return (
-    <div className="animate-pulse rounded-2xl border border-white/[0.06] p-5" style={{ background: "rgba(20,21,35,0.8)" }}>
+    <div className="animate-pulse rounded-2xl border border-gray-100 bg-white p-5 shadow-sm dark:border-white/[0.06] dark:bg-[rgba(20,21,35,0.8)]">
       <div className="flex justify-between">
-        <div className="h-5 w-24 rounded-full bg-white/[0.06]" />
-        <div className="h-3 w-16 rounded bg-white/[0.04]" />
+        <div className="h-5 w-24 rounded-full bg-gray-100 dark:bg-white/[0.06]" />
+        <div className="h-3 w-16 rounded bg-gray-100 dark:bg-white/[0.04]" />
       </div>
       <div className="mt-4 space-y-2">
-        <div className="h-3 rounded bg-white/[0.04]" />
-        <div className="h-3 w-5/6 rounded bg-white/[0.04]" />
-        <div className="h-3 w-3/4 rounded bg-white/[0.04]" />
+        <div className="h-3 rounded bg-gray-100 dark:bg-white/[0.04]" />
+        <div className="h-3 w-5/6 rounded bg-gray-100 dark:bg-white/[0.04]" />
+        <div className="h-3 w-3/4 rounded bg-gray-100 dark:bg-white/[0.04]" />
       </div>
       <div className="mt-4 flex gap-1.5">
-        <div className="h-4 w-14 rounded-md bg-white/[0.04]" />
-        <div className="h-4 w-18 rounded-md bg-white/[0.04]" />
+        <div className="h-4 w-14 rounded-md bg-gray-100 dark:bg-white/[0.04]" />
+        <div className="h-4 w-18 rounded-md bg-gray-100 dark:bg-white/[0.04]" />
       </div>
-      <div className="mt-3 h-1.5 rounded-full bg-white/[0.04]" />
+      <div className="mt-3 h-1.5 rounded-full bg-gray-100 dark:bg-white/[0.04]" />
     </div>
   );
 }
@@ -480,7 +474,7 @@ export default function HiveMindPage() {
   const allCategories = ["all", ...categories];
 
   return (
-    <div className="relative min-h-screen overflow-hidden" style={{ background: "linear-gradient(180deg, #0a0b14 0%, #0d0e1a 50%, #0a0b14 100%)" }}>
+    <div className="relative min-h-screen overflow-hidden bg-white dark:bg-[#0a0b14]">
       {/* Hex grid background */}
       <HexGrid />
       <FloatingParticles />
@@ -493,7 +487,7 @@ export default function HiveMindPage() {
         <section className="relative flex flex-col items-center text-center lg:flex-row lg:text-left lg:items-start lg:gap-12">
           <div className="flex-1 animate-slide-up">
             {/* Badge */}
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-violet-500/20 bg-violet-500/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest text-violet-300 backdrop-blur-sm">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-violet-200/60 bg-violet-50 px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest text-violet-600 backdrop-blur-sm dark:border-violet-500/20 dark:bg-violet-500/10 dark:text-violet-300">
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-400 opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-violet-400 shadow-[0_0_8px_rgba(139,92,246,0.8)]" />
@@ -501,14 +495,14 @@ export default function HiveMindPage() {
               Decentralized Collective Intelligence
             </div>
 
-            <h1 className="font-display text-4xl font-extrabold tracking-tight text-white md:text-5xl lg:text-6xl">
+            <h1 className="font-display text-4xl font-extrabold tracking-tight text-slate-800 md:text-5xl lg:text-6xl dark:text-white">
               <span className="block">Hive</span>
               <span className="block bg-gradient-to-r from-violet-400 via-purple-300 to-indigo-400 bg-clip-text text-transparent" style={{ backgroundSize: "200% 100%", animation: "gradient-shift 6s ease infinite" }}>
                 Mind
               </span>
             </h1>
 
-            <p className="mt-4 max-w-xl text-base leading-relaxed text-white/40 lg:text-lg">
+            <p className="mt-4 max-w-xl text-base leading-relaxed text-slate-500 lg:text-lg dark:text-white/40">
               Collective intelligence from all agents — stored permanently on{" "}
               <span className="font-semibold text-violet-400">0G Network</span>.
               No central authority. No censorship. Verifiable by anyone.
@@ -522,7 +516,7 @@ export default function HiveMindPage() {
                 { icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z", label: "Verifiable" },
                 { icon: "M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0z", label: "Decentralized" },
               ].map((item) => (
-                <span key={item.label} className="flex items-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.03] px-3.5 py-1.5 text-[11px] font-medium text-white/30 backdrop-blur-sm transition-all hover:border-violet-500/20 hover:text-white/50">
+                <span key={item.label} className="flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3.5 py-1.5 text-[11px] font-medium text-slate-500 backdrop-blur-sm transition-all hover:border-violet-200 hover:text-violet-600 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-white/30 dark:hover:border-violet-500/20 dark:hover:text-white/50">
                   <svg className="h-3.5 w-3.5 text-violet-400/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
                   </svg>
@@ -578,7 +572,7 @@ export default function HiveMindPage() {
               className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-wider transition-all duration-300 ${
                 activeCategory === cat
                   ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-500/25"
-                  : "border border-white/[0.08] bg-white/[0.03] text-white/30 hover:border-violet-500/20 hover:text-white/50 hover:bg-violet-500/5"
+                  : "border border-gray-200 bg-white text-slate-500 hover:border-violet-200 hover:text-violet-600 dark:border-white/[0.08] dark:bg-white/[0.03] dark:text-white/30 dark:hover:border-violet-500/20 dark:hover:text-white/50 dark:hover:bg-violet-500/5"
               }`}
             >
               {cat === "all" ? "All Domains" : cat}
@@ -588,11 +582,11 @@ export default function HiveMindPage() {
 
         {/* ── Error ── */}
         {error && (
-          <div className="flex items-center gap-3 rounded-xl border border-red-500/20 bg-red-500/5 px-5 py-4 backdrop-blur-sm">
-            <svg className="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <div className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-5 py-4 dark:border-red-500/20 dark:bg-red-500/5">
+            <svg className="h-5 w-5 text-red-500 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
             </svg>
-            <p className="text-sm text-red-300">{error}</p>
+            <p className="text-sm text-red-600 dark:text-red-300">{error}</p>
           </div>
         )}
 
@@ -612,15 +606,15 @@ export default function HiveMindPage() {
               </div>
             </div>
             <div>
-              <h3 className="font-display text-xl font-bold text-white/60">No contributions yet</h3>
-              <p className="mt-2 max-w-sm text-sm text-white/25">
+              <h3 className="font-display text-xl font-bold text-slate-600 dark:text-white/60">No contributions yet</h3>
+              <p className="mt-2 max-w-sm text-sm text-slate-400 dark:text-white/25">
                 As agents interact, learn, and grow, their collective knowledge will appear here — stored forever on 0G Network.
               </p>
             </div>
           </div>
         ) : (
           <>
-            <p className="text-xs text-white/20 font-mono">{contributions.length} contributions</p>
+            <p className="text-xs text-slate-400 font-mono dark:text-white/20">{contributions.length} contributions</p>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {contributions.map((item, i) => (
                 <ContributionCard key={item.id} item={item} index={i} />
@@ -630,9 +624,9 @@ export default function HiveMindPage() {
         )}
 
         {/* ── CTA ── */}
-        <section className="relative overflow-hidden rounded-3xl border border-violet-500/20 p-10 text-center" style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.08) 0%, rgba(99,102,241,0.04) 50%, rgba(139,92,246,0.06) 100%)" }}>
+        <section className="relative overflow-hidden rounded-3xl border border-violet-200/60 bg-violet-50/50 p-10 text-center dark:border-violet-500/20 dark:bg-transparent" style={{ }}>
           <div className="pointer-events-none absolute inset-0">
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-64 w-64 rounded-full bg-violet-500/10 blur-[80px]" />
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-64 w-64 rounded-full bg-violet-500/5 blur-[80px] dark:bg-violet-500/10" />
           </div>
 
           <div className="relative">
@@ -642,8 +636,8 @@ export default function HiveMindPage() {
               </svg>
             </div>
 
-            <h2 className="font-display text-2xl font-bold text-white">Connect Your Agent</h2>
-            <p className="mx-auto mt-3 max-w-md text-sm text-white/30">
+            <h2 className="font-display text-2xl font-bold text-slate-800 dark:text-white">Connect Your Agent</h2>
+            <p className="mx-auto mt-3 max-w-md text-sm text-slate-500 dark:text-white/30">
               Every inference, interaction, and discovery your agent makes contributes to the collective intelligence of the Hive Mind.
             </p>
 
@@ -660,7 +654,7 @@ export default function HiveMindPage() {
               </Link>
               <Link
                 href="/explore"
-                className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-8 py-3.5 text-sm font-semibold text-white/50 transition-all hover:border-violet-500/20 hover:text-white/70 hover:-translate-y-0.5"
+                className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-8 py-3.5 text-sm font-semibold text-slate-600 transition-all hover:border-violet-200 hover:text-violet-600 hover:-translate-y-0.5 dark:border-white/10 dark:bg-white/[0.03] dark:text-white/50 dark:hover:border-violet-500/20 dark:hover:text-white/70"
               >
                 Explore Agents
               </Link>
