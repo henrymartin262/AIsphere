@@ -7,6 +7,11 @@ import "./globals.css";
 import { Navbar } from "../components/Navbar";
 import { RoutePrefetcher } from "../components/RoutePrefetcher";
 
+const HexGridBackground = dynamic(
+  () => import("../components/HexGrid").then((mod) => mod.HexGrid),
+  { ssr: false }
+);
+
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-display" });
 
@@ -77,7 +82,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="zh-CN" suppressHydrationWarning className={`${inter.variable} ${spaceGrotesk.variable}`}>
       <body className="font-sans">
         <Providers>
-          <div className="min-h-screen">
+          <HexGridBackground />
+          <div className="relative z-10 min-h-screen">
             <Navbar />
             {children}
           </div>
