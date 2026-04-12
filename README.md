@@ -79,9 +79,9 @@ graph TB
     AUTH --> STORAGE
     OC --> COMPUTE
 
-    style Client fill:#1e1b4b,stroke:#7c3aed,color:#fff
-    style Service fill:#1e293b,stroke:#3b82f6,color:#fff
-    style ZeroG fill:#0f172a,stroke:#22c55e,color:#fff
+    style Client fill:transparent,stroke:#7c3aed,color:#333
+    style Service fill:transparent,stroke:#3b82f6,color:#333
+    style ZeroG fill:transparent,stroke:#22c55e,color:#333
     style FE fill:#7c3aed,stroke:#a78bfa,color:#fff
     style MCP fill:#f59e0b,stroke:#fbbf24,color:#000
     style AUTH fill:#64748b,stroke:#94a3b8,color:#fff
