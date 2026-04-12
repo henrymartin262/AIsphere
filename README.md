@@ -52,20 +52,23 @@ Plus: ![](https://img.shields.io/badge/Living%20Soul-22c55e?style=flat-square) !
 ```mermaid
 graph TB
     subgraph Client["🌐 Client Layer"]
-        FE["<b>Frontend</b><br/>Next.js 14 · RainbowKit · wagmi"]
-        MCP["<b>MCP Server</b><br/>10 Tools · 6 Resources · stdio"]
+        direction LR
+        FE["<b>Frontend</b><br/>Next.js 14 · RainbowKit"]
+        MCP["<b>MCP Server</b><br/>10 Tools · stdio"]
     end
 
     subgraph Service["⚙️ Service Layer"]
-        BE["<b>Backend API</b><br/>Express · 12 Services · 15 Routes"]
-        AUTH["walletAuth (SIWE)<br/>CORS · Rate Limit"]
-        OC["<b>OpenClaw Engine</b><br/>5 Built-in Skills · Pipelines · Task Queue"]
+        direction LR
+        AUTH["<b>Auth</b><br/>SIWE · CORS"]
+        BE["<b>Backend API</b><br/>Express · 12 Services"]
+        OC["<b>OpenClaw</b><br/>5 Skills · Pipelines"]
     end
 
     subgraph ZeroG["🟣 0G Network"]
-        CHAIN["<b>0G Chain</b><br/>4 Smart Contracts<br/>INFT · Decision · Registry · Bounty"]
-        STORAGE["<b>0G Storage</b><br/>KV + Indexer<br/>Memory · Soul · Hive Mind"]
-        COMPUTE["<b>0G Compute</b><br/>TEE (Intel TDX)<br/>Sealed Inference · Media"]
+        direction LR
+        CHAIN["<b>0G Chain</b><br/>4 Contracts"]
+        STORAGE["<b>0G Storage</b><br/>KV · Memory · Soul"]
+        COMPUTE["<b>0G Compute</b><br/>TEE · Media"]
     end
 
     FE --> BE
@@ -74,7 +77,6 @@ graph TB
     BE --> OC
     AUTH --> CHAIN
     AUTH --> STORAGE
-    AUTH --> COMPUTE
     OC --> COMPUTE
 
     style Client fill:#1e1b4b,stroke:#7c3aed,color:#fff
@@ -82,8 +84,8 @@ graph TB
     style ZeroG fill:#0f172a,stroke:#22c55e,color:#fff
     style FE fill:#7c3aed,stroke:#a78bfa,color:#fff
     style MCP fill:#f59e0b,stroke:#fbbf24,color:#000
-    style BE fill:#3b82f6,stroke:#60a5fa,color:#fff
     style AUTH fill:#64748b,stroke:#94a3b8,color:#fff
+    style BE fill:#3b82f6,stroke:#60a5fa,color:#fff
     style OC fill:#ff6b35,stroke:#ff8c5a,color:#fff
     style CHAIN fill:#22c55e,stroke:#4ade80,color:#000
     style STORAGE fill:#06b6d4,stroke:#22d3ee,color:#000
