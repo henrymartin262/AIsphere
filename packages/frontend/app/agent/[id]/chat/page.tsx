@@ -130,9 +130,33 @@ export default function AgentChatPage() {
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
           {messages.length === 0 && !chatLoading && (
-            <div className="flex flex-col items-center gap-3 py-16 text-center">
-              <span className="text-4xl">💬</span>
-              <p className="text-gray-400 dark:text-slate-500">{t("chat_empty")}</p>
+            <div className="flex flex-col items-center gap-6 py-12">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-hero-gradient-subtle">
+                <svg className="h-8 w-8 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+                </svg>
+              </div>
+              <div className="text-center">
+                <h3 className="font-display text-lg font-semibold text-gray-800 dark:text-white">{lang === "zh" ? "开始对话" : "Start a Conversation"}</h3>
+                <p className="mt-1 text-sm text-gray-400 dark:text-slate-500">{lang === "zh" ? "选择一个话题或输入你的问题" : "Pick a topic or type your question"}</p>
+              </div>
+              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 w-full max-w-lg">
+                {[
+                  { icon: "📊", label: lang === "zh" ? "分析 0G 代币趋势" : "Analyze 0G token trend", msg: lang === "zh" ? "分析一下 0G 代币近期的价格趋势和市场表现" : "Analyze the recent price trend and market performance of 0G token" },
+                  { icon: "🔍", label: lang === "zh" ? "审计智能合约" : "Audit a smart contract", msg: lang === "zh" ? "帮我审计一个 Solidity 智能合约的安全性" : "Help me audit a Solidity smart contract for security vulnerabilities" },
+                  { icon: "🧠", label: lang === "zh" ? "解释 TEE 推理" : "Explain TEE inference", msg: lang === "zh" ? "解释一下 TEE 可信执行环境是如何保证 AI 推理安全性的" : "Explain how TEE (Trusted Execution Environment) ensures AI inference security" },
+                  { icon: "💡", label: lang === "zh" ? "DeFi 收益策略" : "DeFi yield strategies", msg: lang === "zh" ? "推荐几个安全的 DeFi 收益策略" : "Recommend some safe DeFi yield farming strategies" },
+                ].map((prompt) => (
+                  <button
+                    key={prompt.label}
+                    onClick={() => { setInput(prompt.msg); }}
+                    className="group flex items-center gap-3 rounded-xl border border-gray-100 bg-white px-4 py-3 text-left text-sm transition-all hover:border-indigo-200 hover:bg-indigo-50/50 hover:shadow-sm dark:border-white/[0.06] dark:bg-white/[0.02] dark:hover:border-indigo-400/20 dark:hover:bg-indigo-500/5"
+                  >
+                    <span className="text-lg">{prompt.icon}</span>
+                    <span className="text-gray-600 group-hover:text-indigo-600 dark:text-slate-400 dark:group-hover:text-indigo-300">{prompt.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 

@@ -50,7 +50,7 @@ export function BountyCard({ bounty, onClick }: BountyCardProps) {
   return (
     <article
       onClick={onClick}
-      className={`group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-300 cursor-pointer flex flex-col dark:border-white/8 dark:bg-slate-900 ${styles.border} hover:shadow-md`}
+      className={`group hover-lift animate-in relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-300 cursor-pointer flex flex-col dark:border-white/8 dark:bg-slate-900 ${styles.border} hover:shadow-md`}
     >
       {/* Background glow */}
       <div className={`pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full ${styles.glow} blur-[40px] opacity-0 transition-opacity group-hover:opacity-100`} />

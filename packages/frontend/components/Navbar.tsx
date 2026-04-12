@@ -116,7 +116,7 @@ export function Navbar() {
             </div>
           </div>
           <div>
-            <span className="text-base font-bold tracking-wide">
+            <span className="font-display text-base font-bold tracking-wide">
               <span className="text-gradient">Seal</span>
               <span className="text-gray-900 dark:text-white">Mind</span>
             </span>

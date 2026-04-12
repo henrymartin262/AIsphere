@@ -1,10 +1,14 @@
 import dynamic from "next/dynamic";
 import type { Metadata } from "next";
+import { Inter, Space_Grotesk } from "next/font/google";
 import "@rainbow-me/rainbowkit/styles.css";
 import "./globals.css";
 
 import { Navbar } from "../components/Navbar";
 import { RoutePrefetcher } from "../components/RoutePrefetcher";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-display" });
 
 /* ── Loading 骨架屏：Providers 加载完成前展示 ── */
 function AppSkeleton() {
@@ -70,8 +74,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="zh-CN" suppressHydrationWarning>
-      <body>
+    <html lang="zh-CN" suppressHydrationWarning className={`${inter.variable} ${spaceGrotesk.variable}`}>
+      <body className="font-sans">
         <Providers>
           <div className="min-h-screen">
             <Navbar />

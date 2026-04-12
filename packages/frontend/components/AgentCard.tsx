@@ -33,7 +33,7 @@ export function AgentCard({ agent }: AgentCardProps) {
 
   return (
     <Link href={`/agent/${agent.agentId}/chat`} className="group block">
-      <article className={`card relative h-full overflow-hidden p-6 transition-all duration-300 ${styles.border}`}>
+      <article className={`card hover-lift animate-in relative h-full overflow-hidden p-6 transition-all duration-300 ${styles.border}`}>
         {/* 悬浮背景光 */}
         <div className={`pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full ${styles.glow} blur-[40px] opacity-0 transition-opacity group-hover:opacity-60`} />
 

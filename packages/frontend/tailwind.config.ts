@@ -10,6 +10,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["var(--font-inter)", "Inter", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "Space Grotesk", "system-ui", "sans-serif"],
+      },
       colors: {
         background: "#ffffff",
         foreground: "#111827",
@@ -74,6 +78,9 @@ const config: Config = {
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         mesh: "radial-gradient(at 40% 20%, rgba(99,102,241,0.04) 0px, transparent 50%), radial-gradient(at 80% 0%, rgba(139,92,246,0.03) 0px, transparent 50%), radial-gradient(at 0% 50%, rgba(249,115,22,0.02) 0px, transparent 50%)",
+        "hero-gradient": "linear-gradient(135deg, #6366f1 0%, #8b5cf6 40%, #f97316 100%)",
+        "hero-gradient-subtle": "linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(139,92,246,0.06) 40%, rgba(249,115,22,0.04) 100%)",
+        "card-subtle": "linear-gradient(180deg, rgba(99,102,241,0.03) 0%, rgba(99,102,241,0.01) 100%)",
       },
       animation: {
         float: "float 6s ease-in-out infinite",
