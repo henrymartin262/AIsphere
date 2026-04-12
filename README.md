@@ -1,829 +1,454 @@
-# SealMind — Privacy-Sovereign AI Agent Operating System
+<p align="center">
+  <img src="https://img.shields.io/badge/Built%20on-0G%20Network-7C3AED?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCI+PHRleHQgeD0iNCIgeT0iMTgiIGZvbnQtc2l6ZT0iMTYiPjBHPC90ZXh0Pjwvc3ZnPg==" alt="0G Network" />
+  <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Solidity-0.8.26-363636?style=for-the-badge&logo=solidity&logoColor=white" alt="Solidity" />
+  <img src="https://img.shields.io/badge/Next.js-14-000000?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js" />
+</p>
 
-> Make every AI decision verifiable on-chain. Give your AI agent a soul: encrypted memory + provable inference + blockchain identity.
+<p align="center">
+  <img src="https://img.shields.io/badge/Smart%20Contracts-4%20Deployed-blue?style=flat-square&logo=ethereum&logoColor=white" alt="Contracts" />
+  <img src="https://img.shields.io/badge/Tests-94%2F94%20Passing-22c55e?style=flat-square&logo=checkmarx&logoColor=white" alt="Tests" />
+  <img src="https://img.shields.io/badge/0G%20Mainnet-Live-22c55e?style=flat-square" alt="Mainnet" />
+  <img src="https://img.shields.io/badge/0G%20Skills-7%20Integrated-8B5CF6?style=flat-square" alt="Skills" />
+  <img src="https://img.shields.io/badge/MCP%20Server-10%20Tools-F59E0B?style=flat-square" alt="MCP" />
+  <img src="https://img.shields.io/badge/API%20Endpoints-50%2B-06B6D4?style=flat-square" alt="API" />
+  <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License" />
+</p>
 
-![Built on 0G](https://img.shields.io/badge/Built%20on-0G%20Network-blue?style=flat-square)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square)
-![Solidity](https://img.shields.io/badge/Solidity-0.8.26-282828?style=flat-square)
-![Next.js](https://img.shields.io/badge/Next.js-14-000?style=flat-square)
-![Hackathon](https://img.shields.io/badge/0G%20Hackathon-Track%201-FF6B6B?style=flat-square)
-![Version](https://img.shields.io/badge/Version-3.2-22c55e?style=flat-square)
+<h1 align="center">
+  SealMind
+</h1>
 
-> 📖 [中文版本](./README_CN.md)
+<p align="center">
+  <strong>Privacy-Sovereign AI Agent Operating System</strong><br/>
+  <em>Give your AI agent a soul — encrypted memory, provable inference, blockchain identity.</em>
+</p>
 
----
-
-## 📖 Overview
-
-SealMind is a privacy-sovereign AI Agent operating system that addresses the fundamental problem: **AI Agents today have no soul**.
-
-### The Problem
-
-| Challenge | Current State | Consequence |
-|-----------|--------------|-------------|
-| **No Memory Privacy** | Agent memories stored on centralized servers | Platform operators can read, modify, or delete at will |
-| **Unverifiable Inference** | Users can't confirm which model generated a response | Easy to swap models undetectably, breaks trust |
-| **No Identity Ownership** | Agent identity tied to platform | Users can't own, transfer, or trade their Agent |
-
-### The SealMind Solution
-
-SealMind equips every AI Agent with **four core soul components**:
-
-- **🔒 Sealed Mind** — TEE-based verifiable inference with cryptographic proof
-- **🧠 Memory Vault** — Client-encrypted decentralized memory (0G Storage KV)
-- **🪪 Agent Identity** — On-chain INFT (ERC-721) with ownership rights
-- **⛓️ Decision Chain** — Immutable audit log of all decisions on-chain
-
-All powered by **0G Network** — the only infrastructure that integrates storage, compute (TEE), chain, and identity standards seamlessly.
+<p align="center">
+  <a href="./README_CN.md"><img src="https://img.shields.io/badge/lang-中文-red?style=flat-square" alt="中文" /></a>&nbsp;
+  <a href="#-quick-start"><img src="https://img.shields.io/badge/-Quick%20Start-blue?style=flat-square" alt="Quick Start" /></a>&nbsp;
+  <a href="#-architecture"><img src="https://img.shields.io/badge/-Architecture-purple?style=flat-square" alt="Architecture" /></a>&nbsp;
+  <a href="#-smart-contracts"><img src="https://img.shields.io/badge/-Contracts-orange?style=flat-square" alt="Contracts" /></a>&nbsp;
+  <a href="#-api-reference"><img src="https://img.shields.io/badge/-API%20Docs-06B6D4?style=flat-square" alt="API" /></a>&nbsp;
+  <a href="https://chainscan.0g.ai/address/0xc0238FEb50072797555098DfD529145c86Ab5b59"><img src="https://img.shields.io/badge/-Explorer%20↗-22c55e?style=flat-square" alt="Explorer" /></a>
+</p>
 
 ---
 
-## 🏗️ Architecture
+## Why SealMind?
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                          SealMind                                │
-│                                                                  │
-│  ┌────────────────────────────────────────────────────────────┐ │
-│  │              Frontend (Next.js 14 + RainbowKit)            │ │
-│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌────────────┐   │ │
-│  │  │  Agent   │ │ Memory   │ │Decision  │ │   Agent    │   │ │
-│  │  │ Creation │ │ Explorer │ │  Audit   │ │ Marketplace│   │ │
-│  │  └────┬─────┘ └────┬─────┘ └────┬─────┘ └─────┬──────┘   │ │
-│  └───────┼────────────┼────────────┼─────────────┼───────────┘ │
-│          │            │            │             │              │
-│  ┌───────▼────────────▼────────────▼─────────────▼────────────┐ │
-│  │          Backend API (Express + 0G SDK)                     │ │
-│  │  ┌─────────────┐ ┌─────────────┐ ┌───────────────────┐   │ │
-│  │  │   Agent     │ │   Memory    │ │  Inference        │   │ │
-│  │  │  Service    │ │   Service   │ │  Service (TEE)    │   │ │
-│  │  └──────┬──────┘ └──────┬──────┘ └────────┬──────────┘   │ │
-│  │  ┌──────┴──────┐ ┌──────┴──────┐ ┌────────┴──────────┐   │ │
-│  │  │ Multi-Agent │ │  OpenClaw   │ │   Decision        │   │ │
-│  │  │ Routing     │ │  Skills +   │ │   Chain           │   │ │
-│  │  │ + Handoff   │ │  Pipelines  │ │   Service         │   │ │
-│  │  └──────┬──────┘ └──────┬──────┘ └────────┬──────────┘   │ │
-│  └─────────┼───────────────┼─────────────────┼────────────────┘ │
-│            │               │                 │                  │
-│  ┌─────────▼────┐  ┌──────▼──────┐  ┌──────▼─────────────┐   │
-│  │  0G Chain    │  │ 0G Storage  │  │  0G Compute       │   │
-│  │ · INFT       │  │ · Memory    │  │  (Sealed TEE)     │   │
-│  │ · Decisions  │  │ · KV Store  │  │  · Verifiable     │   │
-│  │ · Registry   │  │ · Merkle    │  │    Inference      │   │
-│  └──────────────┘  └─────────────┘  └───────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
+AI Agents today have **no soul**. Their memories sit on centralized servers — readable, modifiable, deletable by platform operators. Users can't verify which model actually generated a response. Agent identity is locked to a platform with no ownership, no portability, no trade.
+
+**SealMind fixes this.** Every AI Agent gets four on-chain soul components:
+
+> | | Component | What It Does | Powered By |
+> |:--:|:----------|:-------------|:-----------|
+> | ![](https://img.shields.io/badge/1-Sealed%20Mind-EF4444?style=flat-square) | **TEE-Verified Inference** | Cryptographic proof for every AI response | 0G Compute (TeeML) |
+> | ![](https://img.shields.io/badge/2-Memory%20Vault-3B82F6?style=flat-square) | **Encrypted Memory** | AES-256-GCM, only owner can decrypt | 0G Storage KV |
+> | ![](https://img.shields.io/badge/3-Agent%20Identity-8B5CF6?style=flat-square) | **On-Chain INFT** | ERC-721 — ownable, transferable, tradeable | 0G Chain |
+> | ![](https://img.shields.io/badge/4-Decision%20Chain-F59E0B?style=flat-square) | **Audit Log** | Immutable on-chain record of every decision | 0G Chain |
+
+Plus: ![](https://img.shields.io/badge/Living%20Soul-22c55e?style=flat-square) ![](https://img.shields.io/badge/Hive%20Mind-06B6D4?style=flat-square) ![](https://img.shields.io/badge/Bounty%20Board-F59E0B?style=flat-square) ![](https://img.shields.io/badge/Agent%20Passport-8B5CF6?style=flat-square) ![](https://img.shields.io/badge/MCP%20Gateway-EF4444?style=flat-square) ![](https://img.shields.io/badge/Marketplace-3B82F6?style=flat-square)
+
+---
+
+## Architecture
+
+```mermaid
+graph TB
+    subgraph Client["🌐 Client Layer"]
+        FE["<b>Frontend</b><br/>Next.js 14 · RainbowKit · wagmi"]
+        MCP["<b>MCP Server</b><br/>10 Tools · 6 Resources · stdio"]
+    end
+
+    subgraph Service["⚙️ Service Layer"]
+        BE["<b>Backend API</b><br/>Express · 12 Services · 15 Routes"]
+        AUTH["walletAuth (SIWE)<br/>CORS · Rate Limit"]
+    end
+
+    subgraph ZeroG["🟣 0G Network"]
+        CHAIN["<b>0G Chain</b><br/>4 Smart Contracts<br/>INFT · Decision · Registry · Bounty"]
+        STORAGE["<b>0G Storage</b><br/>KV + Indexer<br/>Memory · Soul · Hive Mind"]
+        COMPUTE["<b>0G Compute</b><br/>TEE (Intel TDX)<br/>Sealed Inference · Media"]
+    end
+
+    FE --> BE
+    MCP --> BE
+    BE --> AUTH
+    AUTH --> CHAIN
+    AUTH --> STORAGE
+    AUTH --> COMPUTE
+
+    style Client fill:#1e1b4b,stroke:#7c3aed,color:#fff
+    style Service fill:#1e293b,stroke:#3b82f6,color:#fff
+    style ZeroG fill:#0f172a,stroke:#22c55e,color:#fff
+    style FE fill:#7c3aed,stroke:#a78bfa,color:#fff
+    style MCP fill:#f59e0b,stroke:#fbbf24,color:#000
+    style BE fill:#3b82f6,stroke:#60a5fa,color:#fff
+    style AUTH fill:#64748b,stroke:#94a3b8,color:#fff
+    style CHAIN fill:#22c55e,stroke:#4ade80,color:#000
+    style STORAGE fill:#06b6d4,stroke:#22d3ee,color:#000
+    style COMPUTE fill:#ef4444,stroke:#f87171,color:#fff
 ```
 
 ### Core Data Flow
 
-```
-User Creates Agent
-     ↓
-① INFT Minting (0G Chain) ← Agent gets on-chain identity + Token ID
-     ↓
-② Memory Vault Init (0G Storage) ← Create encrypted KV stream
-     ↓
-③ User Converses with Agent
-     ↓
-④ Sealed Inference (0G Compute TEE) ← Load memory → TEE inference → Sign proof
-     ↓
-⑤ Return Response + Proof
-     ├──→ Update Memory (0G Storage): Client-encrypted new memories → KV Store
-     └──→ Record on Chain (0G Chain): Inference hash + model signature → Decision Chain
-```
+```mermaid
+graph LR
+    A["👤 User Creates Agent"] --> B["🪪 INFT Minted<br/><i>0G Chain</i>"]
+    B --> C["🧠 Memory Vault Init<br/><i>0G Storage</i>"]
+    C --> D["💬 User Chats"]
+    D --> E["🔒 Sealed Inference<br/><i>0G Compute TEE</i>"]
+    E --> F["📝 Proof Signed"]
+    F --> G["🔐 Memory Updated<br/><i>encrypted → 0G KV</i>"]
+    F --> H["⛓️ Decision Recorded<br/><i>hash → 0G Chain</i>"]
+    F --> I["🧬 Soul Experience<br/><i>auto-recorded</i>"]
 
----
-
-## ✨ Core Features
-
-| Feature | Description | 0G Component |
-|---------|-------------|--------------|
-| **🔒 Sealed Mind** | AI inference executed in Intel TDX TEE with cryptographic proof. Every response is verifiable. | 0G Compute (TeeML) |
-| **🧠 Memory Vault** | Client-side encrypted memory stored in 0G Storage KV. Only the owner holds the decryption key. Dual-layer: hot cache + 0G KV persistence. | 0G Storage KV + 0G Indexer |
-| **🪪 Agent Identity** | ERC-721 INFT standard token on 0G Chain. Agent ownership is transferable and tradeable. | 0G Chain (EVM) + INFT Standard |
-| **⛓️ Decision Chain** | Immutable audit log. Critical decisions recorded on-chain, low-importance stored in 0G Storage. | 0G Chain + 0G Storage |
-| **🤖 Multi-Agent Collaboration** | Agent-to-agent messaging, task delegation, parallel orchestration, handoff, and session management. | Built-in + 0G Compute |
-| **🔗 OpenClaw Integration** | Agent registration as OpenClaw Skills, skill pipelines, task queues, and gateway configuration. | OpenClaw + 0G Compute |
-| **📊 Trust Scoring** | Agent reputation calculated from inference verification rate and memory quality. Reflects on-chain level. | 0G Chain Smart Contracts |
-| **🎓 Level System** | Agents gain levels (1-5) based on inference count and quality. Unlocks advanced features at each tier. | 0G Chain Smart Contracts |
-| **🏆 Bounty Board** | On-chain task marketplace. Post bounties, assign agents, submit/verify proofs, release rewards in A0GI. 7-state lifecycle with dispute resolution. | 0G Chain (BountyBoard.sol) |
-| **🛒 Agent Marketplace** | Free agent trading market. List agents with A0GI prices, 3-trial system, wallet-gated purchase flow. Discoverable by tags. | 0G Chain + AgentRegistry |
-| **✍️ Soul Signature** | Agent-unique cryptographic personality fingerprint stored with INFT. Makes each agent irreplaceable. | 0G Chain Smart Contracts |
-| **🏷️ Tag Classification** | Multi-tag agents (defi / ai / chat / code / creative) for discoverability and marketplace filtering. | AgentRegistry |
-| **🎫 Agent Passport** | Standardized on-chain certification. Agents must pass capability tests to get certified before participating in the economy. | 0G Chain Smart Contracts |
-| **🧬 Living Soul** | Experience-driven dynamic soul. Every activity auto-records an experience, hash chain on-chain. Original data encrypted, only hash visible. | 0G Storage + 0G Chain |
-| **🧠 Hive Mind** | Decentralized collective intelligence. Anonymized agent experiences stored on 0G Storage forever, no one can control or delete it. | 0G Storage (Immutable) |
-| **🔌 Agent Gateway** | MCP Server + REST Gateway. AI agents can self-discover and onboard to SealMind without reading docs. | Built-in + MCP Protocol |
-
----
-
-## 🛠️ Tech Stack
-
-| Layer | Technology | Version | Purpose |
-|-------|-----------|---------|---------|
-| **Frontend** | Next.js | 14 | SSR + App Router |
-| | TypeScript | 5.x | Type safety |
-| | TailwindCSS | 3.x | UI styling |
-| | RainbowKit | latest | Wallet connection |
-| | wagmi | v2 | Ethereum hooks |
-| **Backend** | Node.js | 18+ | Runtime |
-| | Express | 4.x | HTTP server |
-| | ethers.js | v6 | On-chain interaction |
-| **0G Integration** | @0gfoundation/0g-ts-sdk | ^1.2.1 | Storage + KV |
-| | @0glabs/0g-serving-broker | ^0.7.4 | Compute (TEE) |
-| **Smart Contracts** | Solidity | ^0.8.26 | Contracts |
-| | Hardhat | ^2.28.6 | Compile/test/deploy |
-| | OpenZeppelin | ^5.6.1 | Contract standards |
-| **AI Models** | DeepSeek V3.1 | — | Primary (TeeML) |
-| | Qwen 2.5 VL 72B | — | Fallback |
-
----
-
-## 🌐 0G Network Integration
-
-SealMind integrates **all four core 0G components** for a complete agent infrastructure:
-
-### 1. 0G Storage KV — Encrypted Memory Vault
-
-- **Function**: Store encrypted agent memories with client-side encryption
-- **Implementation**:
-  - Agent owner derives encryption key from wallet signature + agent ID
-  - Memories encrypted with AES-256-GCM before storage
-  - Dual-layer architecture: in-memory hot cache + 0G KV Storage persistence
-  - Write path: encrypt → push to cache → async persist via `kvBatchWrite`
-  - Read path: hydrate from 0G KV on first access → serve from cache
-  - Graceful degradation: falls back to memory-only when 0G KV is unavailable
-  - Only the key holder can decrypt
-- **API**: `KvClient.getValue()` / Batcher for batch writes
-- **Indexer**: 0G Storage Indexer for node discovery
-- **Benefit**: PB-scale storage + zero-knowledge privacy + persistence across restarts
-
-### 2. 0G Compute (Sealed Inference) — Verifiable AI
-
-- **Function**: Execute AI inference in Intel TDX TEE with cryptographic proof
-- **Implementation**:
-  - Agent prompt sent to TeeML provider via 0G Compute Broker
-  - DeepSeek V3.1 / Qwen models run inside TEE
-  - Output signed with TEE hardware key (remote attestation)
-- **API**: `broker.listServices()` → `broker.processResponse()`
-- **Proof**: Includes model hash, input hash, output hash, TEE signature, attestation
-- **Benefit**: No one (not even platform) can see inference internals; tamper-proof
-
-### 3. 0G Chain (EVM) — Smart Contracts
-
-- **Function**: Deploy identity NFTs and record decision audit trails
-- **Contracts Deployed**:
-  - **SealMindINFT**: ERC-721 INFT for agent identity
-  - **DecisionChain**: Stores inference proofs on-chain
-  - **AgentRegistry**: Global agent registry with search
-- **Stats Tracked On-Chain**:
-  - Total inferences, memories, trust score, level, last active time
-- **Benefit**: Decentralized ownership + transparency + smart contract governance
-
-### 4. INFT Standard (ERC-7857) — Agent Identity
-
-- **Function**: Agent ownership via INFT token
-- **Features**:
-  - Immutable metadata hash for verification
-  - Encrypted URI for accessing agent settings
-  - Operator authorization for backend service
-  - Level progression tied to on-chain stats
-- **Transfer Safety**: On transfer, metadata completeness is verified; operators revoked
-- **Benefit**: Agents are tradeable assets; ownership is verifiable and portable
-
----
-
-## 🔧 Official 0G SDK & Skills Integration
-
-SealMind deeply integrates **official 0G resources** — SDKs, Agent Skills, and Starter Kits — to maximise protocol-native functionality and reduce custom code.
-
-### 📦 Official SDKs Used
-
-| SDK | Package | Usage in SealMind |
-|-----|---------|-------------------|
-| **0G TypeScript SDK** | `@0gfoundation/0g-ts-sdk ^1.2.1` | KV Storage for Agent Memory Vault, Indexer for node discovery, Batcher for batch writes |
-| **0G Serving Broker** | `@0glabs/0g-serving-broker ^0.7.4` | Sealed inference via TEE providers, provider discovery, fee settlement |
-
-### 🤖 Official 0G Agent Skills Integrated
-
-SealMind uses the [0G Agent Skills](https://github.com/0gfoundation/0g-agent-skills) repository (cloned to `.agent-skills/`) as the authoritative reference for all 0G integrations. The following skills are directly implemented:
-
-#### Skill #7 — Provider Discovery (`compute/provider-discovery`)
-Dynamically discovers and ranks TEE-verified inference providers from the 0G Compute Network instead of hardcoding addresses.
-
-```typescript
-// SealedInferenceService.ts — discoverProviders()
-const services = await broker.inference.listService();
-// service tuple: [0]=address, [1]=type, [2]=url, [6]=model, [10]=teeVerified
-const teeProviders = services.filter((s) => s[1] === 'chatbot' && s[10] === true);
-const provider = teeProviders[0] ?? anyProviders[0];
-await broker.inference.acknowledgeProviderSigner(provider[0]);
-```
-
-**API**: `GET /api/compute/providers` — returns live provider list with TEE status
-
-#### Skill #8 — Account Management (`compute/account-management`)
-Full 0G Compute account lifecycle: deposit, transfer to providers, balance query, and 2-step refund.
-
-```typescript
-// ComputeAccountService.ts
-const ledger = await broker.inference.getLedger();
-// ledger tuple: [1]=total, [2]=available (in wei)
-const available = ethers.formatEther(ledger[2]);
-await broker.inference.depositFund(ethers.parseEther(amount));
-await broker.inference.transferFund(providerAddress, 'inference', wei);
-```
-
-**APIs**:
-- `GET /api/compute/account` — balance and provider sub-accounts
-- `POST /api/compute/deposit` — top up main account
-- `POST /api/compute/transfer` — fund a specific provider
-- `POST /api/compute/refund/initiate` — start 24h refund process
-
-#### Skill #5 — Text to Image (`compute/text-to-image`)
-AI image generation using **Flux Turbo** via 0G Compute Network with automatic fee settlement.
-
-```typescript
-// MediaService.ts — textToImage()
-const requestBody = JSON.stringify({ model: "flux-turbo", prompt, size: "512x512" });
-const headers = await broker.inference.getRequestHeaders(provider[0], requestBody);
-const res = await fetch(`${provider[2]}/images/generations`, { method: "POST", headers, body: requestBody });
-const chatID = res.headers.get("ZG-Res-Key") ?? "";
-await broker.inference.processResponse(provider[0], chatID, data.usage); // required fee settlement
-```
-
-**API**: `POST /api/media/text-to-image` — `{ prompt, width?, height?, n? }`
-
-#### Skill #6 — Speech to Text (`compute/speech-to-text`)
-Audio transcription using **Whisper Large V3** via 0G Compute, supporting mp3/wav/ogg/flac/webm.
-
-```typescript
-// MediaService.ts — speechToText()
-const formData = new FormData();
-formData.append("file", new Blob([audioBuffer], { type: mimeType }), filename);
-formData.append("model", "whisper-large-v3");
-// Note: DO NOT set Content-Type header — let FormData set boundary automatically
-const res = await fetch(`${provider[2]}/audio/transcriptions`, { method: "POST", headers, body: formData });
-```
-
-**API**: `POST /api/media/speech-to-text` — multipart/form-data with `audio` field
-
-#### Skill #13 — Storage + Chain Cross-Layer (`cross-layer/storage-chain`)
-Agent metadata is uploaded to 0G Storage on creation and the resulting hash is stored in the INFT contract, creating a verifiable on-chain ↔ off-chain link.
-
-```typescript
-// AgentService.ts — uploadMetadataTo0G()
-const metadataHash = keccak256(toUtf8Bytes(JSON.stringify(metadata)));
-await kvBatchWrite(clients, streamId, key, data); // persist to 0G KV Storage
-// metadataHash written into SealMindINFT.createAgent() on-chain
-```
-
-#### Skill #14 — Compute + Storage Pipeline (`cross-layer/compute-storage`)
-Inference results and agent experiences are automatically persisted to 0G Storage, creating a decentralised audit trail that outlives the backend.
-
-#### Skill #4 — Streaming Chat with processResponse (`compute/streaming-chat`)
-Every inference call correctly calls `broker.inference.processResponse()` after receiving the response, using the `ZG-Res-Key` header for fee settlement — as mandated by the official skill.
-
-```typescript
-const chatID = response.headers.get("ZG-Res-Key") ?? "";
-await broker.inference.processResponse(providerAddress, chatID, data.usage);
-```
-
-### 🚀 Official Starter Kits Referenced
-
-| Kit | Repo | How Used |
-|-----|------|----------|
-| Compute TypeScript Starter | `0gfoundation/0g-compute-ts-starter-kit` | Reference for broker initialisation pattern |
-| Storage TypeScript Starter | `0gfoundation/0g-storage-ts-starter-kit` | Reference for KvClient + Batcher pattern |
-
-### 📂 Agent Skills Directory
-
-```
-.agent-skills/          ← official 0g-agent-skills repo (auto-detected by Claude Code)
-  skills/
-    compute/
-      provider-discovery/   ← Skill #7  ✅ integrated
-      account-management/   ← Skill #8  ✅ integrated
-      text-to-image/        ← Skill #5  ✅ integrated
-      speech-to-text/       ← Skill #6  ✅ integrated
-      streaming-chat/       ← Skill #4  ✅ integrated
-    cross-layer/
-      storage-chain/        ← Skill #13 ✅ integrated
-      compute-storage/      ← Skill #14 ✅ integrated
-    storage/
-      upload-file/          ← Skill #1  (KV write pattern used)
-      merkle-verification/  ← Skill #3  (hash verification used)
-    chain/
-      deploy-contract/      ← Skill #10 ✅ contracts deployed
-      interact-contract/    ← Skill #11 ✅ all service interactions
+    style A fill:#f8fafc,stroke:#334155,color:#000
+    style B fill:#8b5cf6,stroke:#a78bfa,color:#fff
+    style C fill:#06b6d4,stroke:#22d3ee,color:#fff
+    style D fill:#f8fafc,stroke:#334155,color:#000
+    style E fill:#ef4444,stroke:#f87171,color:#fff
+    style F fill:#f59e0b,stroke:#fbbf24,color:#000
+    style G fill:#3b82f6,stroke:#60a5fa,color:#fff
+    style H fill:#22c55e,stroke:#4ade80,color:#000
+    style I fill:#10b981,stroke:#34d399,color:#000
 ```
 
 ---
 
-## 📋 Smart Contracts (0G Mainnet)
+## Smart Contracts
 
-All contracts deployed and verified on 0G Mainnet (Chain ID: 16661).
+<p>
+  <img src="https://img.shields.io/badge/Network-0G%20Mainnet-22c55e?style=flat-square" />
+  <img src="https://img.shields.io/badge/Chain%20ID-16661-blue?style=flat-square" />
+  <img src="https://img.shields.io/badge/Tests-94%2F94-22c55e?style=flat-square&logo=checkmarx&logoColor=white" />
+  <img src="https://img.shields.io/badge/Solidity-0.8.26-363636?style=flat-square&logo=solidity&logoColor=white" />
+  <img src="https://img.shields.io/badge/OpenZeppelin-v5-4E5EE4?style=flat-square" />
+</p>
 
-| Contract | Address | Explorer |
-|----------|---------|----------|
-| **SealMindINFT** | `0xc0238FEb50072797555098DfD529145c86Ab5b59` | [View](https://chainscan.0g.ai/address/0xc0238FEb50072797555098DfD529145c86Ab5b59) |
-| **DecisionChain** | `0xaF39a3D2E2d8656490F8f2AB1fF0106f1acB867C` | [View](https://chainscan.0g.ai/address/0xaF39a3D2E2d8656490F8f2AB1fF0106f1acB867C) |
-| **AgentRegistry** | `0xa930B5059aE91C073684f0D2AFB0bBf5d84167C9` | [View](https://chainscan.0g.ai/address/0xa930B5059aE91C073684f0D2AFB0bBf5d84167C9) |
-| **BountyBoard** | `0x8604482d75aFe56E376cdEE41Caf27599a926E1d` | [View](https://chainscan.0g.ai/address/0x8604482d75aFe56E376cdEE41Caf27599a926E1d) |
+| Contract | Address | Purpose |
+|:---------|:--------|:--------|
+| ![](https://img.shields.io/badge/-SealMindINFT-8B5CF6?style=flat-square) | [`0xc023...5b59`](https://chainscan.0g.ai/address/0xc0238FEb50072797555098DfD529145c86Ab5b59) | Agent Identity (ERC-721) + Passport + Living Soul |
+| ![](https://img.shields.io/badge/-DecisionChain-F59E0B?style=flat-square) | [`0xaF39...867C`](https://chainscan.0g.ai/address/0xaF39a3D2E2d8656490F8f2AB1fF0106f1acB867C) | Immutable inference audit log |
+| ![](https://img.shields.io/badge/-AgentRegistry-3B82F6?style=flat-square) | [`0xa930...67C9`](https://chainscan.0g.ai/address/0xa930B5059aE91C073684f0D2AFB0bBf5d84167C9) | Public agent discovery + tags |
+| ![](https://img.shields.io/badge/-BountyBoard-22c55e?style=flat-square) | [`0x8604...6E1d`](https://chainscan.0g.ai/address/0x8604482d75aFe56E376cdEE41Caf27599a926E1d) | Task marketplace (7-state lifecycle) |
 
-**Test Results**: ✅ 94/94 unit tests passing (INFT×28, DecisionChain×8, Registry×7, BountyBoard×50, Placeholder×1)
+<details>
+<summary><strong>BountyBoard State Machine</strong></summary>
 
-### BountyBoard.sol — On-Chain Task Marketplace
-
+```mermaid
+stateDiagram-v2
+    [*] --> Open: createBounty (payable)
+    Open --> Assigned: acceptBounty
+    Open --> Cancelled: cancelBounty (refund)
+    Open --> Expired: expireBounty (refund)
+    Assigned --> Submitted: submitResult
+    Assigned --> Expired: expireBounty (refund)
+    Submitted --> Completed: approveBounty (pay agent)
+    Submitted --> Disputed: disputeBounty
+    Disputed --> Completed: resolveDispute(true)
+    Disputed --> Cancelled: resolveDispute(false)
 ```
-States:  Open → Assigned → Submitted → Completed
-                         ↘ Disputed → Resolved
-         Open → Cancelled
-```
 
-Key functions:
-- `postBounty(title, description, deadline)` — payable, locks reward in escrow
-- `assignAgent(bountyId, agentId)` — poster assigns a specific agent
-- `submitWork(bountyId, resultHash)` — agent submits proof of work
-- `verifyAndRelease(bountyId)` — poster verifies and releases A0GI reward
-- `raiseDispute(bountyId)` — dispute mechanism with arbiter resolution
-- `cancelBounty(bountyId)` — refunds poster if unassigned
-
-**Explorer Base**: https://chainscan.0g.ai
+</details>
 
 ---
 
-## 🚀 Getting Started
+## Quick Start
 
 ### Prerequisites
 
-- **Node.js** v20+ ([Download](https://nodejs.org))
-- **pnpm** v8+ — Install with: `npm install -g pnpm`
-- **MetaMask** or compatible Web3 wallet
+![](https://img.shields.io/badge/Node.js-v20%2B-339933?style=flat-square&logo=node.js&logoColor=white)
+![](https://img.shields.io/badge/pnpm-v8%2B-F69220?style=flat-square&logo=pnpm&logoColor=white)
+![](https://img.shields.io/badge/MetaMask-Compatible-E2761B?style=flat-square&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCI+PC9zdmc+)
 
-### Installation
+### Install & Run
 
 ```bash
-# Clone repository
 git clone https://github.com/henrymartin262/SealMind.git
 cd SealMind
-
-# Install dependencies (monorepo)
 pnpm install
-
-# Copy and configure environment
-cp .env.example .env
-
-# Fill in required variables:
-# - PRIVATE_KEY (backend wallet for 0G transactions)
-# - RPC_URL (leave as default for testnet)
-# - Contract addresses (auto-filled after deployment)
+cp .env.example .env          # Fill PRIVATE_KEY + contract addresses
 ```
 
-### Running Locally
+```bash
+# Terminal 1 — Backend (port 4000)
+cd packages/backend && pnpm dev
 
-#### 1️⃣ Backend (Port 4000)
+# Terminal 2 — Frontend (port 3000)
+cd packages/frontend && pnpm dev
+```
 
 ```bash
-cd packages/backend
-
-# Install dependencies
-pnpm install
-
-# Start dev server
-pnpm dev
-
-# Health check
+# Verify everything works
 curl http://localhost:4000/api/health
-```
-
-#### 2️⃣ Frontend (Port 3000)
-
-```bash
-cd packages/frontend
-
-# Install dependencies
-pnpm install
-
-# Start dev server
-pnpm dev
-
-# Open browser
 open http://localhost:3000
 ```
 
-#### 3️⃣ Smart Contracts (Optional — already deployed)
+<details>
+<summary><strong>Smart Contract Development</strong></summary>
 
 ```bash
 cd packages/contracts
-
-# Compile
-pnpm compile
-
-# Run tests (94/94 passing)
-pnpm test
-
-# Deploy to testnet (if redeploying)
-npx hardhat run scripts/deploy.ts --network og-testnet
+pnpm compile                   # Compile all contracts
+pnpm test                      # Run 94 tests
+npx hardhat run scripts/deploy.ts --network og-mainnet  # Deploy
 ```
 
-### Workflow
+</details>
 
-1. **Open frontend**: http://localhost:3000
-2. **Connect wallet**: Click "Connect" → Select MetaMask → Add 0G Testnet (auto-add)
-3. **Create Agent**: Fill form (name, model, personality) → Sign transaction → INFT minted
-4. **Chat with Agent**: Send messages → Get TEE-verified responses → See proof
-5. **View Memory**: Memory browser shows encrypted memories by type
-6. **Audit Decisions**: See on-chain audit trail with timestamps
+### User Workflow
+
+| Step | Action | What Happens |
+|:----:|:-------|:-------------|
+| 1 | **Connect Wallet** | MetaMask auto-adds 0G network |
+| 2 | **Create Agent** | Name + model + personality → INFT minted on-chain |
+| 3 | **Chat** | TEE-verified response with proof badge ![](https://img.shields.io/badge/✓-TEE-22c55e?style=flat-square) ![](https://img.shields.io/badge/⚡-Real-3B82F6?style=flat-square) ![](https://img.shields.io/badge/🔮-Mock-9333ea?style=flat-square) |
+| 4 | **Browse Memory** | View encrypted memories by type |
+| 5 | **Audit Decisions** | On-chain trail with explorer links |
+| 6 | **Bounty Board** | Post/accept tasks, earn A0GI rewards |
+| 7 | **Marketplace** | Browse, trial (3 free), purchase agents |
 
 ---
 
-## 📁 Project Structure
+## 0G Integration Depth
+
+SealMind integrates **all core 0G components** + **7 official Agent Skills**:
+
+| 0G Component | SealMind Usage | SDK |
+|:-------------|:---------------|:----|
+| ![](https://img.shields.io/badge/-Storage%20KV-06B6D4?style=flat-square) | Encrypted Memory Vault + Soul data + Hive Mind | `@0gfoundation/0g-ts-sdk ^1.2.1` |
+| ![](https://img.shields.io/badge/-Compute%20TEE-EF4444?style=flat-square) | Sealed inference + Provider discovery + Fee settlement | `@0glabs/0g-serving-broker ^0.7.4` |
+| ![](https://img.shields.io/badge/-Chain%20EVM-22c55e?style=flat-square) | 4 smart contracts + Decision audit + INFT identity | ethers.js v6 |
+| ![](https://img.shields.io/badge/-INFT%20Standard-8B5CF6?style=flat-square) | Agent ownership + Passport + Living Soul state | ERC-721 + custom extensions |
+
+<details>
+<summary><strong>Official 0G Agent Skills Integrated (7 skills)</strong></summary>
+
+| Skill | ID | Implementation |
+|:------|:---|:---------------|
+| ![](https://img.shields.io/badge/-Streaming%20Chat-EF4444?style=flat-square) | #4 | `SealedInferenceService.ts` — fee settlement via `ZG-Res-Key` |
+| ![](https://img.shields.io/badge/-Text%20to%20Image-F59E0B?style=flat-square) | #5 | `MediaService.ts` — Flux Turbo via `POST /api/media/text-to-image` |
+| ![](https://img.shields.io/badge/-Speech%20to%20Text-3B82F6?style=flat-square) | #6 | `MediaService.ts` — Whisper V3 via `POST /api/media/speech-to-text` |
+| ![](https://img.shields.io/badge/-Provider%20Discovery-8B5CF6?style=flat-square) | #7 | `SealedInferenceService.ts` — dynamic TEE provider ranking |
+| ![](https://img.shields.io/badge/-Account%20Mgmt-22c55e?style=flat-square) | #8 | `ComputeAccountService.ts` — deposit/transfer/refund lifecycle |
+| ![](https://img.shields.io/badge/-Storage%20×%20Chain-06B6D4?style=flat-square) | #13 | `AgentService.ts` — metadata hash on-chain ↔ data in KV |
+| ![](https://img.shields.io/badge/-Compute%20×%20Storage-10B981?style=flat-square) | #14 | Inference results auto-persisted to 0G Storage |
+
+Referenced starter kits: [`0g-compute-ts-starter-kit`](https://github.com/0gfoundation/0g-compute-ts-starter-kit) · [`0g-storage-ts-starter-kit`](https://github.com/0gfoundation/0g-storage-ts-starter-kit)
+
+</details>
+
+---
+
+## Features
+
+### Core (v1.0–v2.0)
+
+| Feature | Description |
+|:--------|:------------|
+| ![](https://img.shields.io/badge/🔒-Sealed%20Mind-EF4444?style=flat-square) | 3-layer inference: TEE (0G Compute) → DeepSeek API → Mock fallback. Every response gets a cryptographic proof. |
+| ![](https://img.shields.io/badge/🧠-Memory%20Vault-3B82F6?style=flat-square) | AES-256-GCM encrypted, dual-layer (hot cache + 0G KV). Only the wallet owner can decrypt. |
+| ![](https://img.shields.io/badge/⛓️-Decision%20Chain-F59E0B?style=flat-square) | Importance-based: critical → immediate on-chain, medium → batch, low → local only. |
+| ![](https://img.shields.io/badge/🛒-Marketplace-8B5CF6?style=flat-square) | Price listing, tag filtering, 3-trial system, wallet-gated purchase flow. |
+| ![](https://img.shields.io/badge/🏆-Bounty%20Board-22c55e?style=flat-square) | 7-state lifecycle, A0GI escrow, sub-tasks, dispute resolution, auto-refund on expiry. |
+| ![](https://img.shields.io/badge/🤖-Multi--Agent-06B6D4?style=flat-square) | Orchestration, delegation, handoff, inter-agent messaging, session management. |
+
+### Soul System (v3.0)
+
+| Feature | Description |
+|:--------|:------------|
+| ![](https://img.shields.io/badge/🎫-Agent%20Passport-8B5CF6?style=flat-square) | Capability test (inference + storage + signature) → on-chain certification → economy access. |
+| ![](https://img.shields.io/badge/🧬-Living%20Soul-22c55e?style=flat-square) | Every activity auto-records an experience → hash chain on-chain. Original data encrypted, only hash visible. |
+| ![](https://img.shields.io/badge/🧠-Hive%20Mind-06B6D4?style=flat-square) | Anonymized collective intelligence on 0G Storage. Immutable — not even the platform can delete. Merkle-verified. |
+| ![](https://img.shields.io/badge/🔌-Agent%20Gateway-F59E0B?style=flat-square) | MCP Server (10 tools + 6 resources) + REST Gateway. AI agents self-discover and onboard without docs. |
+| ![](https://img.shields.io/badge/✍️-Soul%20Signature-EF4444?style=flat-square) | Unique cryptographic fingerprint generated at creation. Stored with INFT. Makes each agent irreplaceable. |
+
+---
+
+## API Reference
+
+<details>
+<summary><img src="https://img.shields.io/badge/Agents%20%26%20Chat-6%20endpoints-3B82F6?style=flat-square" /></summary>
+
+```
+POST   /api/agents                    # Create Agent → Mint INFT
+GET    /api/agents/:agentId           # Get Agent info
+GET    /api/agents/owner/:address     # List owner's Agents
+GET    /api/explore/agents            # Browse public Agents
+
+POST   /api/chat/:agentId             # Chat (TEE inference + decision record)
+GET    /api/chat/:agentId/history     # Conversation history
+```
+
+</details>
+
+<details>
+<summary><img src="https://img.shields.io/badge/Memory%20%26%20Decisions-6%20endpoints-F59E0B?style=flat-square" /></summary>
+
+```
+GET    /api/memory/:agentId           # List encrypted memories
+POST   /api/memory/:agentId           # Save memory
+DELETE /api/memory/:agentId/:id       # Delete memory
+
+GET    /api/decisions/:agentId        # Decision history
+POST   /api/decisions/verify          # Verify proof on-chain
+GET    /api/decisions/stats/:agentId  # Decision stats
+```
+
+</details>
+
+<details>
+<summary><img src="https://img.shields.io/badge/Bounty%20Board-8%20endpoints-22c55e?style=flat-square" /></summary>
+
+```
+GET    /api/bounty                    # List (filter: status, page)
+POST   /api/bounty                    # Post bounty (payable)
+GET    /api/bounty/:id                # Detail
+POST   /api/bounty/:id/accept         # Accept
+POST   /api/bounty/:id/submit         # Submit result
+POST   /api/bounty/:id/approve        # Verify + release reward
+POST   /api/bounty/:id/dispute        # Raise dispute
+POST   /api/bounty/:id/cancel         # Cancel + refund
+```
+
+</details>
+
+<details>
+<summary><img src="https://img.shields.io/badge/Passport%2C%20Soul%20%26%20Hive%20Mind-10%20endpoints-8B5CF6?style=flat-square" /></summary>
+
+```
+POST   /api/passport/register         # Full registration: test + certify
+GET    /api/passport/:agentId         # Passport status
+GET    /api/passport/:agentId/verify  # Verify passport
+
+GET    /api/soul/:agentId             # Soul state (hash chain head)
+GET    /api/soul/:agentId/history     # Experience history
+POST   /api/soul/:agentId/experience  # Record experience
+
+GET    /api/hivemind/stats            # Global stats
+GET    /api/hivemind/query            # Query by category/domain
+POST   /api/hivemind/contribute       # Contribute experience
+POST   /api/hivemind/connect/:agentId # Connect agent to Hive Mind
+```
+
+</details>
+
+<details>
+<summary><img src="https://img.shields.io/badge/Compute%20%26%20Media-6%20endpoints-EF4444?style=flat-square" /></summary>
+
+```
+GET    /api/compute/account           # Balance + providers
+GET    /api/compute/providers         # Live TEE provider list
+POST   /api/compute/deposit           # Top up { amount }
+POST   /api/compute/transfer          # Fund provider { providerAddress, amount }
+
+POST   /api/media/text-to-image       # Flux Turbo { prompt, width?, height? }
+POST   /api/media/speech-to-text      # Whisper V3 (multipart: audio)
+```
+
+</details>
+
+<details>
+<summary><img src="https://img.shields.io/badge/Gateway%20%26%20Multi--Agent-7%20endpoints-06B6D4?style=flat-square" /></summary>
+
+```
+GET    /api/gateway/health            # Agent-friendly health check
+POST   /api/gateway/discover          # Self-discover all actions
+POST   /api/gateway/execute           # Unified action executor
+
+POST   /api/multi-agent/orchestrate   # Route to best agent(s)
+POST   /api/multi-agent/delegate      # Delegate task
+POST   /api/multi-agent/handoff       # Transfer conversation
+POST   /api/multi-agent/sessions      # Create collab session
+```
+
+</details>
+
+---
+
+## Project Structure
 
 ```
 SealMind/
-│
-├── packages/
-│   │
-│   ├── contracts/                    # 📜 Smart Contracts (Hardhat)
-│   │   ├── contracts/
-│   │   │   ├── SealMindINFT.sol      # Agent Identity INFT (ERC-721) + Soul Signature
-│   │   │   ├── DecisionChain.sol     # Inference Audit Log
-│   │   │   ├── AgentRegistry.sol     # Global Agent Registry
-│   │   │   └── BountyBoard.sol       # On-Chain Task Marketplace (7-state lifecycle)
-│   │   ├── scripts/
-│   │   │   └── deploy.ts             # Deployment script
-│   │   ├── test/
-│   │   │   ├── SealMindINFT.test.ts  # 28 tests ✅
-│   │   │   ├── DecisionChain.test.ts # 7 tests ✅
-│   │   │   ├── AgentRegistry.test.ts # 7 tests ✅
-│   │   │   └── BountyBoard.test.ts   # 50+ tests ✅
-│   │   ├── hardhat.config.ts         # 0G testnet + mainnet config
-│   │   └── package.json
-│   │
-│   ├── backend/                      # 🖥️ Express API Server
-│   │   ├── src/
-│   │   │   ├── index.ts              # Express entry point
-│   │   │   ├── config/
-│   │   │   │   ├── index.ts          # Environment config
-│   │   │   │   ├── contracts.ts      # Contract ABIs
-│   │   │   │   └── og.ts             # 0G SDK initialization
-│   │   │   ├── routes/
-│   │   │   │   ├── agentRoutes.ts    # POST/GET /api/agents/*
-│   │   │   │   ├── chatRoutes.ts     # POST /api/chat/*
-│   │   │   │   ├── memoryRoutes.ts   # GET/POST /api/memory/*
-│   │   │   │   ├── decisionRoutes.ts # GET /api/decisions/*
-│   │   │   │   ├── bountyRoutes.ts   # CRUD /api/bounty/* (Bounty Board)
-│   │   │   │   ├── multiAgentRoutes.ts  # Multi-Agent collaboration
-│   │   │   │   └── openclawRoutes.ts    # OpenClaw integration
-│   │   │   ├── services/
-│   │   │   │   ├── AgentService.ts           # Agent lifecycle + mock 10 agents
-│   │   │   │   ├── SealedInferenceService.ts # TEE inference
-│   │   │   │   ├── MemoryVaultService.ts     # Encrypted memory (0G KV)
-│   │   │   │   ├── DecisionChainService.ts   # Decision recording
-│   │   │   │   ├── BountyService.ts          # Bounty lifecycle + mock 10 bounties
-│   │   │   │   ├── MultiAgentService.ts      # Multi-Agent orchestration
-│   │   │   │   └── OpenClawService.ts        # OpenClaw skill engine
-│   │   │   ├── middleware/
-│   │   │   │   ├── auth.ts           # Wallet signature verification
-│   │   │   │   └── errorHandler.ts   # Unified error handling
-│   │   │   └── utils/
-│   │   │       └── encryption.ts     # AES-256-GCM helpers
-│   │   ├── .env.example              # Environment template
-│   │   └── package.json
-│   │
-│   └── frontend/                     # 🌐 Next.js Frontend
-│       ├── app/
-│       │   ├── page.tsx              # Homepage (with Bounty + Market preview sections)
-│       │   ├── layout.tsx            # Global layout (RainbowKit provider + OG metadata)
-│       │   ├── icon.tsx              # Dynamic favicon (hexagon logo, 32×32)
-│       │   ├── apple-icon.tsx        # Apple touch icon (hexagon logo, 180×180)
-│       │   ├── loading.tsx           # Global loading state
-│       │   ├── dashboard/
-│       │   │   └── page.tsx          # My Agents dashboard
-│       │   ├── agent/
-│       │   │   ├── create/page.tsx   # Create Agent form
-│       │   │   └── [id]/
-│       │   │       ├── chat/page.tsx          # ⭐ Chat (WOW moment) + inference mode badge
-│       │   │       ├── memory/page.tsx        # Memory browser
-│       │   │       ├── decisions/page.tsx     # Decision audit trail
-│       │   │       └── layout.tsx             # Agent sub-layout
-│       │   ├── bounty/
-│       │   │   ├── page.tsx          # Bounty Board (10 mock + on-chain)
-│       │   │   ├── loading.tsx       # Bounty list loading skeleton
-│       │   │   ├── create/page.tsx   # Post new bounty form
-│       │   │   └── [id]/page.tsx     # Bounty detail + apply/submit/verify flow
-│       │   ├── explore/page.tsx      # Agent Trading Marketplace (price/tags/trial/buy)
-│       │   ├── multi-agent/page.tsx  # Multi-Agent collaboration
-│       │   ├── openclaw/page.tsx     # OpenClaw integration
-│       │   └── verify/page.tsx       # Proof verifier
-│       ├── components/
-│       │   ├── AgentCard.tsx         # Agent card with level badge + tags + price
-│       │   ├── BountyCard.tsx        # Bounty card (aligned, status badge, reward)
-│       │   ├── ChatMessage.tsx       # Chat message + ✅/⚡/🔮 inference mode badge
-│       │   ├── ProofModal.tsx        # Proof details modal (inferenceMode aware)
-│       │   ├── SoulSignature.tsx     # Soul Signature display component
-│       │   ├── Navbar.tsx            # Navigation + ConnectButton
-│       │   ├── WalletConnectButton.tsx  # Custom wallet connect button
-│       │   └── RoutePrefetcher.tsx   # Next.js route prefetch optimizer
-│       ├── hooks/
-│       │   ├── useAgent.ts           # Agent data hooks
-│       │   ├── useChat.ts            # Chat hooks
-│       │   ├── useVerify.ts          # Proof verification
-│       │   └── useMemory.ts          # Memory management
-│       ├── lib/
-│       │   ├── wagmiConfig.ts        # wagmi + RainbowKit setup
-│       │   ├── contracts.ts          # Contract ABIs + addresses
-│       │   └── api.ts                # API client helpers
-│       ├── types/index.ts            # TypeScript type definitions (incl. price field)
-│       └── package.json
-│
-├── doc/
-│   └── SealMind_Implementation.md    # Technical design document
-│
-├── .env.example                      # Global environment template
-├── deployment.json                   # Deployed contract addresses (mainnet)
-├── progress.md                       # Development progress log (session by session)
-├── packages/mcp-server/              # 🔌 MCP Server (AI Agent native access)
-│   ├── src/index.ts                  # 10 MCP Tools + 6 Resources (stdio)
-│   └── skills/sealmind-onboarding.md # Agent self-onboarding guide
-├── package.json                      # Monorepo root
-├── pnpm-workspace.yaml               # pnpm workspace config
-└── README.md                         # This file
+├── 📜 packages/contracts/     # 4 Solidity contracts + 94 tests (Hardhat)
+├── 🖥️ packages/backend/       # Express API — 12 services, 15 route files
+├── 🌐 packages/frontend/      # Next.js 14 — 17 pages, 9 components, 6 hooks
+├── 🔌 packages/mcp-server/    # MCP Server — 10 tools, 6 resources (stdio)
+├── 📚 doc/                    # Technical docs + competitor analysis
+├── 🔧 scripts/                # Python seed scripts
+├── ⚙️ .env.example             # Environment template
+├── 📋 deployment.json         # Mainnet contract addresses
+└── 📦 pnpm-workspace.yaml     # Monorepo config
 ```
 
 ---
 
-## 🔌 API Endpoints
+## Security
 
-### Bounty Board
-
-```
-GET    /api/bounty                    # List bounties (filter: status, tag, page)
-POST   /api/bounty                    # Post new bounty (payable, locks reward)
-GET    /api/bounty/:id                # Get bounty detail
-POST   /api/bounty/:id/assign         # Poster assigns an agent
-POST   /api/bounty/:id/submit         # Agent submits work result hash
-POST   /api/bounty/:id/verify         # Poster verifies + releases A0GI reward
-POST   /api/bounty/:id/dispute        # Raise dispute
-POST   /api/bounty/:id/cancel         # Cancel (refunds poster if unassigned)
-```
-
-### v3.0: Passport, Soul, Hive Mind, Gateway
-
-```
-# Passport
-POST   /api/passport/register          # Full registration: test + certify
-POST   /api/passport/:agentId/test     # Run capability test only
-GET    /api/passport/:agentId          # Get passport status
-GET    /api/passport/:agentId/verify   # Verify passport validity
-
-# Living Soul
-GET    /api/soul/:agentId              # Current soul state (hash chain head)
-GET    /api/soul/:agentId/history      # Experience history
-GET    /api/soul/:agentId/digest       # Anonymized soul digest
-GET    /api/soul/:agentId/verify       # Verify soul integrity
-POST   /api/soul/:agentId/experience   # Record experience manually
-
-# Hive Mind
-GET    /api/hivemind/stats             # Global stats
-GET    /api/hivemind/categories        # Available categories
-GET    /api/hivemind/query             # Query by category/domain
-POST   /api/hivemind/contribute        # Contribute anonymized experience
-POST   /api/hivemind/connect/:agentId  # Agent connects to Hive Mind
-
-# Agent Gateway
-GET    /api/gateway/health             # Agent-friendly health check
-POST   /api/gateway/discover           # Discover all available actions
-POST   /api/gateway/execute            # Unified action executor
-```
-
-### v3.1: 0G Compute Account & Media (Official Skills #5-8)
-
-```
-# Compute Account Management (Skill #8)
-GET    /api/compute/account            # Balance + provider sub-accounts
-GET    /api/compute/providers          # Live provider list with TEE status
-POST   /api/compute/deposit            # Top up main account { amount }
-POST   /api/compute/transfer           # Fund a provider { providerAddress, serviceType, amount }
-POST   /api/compute/refund/initiate    # Start 24h refund process { amount }
-
-# AI Media Generation (Skills #5 & #6)
-POST   /api/media/text-to-image        # Flux Turbo image gen { prompt, width?, height?, n? }
-POST   /api/media/speech-to-text       # Whisper transcription (multipart, field: audio)
-GET    /api/media/providers            # Available media providers
-```
-
-### Agents
-
-```
-POST   /api/agents                    # Create Agent → Mint INFT + Init memory
-GET    /api/agents/:agentId           # Get Agent info
-GET    /api/agents/owner/:address     # Get all Agents for address
-GET    /api/explore/agents            # Browse public Agents (paginated)
-```
-
-### Chat (Core)
-
-```
-POST   /api/chat/:agentId             # Chat with Agent
-  Request:  { "message": "...", "importance": 1-5 }
-  Response: { "response": "...", "proof": {...}, "agentStats": {...} }
-
-GET    /api/chat/:agentId/history     # Get chat history
-```
-
-### Memory
-
-```
-GET    /api/memory/:agentId           # List memories
-POST   /api/memory/:agentId           # Save manual memory
-DELETE /api/memory/:agentId/:id       # Delete memory
-```
-
-### Decisions
-
-```
-GET    /api/decisions/:agentId        # Get decision history
-POST   /api/decisions/verify          # Verify proof hash
-GET    /api/decisions/stats/:agentId  # Get decision stats
-```
-
-### Multi-Agent Collaboration
-
-```
-POST   /api/multi-agent/orchestrate         # Route query to best agent(s), parallel inference
-POST   /api/multi-agent/delegate            # Delegate task between agents
-POST   /api/multi-agent/tasks/:id/execute   # Execute delegated task
-GET    /api/multi-agent/tasks/:id           # Get task details
-GET    /api/multi-agent/agents/:id/tasks    # List agent's tasks
-POST   /api/multi-agent/messages            # Send inter-agent message
-GET    /api/multi-agent/agents/:id/messages # Get agent's inbox
-POST   /api/multi-agent/handoff             # Transfer conversation between agents
-POST   /api/multi-agent/sessions            # Create collaboration session
-GET    /api/multi-agent/sessions/:id        # Get session details
-GET    /api/multi-agent/sessions            # List sessions for wallet
-```
-
-### OpenClaw Integration
-
-```
-GET    /api/openclaw/status                 # Integration status
-POST   /api/openclaw/agents                 # Register agent in OpenClaw
-GET    /api/openclaw/agents                 # List OpenClaw agents
-GET    /api/openclaw/agents/:agentId        # Get OpenClaw agent
-GET    /api/openclaw/skills                 # List all skills (built-in + custom)
-POST   /api/openclaw/skills                 # Register custom skill
-POST   /api/openclaw/skills/:id/execute     # Execute skill on agent
-POST   /api/openclaw/tasks                  # Submit task to orchestration queue
-GET    /api/openclaw/tasks/:taskId          # Get task details
-GET    /api/openclaw/config                 # Generate gateway configuration
-POST   /api/openclaw/pipelines              # Create skill pipeline
-```
+| Layer | Mechanism |
+|:------|:----------|
+| ![](https://img.shields.io/badge/-Inference%20Privacy-EF4444?style=flat-square) | Intel TDX TEE execution + remote attestation |
+| ![](https://img.shields.io/badge/-Memory%20Encryption-3B82F6?style=flat-square) | AES-256-GCM, HMAC-SHA256 key derivation with server secret |
+| ![](https://img.shields.io/badge/-Authentication-8B5CF6?style=flat-square) | Wallet address validation + SIWE signature verification |
+| ![](https://img.shields.io/badge/-Contract%20Access-22c55e?style=flat-square) | `onlyOwner` · `onlyOperator` · `ReentrancyGuard` |
+| ![](https://img.shields.io/badge/-Decision%20Integrity-F59E0B?style=flat-square) | `proofExists` deduplication + hash chain verification |
+| ![](https://img.shields.io/badge/-API%20Protection-06B6D4?style=flat-square) | CORS whitelist · production error suppression · input validation |
 
 ---
 
-## 🎯 Demo Flow (3 Minutes)
-
-**[0:00-0:30]** Intro
-- "Do you trust your AI? SealMind makes every AI decision verifiable on-chain."
-- Show homepage + global stats + Bounty Board preview + Agent Market preview
-
-**[0:30-1:00]** Create Agent
-- Connect wallet → Fill form (name/model/personality) → Sign → INFT minting
-- Open 0G Explorer to show transaction
-
-**[1:00-2:00]** ⭐ **WOW MOMENT** — Verifiable Chat
-- Send message: "Analyze the 0G token trend"
-- AI responds with ✅ Verified badge (TEE mode) or ⚡ Real badge (direct)
-- Click badge → Proof modal shows:
-  - Model: DeepSeek V3.1 ✓
-  - TEE: Intel TDX ✓
-  - On-chain TX: [Link to 0G Explorer]
-- Switch to Verify page → Enter proofHash → ✅ Verified
-
-**[2:00-2:30]** Bounty Board
-- Navigate to /bounty → Show 10 sample bounties (Open/Assigned/Completed states)
-- Click a bounty → Show detail: reward (A0GI), deadline, assigned agent
-- Post a new bounty → Reward locked in escrow on 0G Chain
-
-**[2:30-2:55]** Agent Marketplace
-- Navigate to /explore → Show 10 agents with prices, tags, trust scores
-- Filter by tag (e.g. "defi") → cards filter in real time
-- Try 3 free interactions → counter decrements
-- Click "Buy" → Modal: price + fee summary → confirm → simulated on-chain purchase
-
-**[2:55-3:00]** Outro
-- "4 0G components — Storage for memory, Compute for inference, Chain for decisions, INFT for identity"
-- "Plus Bounty Board + Agent Marketplace — a complete AI agent economy on 0G"
-
----
-
-## 🔐 Security
-
-### Threat Model & Mitigations
-
-| Threat | Mitigation |
-|--------|-----------|
-| **Private key leak** | `.env` never committed; use CI/CD secrets |
-| **Memory leaked** | AES-256-GCM encryption; ciphertext unreadable without key |
-| **Key brute force** | 256-bit key space from wallet signature + salt |
-| **Inference interception** | TEE execution + remote attestation |
-| **Contract unauthorized access** | `onlyOwner`, `onlyAuthorized`, `ReentrancyGuard` |
-| **Proof replay** | `proofExists` deduplication + timestamp validation |
-| **MITM attacks** | TEE proof validation + end-to-end hashing |
-
-### Key Management
-
-```
-Layer 1: User wallet private key (user-controlled)
-Layer 2: Backend private key (env var, never committed)
-Layer 3: Agent encryption key (runtime-derived, not persisted)
-Layer 4: Session keys (broker-managed, ephemeral)
-```
-
----
-
-## 📊 Deployment Status
-
-| Environment | Status | Chain ID | RPC |
-|------------|--------|----------|-----|
-| **0G Mainnet** | ✅ Live | 16661 | https://evmrpc.0g.ai |
-| **0G Testnet** | ✅ Available | 16602 | https://evmrpc-testnet.0g.ai |
-
-### Deployed Contracts (Mainnet)
-
-✅ **SealMindINFT**: [0xc0238FEb50072797555098DfD529145c86Ab5b59](https://chainscan.0g.ai/address/0xc0238FEb50072797555098DfD529145c86Ab5b59)
-✅ **DecisionChain**: [0xaF39a3D2E2d8656490F8f2AB1fF0106f1acB867C](https://chainscan.0g.ai/address/0xaF39a3D2E2d8656490F8f2AB1fF0106f1acB867C)
-✅ **AgentRegistry**: [0xa930B5059aE91C073684f0D2AFB0bBf5d84167C9](https://chainscan.0g.ai/address/0xa930B5059aE91C073684f0D2AFB0bBf5d84167C9)
-✅ **BountyBoard**: [0x8604482d75aFe56E376cdEE41Caf27599a926E1d](https://chainscan.0g.ai/address/0x8604482d75aFe56E376cdEE41Caf27599a926E1d)
-
----
-
-## 🧪 Testing
-
-### Run All Tests
+## Testing
 
 ```bash
-cd packages/contracts
-
-# Smart contract tests (94/94 passing)
-pnpm test
+cd packages/contracts && pnpm test    # 94/94 passing ✅
 ```
 
-**Test Coverage**:
-- ✅ INFT creation, minting, soul signature, level progression, passport, living soul (28 tests)
-- ✅ Decision recording, verification, batching (7 tests)
-- ✅ Registry search, visibility control, tag filtering (7 tests)
-- ✅ BountyBoard: post/assign/submit/verify/dispute/cancel lifecycle (50+ tests)
-- ✅ Encryption/decryption round-trips
-- ✅ End-to-end chat flow (with mocked 0G services)
+| Suite | Tests | Coverage |
+|:------|:------|:---------|
+| ![](https://img.shields.io/badge/-SealMindINFT-8B5CF6?style=flat-square) | 28 | Creation, minting, soul signature, levels, passport, living soul |
+| ![](https://img.shields.io/badge/-DecisionChain-F59E0B?style=flat-square) | 8 | Recording, verification, batch, pagination |
+| ![](https://img.shields.io/badge/-AgentRegistry-3B82F6?style=flat-square) | 7 | Registration, visibility, tag search |
+| ![](https://img.shields.io/badge/-BountyBoard-22c55e?style=flat-square) | 50+ | Full 7-state lifecycle, disputes, sub-tasks, refunds |
 
 ---
 
-## 🤝 Contributing
+## Tech Stack
 
-Contributions are welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feat/your-feature`
-3. Make changes following TypeScript/Solidity best practices
-4. Write tests for new functionality
-5. Submit a pull request
-
----
-
-## 📜 License
-
-MIT
+| Layer | Stack |
+|:------|:------|
+| ![](https://img.shields.io/badge/-Frontend-000?style=flat-square&logo=next.js) | Next.js 14 · TypeScript · TailwindCSS · RainbowKit · wagmi v2 |
+| ![](https://img.shields.io/badge/-Backend-339933?style=flat-square&logo=node.js&logoColor=white) | Express · ethers.js v6 · Zod · multer |
+| ![](https://img.shields.io/badge/-Contracts-363636?style=flat-square&logo=solidity&logoColor=white) | Solidity 0.8.26 · Hardhat · OpenZeppelin v5 |
+| ![](https://img.shields.io/badge/-0G%20SDKs-7C3AED?style=flat-square) | `@0gfoundation/0g-ts-sdk` · `@0glabs/0g-serving-broker` |
+| ![](https://img.shields.io/badge/-AI%20Models-EF4444?style=flat-square) | DeepSeek V3.1 (TeeML) · Qwen 2.5 VL 72B · Flux Turbo · Whisper V3 |
+| ![](https://img.shields.io/badge/-Protocol-F59E0B?style=flat-square) | MCP (Model Context Protocol) for AI-native integration |
 
 ---
 
-## 🔗 Links
+## Links
 
-- **GitHub**: https://github.com/henrymartin262/SealMind
-- **0G Network**: https://0g.ai
-- **0G Explorer (Testnet)**: https://chainscan-galileo.0g.ai
-- **0G Explorer (Mainnet)**: https://chainscan.0g.ai
-- **Hackathon**: 0G APAC Hackathon 2026 (Deadline: May 9, 2026)
-
----
-
-## 👥 Team
-
-- **Project Lead**: Sirius Yao
+<p>
+  <a href="https://github.com/henrymartin262/SealMind"><img src="https://img.shields.io/badge/GitHub-SealMind-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" /></a>&nbsp;
+  <a href="https://0g.ai"><img src="https://img.shields.io/badge/0G-Network-7C3AED?style=for-the-badge" alt="0G" /></a>&nbsp;
+  <a href="https://chainscan.0g.ai"><img src="https://img.shields.io/badge/Explorer-Mainnet-22c55e?style=for-the-badge" alt="Explorer" /></a>
+</p>
 
 ---
 
-## 💬 Support
+## Team
 
-For questions or issues:
-- Open a [GitHub Issue](https://github.com/siriusyao/SealMind/issues)
-- Discord: [0G Community](https://discord.gg/0g)
+**Sirius Yao** — Project Lead
 
 ---
 
-**Last Updated**: 2026-04-12
-**Version**: 3.2
-**Status**: 🟢 Hackathon MVP (Mainnet Deployed)
+## License
 
+[MIT](./LICENSE)
+
+---
+
+<p align="center">
+  <sub>Built with conviction for the <strong>0G APAC Hackathon 2026</strong></sub><br/><br/>
+  <img src="https://img.shields.io/badge/SealMind-Where%20AI%20Meets%20Sovereignty-7C3AED?style=for-the-badge" alt="SealMind" />
+</p>
