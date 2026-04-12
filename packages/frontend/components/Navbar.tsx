@@ -82,6 +82,8 @@ export function Navbar() {
   const links = [
     { href: "/", label: t("nav_home") },
     { href: "/dashboard", label: t("nav_dashboard") },
+    { href: "/multi-agent", label: t("nav_multi_agent") },
+    { href: "/openclaw", label: "OpenClaw" },
     { href: "/bounty", label: lang === "zh" ? "赏金" : "Bounty" },
     { href: "/explore", label: t("nav_explore") },
     { href: "/hivemind", label: lang === "zh" ? "蜂巢" : "Hive Mind" },
@@ -131,7 +133,7 @@ export function Navbar() {
                 key={link.href}
                 href={link.href}
                 prefetch={true}
-                className={`relative whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-200 ${
+                className={`relative whitespace-nowrap rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 ${
                   active
                     ? "bg-white text-indigo-600 shadow-sm dark:bg-white/10 dark:text-indigo-300"
                     : "text-gray-500 hover:text-gray-800 hover:bg-white/60 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/10"
