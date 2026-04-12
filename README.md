@@ -1,30 +1,13 @@
 <!-- Logo -->
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/%F0%9F%94%90%20SealMind-Privacy--Sovereign%20AI%20Agent%20OS-7C3AED?style=for-the-badge&labelColor=1e1b4b" />
-    <img src="https://img.shields.io/badge/%F0%9F%94%90%20SealMind-Privacy--Sovereign%20AI%20Agent%20OS-7C3AED?style=for-the-badge&labelColor=1e1b4b" alt="SealMind Logo" height="60" />
-  </picture>
+  <img src="https://img.shields.io/badge/%F0%9F%94%90%20SealMind-Privacy--Sovereign%20AI%20Agent%20OS-7C3AED?style=for-the-badge&labelColor=1e1b4b" alt="SealMind Logo" height="60" />
 </p>
 
-<!-- Tech Badges -->
 <p align="center">
-  <img src="https://img.shields.io/badge/Built%20on-0G%20Network-7C3AED?style=for-the-badge" alt="0G Network" />
+  <img src="https://img.shields.io/badge/Built%20on-0G%20Network-7C3AED?style=for-the-badge" alt="0G" />
   <img src="https://img.shields.io/badge/OpenClaw-Integrated-FF6B35?style=for-the-badge" alt="OpenClaw" />
-  <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/Solidity-0.8.26-363636?style=for-the-badge&logo=solidity&logoColor=white" alt="Solidity" />
-  <img src="https://img.shields.io/badge/Next.js-14-000000?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js" />
-</p>
-
-<!-- Status Badges -->
-<p align="center">
-  <img src="https://img.shields.io/badge/Smart%20Contracts-4%20Deployed-blue?style=flat-square&logo=ethereum&logoColor=white" alt="Contracts" />
-  <img src="https://img.shields.io/badge/Tests-94%2F94%20Passing-22c55e?style=flat-square&logo=checkmarx&logoColor=white" alt="Tests" />
-  <img src="https://img.shields.io/badge/0G%20Mainnet-Live-22c55e?style=flat-square" alt="Mainnet" />
-  <img src="https://img.shields.io/badge/0G%20Skills-7%20Integrated-8B5CF6?style=flat-square" alt="Skills" />
-  <img src="https://img.shields.io/badge/OpenClaw%20Skills-5%20Built--in-FF6B35?style=flat-square" alt="OpenClaw Skills" />
-  <img src="https://img.shields.io/badge/MCP%20Server-10%20Tools-F59E0B?style=flat-square" alt="MCP" />
-  <img src="https://img.shields.io/badge/API%20Endpoints-50%2B-06B6D4?style=flat-square" alt="API" />
-  <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License" />
+  <img src="https://img.shields.io/badge/Mainnet-Deployed-22c55e?style=for-the-badge" alt="Mainnet" />
+  <img src="https://img.shields.io/badge/Tests-94%2F94-22c55e?style=for-the-badge" alt="Tests" />
 </p>
 
 <h1 align="center">SealMind</h1>
