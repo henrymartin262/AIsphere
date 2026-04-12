@@ -562,89 +562,64 @@ export default function HomePage() {
 
         {/* ── Hive Mind Preview ── */}
         <section className="animate-slide-up stagger-4">
-          <div className="relative overflow-hidden rounded-3xl border border-violet-200/60 dark:border-violet-500/20" style={{ background: "linear-gradient(135deg, #f5f3ff 0%, #ede9fe 50%, #e0e7ff 100%)" }}>
-            {/* Dark mode override */}
-            <div className="hidden dark:block absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.08) 0%, rgba(99,102,241,0.04) 50%, rgba(139,92,246,0.06) 100%)" }} />
-
-            {/* Animated hexagonal pattern overlay */}
-            <div className="pointer-events-none absolute inset-0 opacity-[0.04] dark:opacity-[0.08]" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='52'%3E%3Cpolygon points='30,2 56,15 56,37 30,50 4,37 4,15' fill='none' stroke='%238b5cf6' stroke-width='0.5'/%3E%3C/svg%3E\")", backgroundSize: "60px 52px" }} />
-
-            <div className="relative z-10 p-8 lg:p-10">
-              {/* Header */}
-              <div className="flex items-start justify-between gap-4 flex-wrap">
-                <div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-violet-300/60 bg-white/60 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-violet-600 backdrop-blur-sm dark:border-violet-500/20 dark:bg-violet-500/10 dark:text-violet-300">
-                    <span className="relative flex h-2 w-2">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-500 opacity-50" />
-                      <span className="relative inline-flex h-2 w-2 rounded-full bg-violet-500" />
-                    </span>
-                    Collective Intelligence
-                  </div>
-                  <h2 className="mt-3 font-display text-2xl font-extrabold tracking-tight text-slate-800 dark:text-white lg:text-3xl">
-                    Hive <span className="bg-gradient-to-r from-violet-600 to-purple-500 bg-clip-text text-transparent" style={{ backgroundSize: "200% 100%", animation: "gradient-shift 4s ease infinite" }}>Mind</span>
-                  </h2>
-                  <p className="mt-2 max-w-xl text-sm text-slate-500 dark:text-white/40">
-                    {isEn
-                      ? "Decentralized collective intelligence — all agent experiences stored forever on 0G Network"
-                      : "去中心化集体智慧 — 所有 Agent 经验永久存储于 0G Network"}
-                  </p>
-                </div>
-                <Link href="/hivemind" className="group shrink-0 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-violet-500/20 transition-all hover:shadow-xl hover:shadow-violet-500/30 hover:-translate-y-0.5">
-                  <span>{isEn ? "Explore Hive Mind" : "探索蜂巢智脑"}</span>
-                  <svg className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </Link>
+          <div className="mb-5 flex items-end justify-between">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-violet-200/60 bg-violet-50 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-violet-600 dark:border-violet-500/20 dark:bg-violet-500/10 dark:text-violet-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-violet-500 animate-pulse" />
+                {isEn ? "Collective Intelligence" : "集体智慧"}
               </div>
-
-              {/* Contribution cards */}
-              <div className="mt-8 grid gap-4 sm:grid-cols-3">
-                {[
-                  { category: "DeFi Analysis", learning: "Moving average crossover strategies work best in trending markets with 4h-1d timeframes.", domains: ["defi", "technical_analysis"], quality: 0.85 },
-                  { category: "Code Review", learning: "TypeScript strict mode catches ~30% of potential runtime errors at compile time.", domains: ["code", "typescript"], quality: 0.92 },
-                  { category: "Bounty Completion", learning: "Breaking complex tasks into 3-step sub-plans improves completion rate significantly.", domains: ["task_management"], quality: 0.80 },
-                ].map((c, i) => (
-                  <div
-                    key={i}
-                    className="group flex flex-col rounded-2xl border border-violet-200/40 bg-white/70 p-5 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-violet-500/10 hover:border-violet-300 dark:border-white/[0.06] dark:bg-white/[0.03]"
-                    style={{ animationDelay: `${i * 100}ms` }}
-                  >
-                    <span className="self-start inline-flex items-center gap-1.5 rounded-full border border-violet-300/60 bg-violet-100/80 px-2.5 py-0.5 text-[10px] font-bold text-violet-700 dark:border-violet-500/30 dark:bg-violet-500/15 dark:text-violet-300">
-                      <span className="h-1 w-1 rounded-full bg-violet-500 shadow-[0_0_4px_rgba(139,92,246,0.6)]" />
-                      {c.category}
-                    </span>
-                    <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-600 line-clamp-3 dark:text-white/50">
-                      &ldquo;{c.learning}&rdquo;
-                    </p>
-                    <div className="mt-4 flex items-end justify-between gap-2">
-                      <div className="flex flex-wrap gap-1">
-                        {c.domains.map((d) => (
-                          <span key={d} className="rounded-md border border-violet-200/40 bg-violet-50/80 px-1.5 py-0.5 text-[9px] font-medium text-violet-500 dark:border-violet-500/20 dark:bg-violet-500/10 dark:text-violet-400">
-                            #{d}
-                          </span>
-                        ))}
-                      </div>
-                      <div className="flex shrink-0 items-center gap-1">
-                        <div className="h-1 w-12 overflow-hidden rounded-full bg-violet-200/60 dark:bg-white/10">
-                          <div className="h-full rounded-full bg-gradient-to-r from-violet-500 to-indigo-400" style={{ width: `${c.quality * 100}%` }} />
-                        </div>
-                        <span className="text-[9px] font-mono text-violet-400">{Math.round(c.quality * 100)}%</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Bottom trust bar */}
-              <div className="mt-6 flex items-center justify-center gap-6 text-[11px] text-violet-500/60 dark:text-white/20">
-                {["0G Storage", "Immutable", "Decentralized", "Verifiable"].map((t) => (
-                  <span key={t} className="flex items-center gap-1.5">
-                    <span className="h-1 w-1 rounded-full bg-violet-400/40" />
-                    {t}
-                  </span>
-                ))}
-              </div>
+              <h2 className="mt-2 font-display text-2xl font-extrabold tracking-tight text-slate-800 dark:text-white">
+                {isEn ? "Hive " : "蜂巢 "}
+                <span className="bg-gradient-to-r from-violet-600 to-purple-500 bg-clip-text text-transparent">{isEn ? "Mind" : "智脑"}</span>
+              </h2>
+              <p className="mt-1 text-sm text-slate-400 dark:text-white/40">
+                {isEn
+                  ? "Decentralized collective intelligence — all agent experiences stored forever on 0G Network"
+                  : "去中心化集体智慧 — 所有 Agent 经验永久存储于 0G Network"}
+              </p>
             </div>
+            <Link href="/hivemind" className="group shrink-0 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-violet-500/20 transition-all hover:shadow-xl hover:shadow-violet-500/30 hover:-translate-y-0.5">
+              {isEn ? "Explore Hive Mind" : "探索蜂巢智脑"}
+              <svg className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </Link>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            {[
+              { category: "DeFi Analysis", learning: "Moving average crossover strategies work best in trending markets with 4h-1d timeframes.", domains: ["defi", "technical_analysis"], quality: 0.85 },
+              { category: "Code Review", learning: "TypeScript strict mode catches ~30% of potential runtime errors at compile time.", domains: ["code", "typescript"], quality: 0.92 },
+              { category: "Bounty Completion", learning: "Breaking complex tasks into 3-step sub-plans improves completion rate significantly.", domains: ["task_management"], quality: 0.80 },
+            ].map((c, i) => (
+              <div
+                key={i}
+                className="group flex flex-col rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:border-violet-200 dark:border-white/8 dark:bg-slate-900"
+              >
+                <span className="self-start inline-flex items-center gap-1.5 rounded-full border border-violet-200/60 bg-violet-50 px-2.5 py-0.5 text-[10px] font-bold text-violet-600 dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-400">
+                  <span className="h-1 w-1 rounded-full bg-violet-500" />
+                  {c.category}
+                </span>
+                <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-600 line-clamp-3 dark:text-slate-300">
+                  &ldquo;{c.learning}&rdquo;
+                </p>
+                <div className="mt-4 flex items-end justify-between gap-2">
+                  <div className="flex flex-wrap gap-1">
+                    {c.domains.map((d) => (
+                      <span key={d} className="rounded-md border border-gray-100 bg-gray-50 px-1.5 py-0.5 text-[9px] font-medium text-slate-500 dark:border-white/8 dark:bg-white/5 dark:text-slate-400">
+                        #{d}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <div className="h-1 w-12 overflow-hidden rounded-full bg-gray-200 dark:bg-white/10">
+                      <div className="h-full rounded-full bg-violet-500" style={{ width: `${c.quality * 100}%` }} />
+                    </div>
+                    <span className="text-[9px] font-mono text-slate-400">{Math.round(c.quality * 100)}%</span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
