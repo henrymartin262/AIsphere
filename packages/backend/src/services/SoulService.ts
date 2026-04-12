@@ -95,7 +95,7 @@ export class SoulService {
     try {
       const clients = await initialize0GClients();
       if (clients?.kvReady) {
-        const key = deriveAgentKey("soul-service", agentId);
+        const key = deriveAgentKey(`soul-agent-${agentId}`, agentId);
         const { encryptedData, iv } = encryptMemory(JSON.stringify(experience), key);
         const streamId = ethers.keccak256(ethers.toUtf8Bytes(`SealMind:Soul:${agentId}`));
         const kvKey = new TextEncoder().encode(`soul:experience:${experience.id}`);

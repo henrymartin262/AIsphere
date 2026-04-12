@@ -70,13 +70,13 @@ app.use("/api/decisions",   decisionRoutes);
 app.use("/api/explore",     exploreRoutes);
 app.use("/api/multi-agent", walletAuth, multiAgentRoutes);
 app.use("/api/openclaw",    openclawRoutes);
-// v3.0 routes
+// v3.0 routes — POST operations require walletAuth, GET operations are public
 app.use("/api/passport",    passportRoutes);
-app.use("/api/soul",        soulRoutes);
+app.use("/api/soul",        walletAuth, soulRoutes);
 app.use("/api/hivemind",    hiveMindRoutes);
 app.use("/api/gateway",     gatewayRoutes);
-app.use("/api/compute",     computeRoutes);
-app.use("/api/media",       mediaRoutes);
+app.use("/api/compute",     walletAuth, computeRoutes);
+app.use("/api/media",       walletAuth, mediaRoutes);
 app.use(errorHandler);
 
 async function bootstrap() {

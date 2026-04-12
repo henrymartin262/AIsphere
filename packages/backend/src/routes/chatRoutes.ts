@@ -89,6 +89,20 @@ router.post("/:agentId", async (req, res) => {
     // 5. Record inference on INFT contract (non-blocking, updates level/stats)
     recordInferenceOnChain(agentId).catch(() => {});
 
+    // 6. Auto-record INFERENCE experience for Living Soul (non-blocking)
+    soulService.recordExperience(agentId, {
+      type: ExperienceType.INFERENCE,
+      category: "general_inference",
+      content: `Processed inference request: "${message.slice(0, 100)}"`,
+      context: `Chat with agent #${agentId}, mode: ${proof.inferenceMode}`,
+      outcome: proof.teeVerified ? "success" : "neutral",
+      importance: proof.teeVerified ? 0.8 : 0.5,
+      learnings: [`Inference completed via ${proof.inferenceMode} mode`],
+      relatedDecisionHash: proof.proofHash,
+    }).catch((err) => {
+      console.warn("[Chat] Auto soul experience record failed (non-fatal):", err);
+    });
+
     res.status(200).json({
       success: true,
       data: {

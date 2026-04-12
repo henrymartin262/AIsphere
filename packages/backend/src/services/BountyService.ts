@@ -58,6 +58,7 @@ export interface BountyInfo {
   createdAt: number;
   completedAt: number;
   isExpired: boolean;
+  source?: "chain" | "mock"; // data source indicator
 }
 
 export interface CreateBountyParams {
@@ -327,7 +328,8 @@ function formatBounty(raw: {
     parentBountyId: Number(raw.parentBountyId),
     createdAt: Number(raw.createdAt),
     completedAt: Number(raw.completedAt),
-    isExpired
+    isExpired,
+    source: "chain",
   };
 }
 
@@ -469,6 +471,9 @@ export async function approveBounty(
     if (contract) {
       const tx = await contract.approveBounty(BigInt(bountyId));
       const receipt = await tx.wait();
+      // Auto-record bounty experience on-chain success
+      const bounty = mockBounties.get(bountyId);
+      if (bounty) autoRecordBountyExperience(bounty);
       return { txHash: receipt.hash };
     }
   } catch (err) {
@@ -489,7 +494,25 @@ export async function approveBounty(
     completedAt: now
   };
   mockBounties.set(bountyId, updated);
+  autoRecordBountyExperience(updated);
   return { txHash: `0xmock_${Date.now().toString(16)}`, mock: true };
+}
+
+// Helper: auto-record BOUNTY experience after completion (non-blocking)
+function autoRecordBountyExperience(bounty: BountyInfo): void {
+  if (bounty.assignedAgentId > 0) {
+    soulService.recordExperience(bounty.assignedAgentId, {
+      type: ExperienceType.BOUNTY,
+      category: "bounty_completion",
+      content: `Completed bounty: "${bounty.title}" for ${bounty.rewardEth} A0GI`,
+      context: `Bounty #${bounty.id}, reward: ${bounty.rewardEth} A0GI`,
+      outcome: "success",
+      importance: Math.min(1, parseFloat(bounty.rewardEth) / 2),
+      learnings: [`Successfully completed task: ${bounty.title}`],
+    }).catch((err) => {
+      console.warn("[BountyService] Auto soul experience record failed (non-fatal):", err);
+    });
+  }
 }
 
 export async function disputeBounty(

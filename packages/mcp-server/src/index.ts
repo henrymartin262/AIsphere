@@ -119,6 +119,10 @@ const TOOLS: Tool[] = [
           type: "string",
           description: "The message / prompt to send to the agent",
         },
+        walletAddress: {
+          type: "string",
+          description: "EVM wallet address for memory context and encryption key derivation (0x…)",
+        },
         importance: {
           type: "number",
           description:
@@ -127,7 +131,7 @@ const TOOLS: Tool[] = [
           maximum: 10,
         },
       },
-      required: ["agentId", "message"],
+      required: ["agentId", "message", "walletAddress"],
     },
   },
   {
@@ -652,6 +656,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         result = await apiFetch("POST", `/api/chat/${agentId}`, {
           message: args?.message,
           importance: args?.importance ?? 5,
+          walletAddress: args?.walletAddress,
         });
         break;
       }

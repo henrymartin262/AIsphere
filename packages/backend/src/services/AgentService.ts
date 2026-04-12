@@ -27,6 +27,7 @@ export interface AgentInfo {
   stats: AgentStats;
   soulSignature?: string;  // bytes32 hex string
   price?: string;          // listing price in A0GI (e.g. "0.5")
+  source?: "chain" | "mock"; // data source indicator
 }
 
 export interface CreateAgentParams {
@@ -275,7 +276,8 @@ export async function createAgent(params: CreateAgentParams): Promise<CreateAgen
     agentId,
     owner: walletAddress,
     profile: { name, model, metadataHash, encryptedURI: "" },
-    stats: { totalInferences: 0, totalMemories: 0, trustScore: computeTrustScore({ totalInferences: 0, totalMemories: 0, level: 1 }), level: 1, lastActiveAt: Date.now() }
+    stats: { totalInferences: 0, totalMemories: 0, trustScore: computeTrustScore({ totalInferences: 0, totalMemories: 0, level: 1 }), level: 1, lastActiveAt: Date.now() },
+    source: "mock",
   };
   mockAgents.set(agentId, agent);
   return { agentId, txHash: `0xmock_${Date.now().toString(16)}`, mock: true };
@@ -313,7 +315,8 @@ export async function getAgent(agentId: number): Promise<AgentInfo | null> {
           }),
           level: Number(stats.level),
           lastActiveAt: Number(stats.lastActiveAt)
-        }
+        },
+        source: "chain",
       };
       // 尝试读取灵魂签名
       try {

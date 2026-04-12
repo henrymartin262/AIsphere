@@ -1,13 +1,28 @@
-import { createCipheriv, createDecipheriv, randomBytes, createHash } from "crypto";
+import { createCipheriv, createDecipheriv, randomBytes, createHash, createHmac } from "crypto";
 import { keccak256, toUtf8Bytes } from "ethers";
 
 /**
- * Derive a deterministic AES-256 key from walletAddress + agentId.
- * MVP: pure HMAC derivation (no live wallet signing needed).
+ * Server-side secret for HKDF-based key derivation.
+ * In production this should come from a secret manager / HSM.
+ * Falls back to a hardcoded value for Hackathon MVP.
  */
-export function deriveAgentKey(walletAddress: string, agentId: number): Buffer {
-  const raw = `SealMind:AgentKey:${walletAddress.toLowerCase()}:${agentId}`;
-  return Buffer.from(createHash("sha256").update(raw).digest());
+const SERVER_SECRET = process.env.ENCRYPTION_SECRET ?? "SealMind:ServerSecret:v3:0G-Hackathon-2026";
+
+/**
+ * Derive a deterministic AES-256 key from walletAddress + agentId using HKDF-like construction.
+ *
+ * Uses HMAC-SHA256 with a server-side secret as the PRK, making keys unrecoverable
+ * without access to the server secret — even if walletAddress and agentId are public.
+ *
+ * In a full production system, the wallet owner would sign a challenge and the signature
+ * would serve as the input keying material. For the Hackathon MVP, HMAC with server secret
+ * provides meaningful security improvement over plain SHA256.
+ */
+export function deriveAgentKey(walletAddress: string, agentId: number | string): Buffer {
+  const info = `SealMind:AgentKey:${String(walletAddress).toLowerCase()}:${agentId}`;
+  return Buffer.from(
+    createHmac("sha256", SERVER_SECRET).update(info).digest()
+  );
 }
 
 export function encryptMemory(

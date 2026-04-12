@@ -79,7 +79,7 @@ export function useChat(agentId: string) {
         const data = await apiPost<ChatResponse>(`/chat/${agentId}`, {
           message: content,
           importance,
-          walletAddress: walletAddress || "0x0000000000000000000000000000000000000000",
+          walletAddress: walletAddress,
         });
 
         // backend returns { response, proof } — support both "response" and "reply"

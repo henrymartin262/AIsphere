@@ -19,6 +19,7 @@ const envSchema = z.object({
   DEEPSEEK_API_KEY: z.string().optional(),
   DEEPSEEK_BASE_URL: z.string().url().default("https://api.deepseek.com"),
   BOUNTY_BOARD_ADDRESS: z.string().optional(),
+  ENCRYPTION_SECRET: z.string().optional(),
 });
 
 export const env = envSchema.parse(process.env);

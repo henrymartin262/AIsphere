@@ -78,11 +78,52 @@ async function submitToChain(
 
 async function flushBatch(): Promise<void> {
   const toFlush = batchQueue.splice(0, batchQueue.length);
-  for (const decision of toFlush) {
-    const result = await submitToChain(decision);
-    if (result) {
-      decision.onChain = true;
-      decision.txHash = result.txHash;
+  if (toFlush.length === 0) return;
+
+  // Group by agentId for efficient batch submission
+  const byAgent = new Map<number, Decision[]>();
+  for (const d of toFlush) {
+    const list = byAgent.get(d.agentId) ?? [];
+    list.push(d);
+    byAgent.set(d.agentId, list);
+  }
+
+  for (const [agentId, decisions] of byAgent) {
+    try {
+      const contract = await getContract();
+      if (contract) {
+        const inputHashes = decisions.map(d => ethers.getBytes(d.inputHash));
+        const outputHashes = decisions.map(d => ethers.getBytes(d.outputHash));
+        const modelHashes = decisions.map(d => ethers.getBytes(d.modelHash));
+        const importances = decisions.map(d => d.importance);
+
+        const tx = await contract.recordBatchDecisions(
+          agentId,
+          inputHashes,
+          outputHashes,
+          modelHashes,
+          importances
+        );
+        const receipt = await tx.wait();
+
+        for (const d of decisions) {
+          d.onChain = true;
+          d.txHash = receipt.hash;
+        }
+        console.log(`[DecisionChain] Batch submitted ${decisions.length} decisions for agent ${agentId}`);
+        continue;
+      }
+    } catch (err) {
+      console.warn("[DecisionChain] Batch submission failed, falling back to individual:", err);
+    }
+
+    // Fallback: submit individually
+    for (const decision of decisions) {
+      const result = await submitToChain(decision);
+      if (result) {
+        decision.onChain = true;
+        decision.txHash = result.txHash;
+      }
     }
   }
 }
