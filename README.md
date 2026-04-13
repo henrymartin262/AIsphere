@@ -543,5 +543,5 @@ cd packages/contracts && pnpm test    # 94/94 passing ✅
 
 <p align="center">
   <sub>Built with conviction for the <strong>0G APAC Hackathon 2026</strong></sub><br/><br/>
-  <img src="https://img.shields.io/badge/AIsphere-Where%20AI%20Meets%20Sovereignty-7C3AED?style=for-the-badge" alt="SealMind" />
+  <img src="https://img.shields.io/badge/AIsphere-Where%20AI%20Meets%20Sovereignty-7C3AED?style=for-the-badge" alt="AIsphere" />
 </p>

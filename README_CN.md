@@ -548,7 +548,7 @@ AIsphere/
 │       └── package.json
 │
 ├── doc/
-│   └── SealMind_Implementation.md    # 技术设计文档
+│   └── AIsphere_Implementation.md    # 技术设计文档
 │
 ├── .env.example                      # 全局环境变量模板
 ├── deployment.json                   # 已部署合约地址

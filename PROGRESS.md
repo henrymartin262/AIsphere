@@ -311,7 +311,7 @@
 
 ---
 
-### 模块 L：Hive Mind（蜂巢智脑）⭐ `🆕 待开发`
+### 模块 L：Hive Mind（蜂巢智脑）⭐ `✅ 已完成`
 
 > 去中心化群体智能：所有 Agent 经验匿名化汇聚 → 新 Agent 接入可继承集体智慧
 > 去中心化保证：存储在 0G Storage，任何人不可篡改或删除
@@ -319,7 +319,7 @@
 #### L.1 后端
 - [x] `HiveMindService.ts` — contributeExperience / queryHiveMind / connectToHiveMind / getHiveMindStats / verifyContribution / internalizeExperiences
 - [x] `hiveMindRoutes.ts` — 6 条路由
-- [x] 0G Storage KV 结构化存储设计（Stream: "SealMind:HiveMind:v1"）
+- [x] 0G Storage KV 结构化存储设计（Stream: "AIsphere:HiveMind:v1"）
 - [x] 经验匿名化处理（去除可识别信息，只保留结构化摘要）
 - [x] 分类索引系统（category-based indexing）
 - [x] Merkle 验证基础实现
@@ -341,7 +341,7 @@
 
 ### 模块 M：Agent Gateway（Agent 接入层）⭐ `✅ 已完成`
 
-> 让外部 Agent 自助了解和接入 SealMind：MCP Server（AI 原生）+ Skills 文档 + Gateway API
+> 让外部 Agent 自助了解和接入 AIsphere：MCP Server（AI 原生）+ Skills 文档 + Gateway API
 
 #### M.1 MCP Server
 - [x] `packages/mcp-server/` 新包初始化
@@ -353,7 +353,7 @@
 
 #### M.2 Skills 文档
 - [x] `packages/mcp-server/skills/sealmind-onboarding.md` — 完整的 Agent 自助上链指南
-  - [x] SealMind 介绍
+  - [x] AIsphere 介绍
   - [x] 注册认证流程（API 调用序列）
   - [x] 赏金任务参与指南
   - [x] Hive Mind 贡献/获取指南
