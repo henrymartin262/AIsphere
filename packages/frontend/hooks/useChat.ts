@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useAccount } from "wagmi";
-import { apiPost, apiGet } from "../lib/api";
+import { apiPost, apiGet, setApiWalletAddress, getApiWalletAddress } from "../lib/api";
 import type { ChatMessage, InferenceProof } from "../types";
 
 interface RawMessage {
@@ -31,11 +31,12 @@ export function useChat(agentId: string) {
 
   const loadHistory = useCallback(async () => {
     if (!agentId) return;
+    // Skip loading history if no wallet connected — not an error
+    if (!walletAddress) return;
     setIsLoading(true);
     setError(null);
     try {
-      const params: Record<string, string> = {};
-      if (walletAddress) params.walletAddress = walletAddress;
+      const params: Record<string, string> = { walletAddress };
 
       const data = await apiGet<RawMessage[]>(`/chat/${agentId}/history`, params);
       const rawMessages: RawMessage[] = Array.isArray(data) ? data : [];
@@ -76,11 +77,20 @@ export function useChat(agentId: string) {
       setError(null);
 
       try {
+        // Use a demo address if wallet not connected (for free trial)
+        const effectiveWallet = walletAddress || "0x0000000000000000000000000000000000000001";
+        // Temporarily set the wallet address in API headers so walletAuth passes
+        const prevWallet = getApiWalletAddress();
+        if (!prevWallet) setApiWalletAddress(effectiveWallet);
+
         const data = await apiPost<ChatResponse>(`/chat/${agentId}`, {
           message: content,
           importance,
-          walletAddress: walletAddress,
+          walletAddress: effectiveWallet,
         });
+
+        // Restore previous wallet address
+        if (!prevWallet) setApiWalletAddress(prevWallet);
 
         // backend returns { response, proof } — support both "response" and "reply"
         const replyText = data.response ?? data.reply ?? "(no response)";

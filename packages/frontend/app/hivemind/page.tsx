@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import { useLang } from "../../contexts/LangContext";
+import { translations } from "../../lib/i18n";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
 
@@ -97,7 +99,7 @@ function QualityBar({ quality }: { quality: number }) {
 }
 
 /* ═══════════════════════ Contribution Card ═══════════════════════ */
-function ContributionCard({ item, index }: { item: HiveMindContribution; index: number }) {
+function ContributionCard({ item, index, mergedLabel }: { item: HiveMindContribution; index: number; mergedLabel: string }) {
   return (
     <article
       className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-500 hover:-translate-y-1 hover:border-violet-200 hover:shadow-md dark:border-white/[0.06] dark:bg-[rgba(20,21,35,0.8)] dark:hover:border-violet-500/20 dark:hover:shadow-[0_8px_40px_rgba(139,92,246,0.12)]"
@@ -135,7 +137,7 @@ function ContributionCard({ item, index }: { item: HiveMindContribution; index: 
         <QualityBar quality={item.quality} />
         {item.contributionCount > 0 && (
           <p className="text-[10px] text-slate-400 dark:text-white/20">
-            {item.contributionCount} contributions merged
+            {item.contributionCount} {mergedLabel}
           </p>
         )}
       </div>
@@ -300,6 +302,8 @@ function SkeletonCard() {
 
 /* ═══════════════════════ MAIN PAGE ═══════════════════════ */
 export default function HiveMindPage() {
+  const { lang } = useLang();
+  const t = translations[lang];
   const [stats, setStats] = useState<HiveMindStats>({ totalContributions: 0, activeAgents: 0, categories: 0 });
   const [contributions, setContributions] = useState<HiveMindContribution[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
@@ -315,7 +319,14 @@ export default function HiveMindPage() {
       try {
         const res = await fetch(`${API_BASE}/hivemind/stats`);
         const json = await res.json();
-        if (!cancelled) setStats(json.data ?? json ?? {});
+        const raw = json.data ?? json ?? {};
+        if (!cancelled) setStats({
+          totalContributions: raw.totalContributions ?? 0,
+          activeAgents: raw.totalAgents ?? raw.activeAgents ?? 0,
+          categories: typeof raw.categoryBreakdown === 'object'
+            ? Object.keys(raw.categoryBreakdown).length
+            : (raw.categories ?? 0),
+        });
       } catch { /* non-critical */ }
       finally { if (!cancelled) setLoadingStats(false); }
     }
@@ -345,7 +356,7 @@ export default function HiveMindPage() {
           setContributions(Array.isArray(list) ? list : []);
         }
       } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load contributions");
+        if (!cancelled) setError(err instanceof Error ? err.message : t.hive_error_load);
       } finally {
         if (!cancelled) setLoadingContribs(false);
       }
@@ -370,7 +381,7 @@ export default function HiveMindPage() {
       const list = json.data ?? json.contributions ?? json ?? [];
       setContributions(Array.isArray(list) ? list : []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load contributions");
+      setError(err instanceof Error ? err.message : t.hive_error_load);
     } finally {
       setLoadingContribs(false);
     }
@@ -395,29 +406,27 @@ export default function HiveMindPage() {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-400 opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-violet-400 shadow-[0_0_8px_rgba(139,92,246,0.8)]" />
               </span>
-              Decentralized Collective Intelligence
+              {t.hive_badge}
             </div>
 
             <h1 className="font-display text-4xl font-extrabold tracking-tight text-slate-800 md:text-5xl lg:text-6xl dark:text-white">
-              <span className="block">Hive</span>
+              <span className="block">{t.hive_title_1}</span>
               <span className="block bg-gradient-to-r from-violet-400 via-purple-300 to-indigo-400 bg-clip-text text-transparent" style={{ backgroundSize: "200% 100%", animation: "gradient-shift 6s ease infinite" }}>
-                Mind
+                {t.hive_title_2}
               </span>
             </h1>
 
             <p className="mt-4 max-w-xl text-base leading-relaxed text-slate-500 lg:text-lg dark:text-white/40">
-              Collective intelligence from all agents — stored permanently on{" "}
-              <span className="font-semibold text-violet-400">0G Network</span>.
-              No central authority. No censorship. Verifiable by anyone.
+              {t.hive_desc}
             </p>
 
             {/* Trust indicators */}
             <div className="mt-6 flex flex-wrap justify-center gap-3 lg:justify-start">
               {[
-                { icon: "M12 21a9 9 0 100-18 9 9 0 000 18z", label: "0G Storage" },
-                { icon: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z", label: "Immutable" },
-                { icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z", label: "Verifiable" },
-                { icon: "M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0z", label: "Decentralized" },
+                { icon: "M12 21a9 9 0 100-18 9 9 0 000 18z", label: t.hive_tag_storage },
+                { icon: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z", label: t.hive_tag_immutable },
+                { icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z", label: t.hive_tag_verifiable },
+                { icon: "M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0z", label: t.hive_tag_decentralized },
               ].map((item) => (
                 <span key={item.label} className="flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3.5 py-1.5 text-[11px] font-medium text-slate-500 backdrop-blur-sm transition-all hover:border-violet-200 hover:text-violet-600 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-white/30 dark:hover:border-violet-500/20 dark:hover:text-white/50">
                   <svg className="h-3.5 w-3.5 text-violet-400/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -442,7 +451,7 @@ export default function HiveMindPage() {
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <StatCard
             value={stats.totalContributions}
-            label="Total Contributions"
+            label={t.hive_stat_contributions}
             color="bg-violet-500/15"
             loading={loadingStats}
             delay={0}
@@ -450,7 +459,7 @@ export default function HiveMindPage() {
           />
           <StatCard
             value={stats.activeAgents}
-            label="Active Agents"
+            label={t.hive_stat_agents}
             color="bg-indigo-500/15"
             loading={loadingStats}
             delay={100}
@@ -458,13 +467,101 @@ export default function HiveMindPage() {
           />
           <StatCard
             value={stats.categories}
-            label="Knowledge Domains"
+            label={t.hive_stat_domains}
             color="bg-purple-500/15"
             loading={loadingStats}
             delay={200}
             icon={<svg className="h-6 w-6 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>}
           />
         </section>
+
+        {/* ── Knowledge Graph ── */}
+        {!loadingStats && categories.length > 0 && (() => {
+          // Build domain-category relationship data for visualization
+          const catList = categories.length > 0 ? categories : ["defi_analysis", "code_review", "bounty_completion", "agent_collaboration", "knowledge_acquisition", "error_recovery", "market_trading"];
+          const catColors: Record<string, string> = {
+            defi_analysis: "#8b5cf6", code_review: "#6366f1", bounty_completion: "#f59e0b",
+            agent_collaboration: "#3b82f6", knowledge_acquisition: "#10b981", error_recovery: "#ef4444",
+            market_trading: "#ec4899", general_inference: "#06b6d4",
+          };
+          const svgW = 700, svgH = 320;
+          const cx = svgW / 2, cy = svgH / 2;
+          const mainR = 100;
+
+          // Position categories in a circle
+          const nodes = catList.map((cat, i) => {
+            const angle = (i / catList.length) * Math.PI * 2 - Math.PI / 2;
+            const r = mainR + 30 + (i % 2) * 25;
+            return {
+              id: cat,
+              x: cx + Math.cos(angle) * r,
+              y: cy + Math.sin(angle) * r,
+              color: catColors[cat] ?? "#8b5cf6",
+              size: 6 + (stats.totalContributions > 0 ? 4 : 0),
+            };
+          });
+
+          // Create edges (connect categories that share domains — simplified: connect adjacent + cross-connections)
+          const edges: Array<{ from: number; to: number; strength: number }> = [];
+          for (let i = 0; i < nodes.length; i++) {
+            edges.push({ from: i, to: (i + 1) % nodes.length, strength: 0.6 });
+            if (nodes.length > 4) edges.push({ from: i, to: (i + 2) % nodes.length, strength: 0.3 });
+          }
+          // Connect each to center
+          const centerEdges = nodes.map((_, i) => ({ from: -1, to: i, strength: 0.4 }));
+
+          return (
+            <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:border-white/[0.06] dark:bg-transparent">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-lg">🕸️</span>
+                <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">{lang === "en" ? "Knowledge Graph" : "知识图谱"}</h2>
+                <span className="ml-auto text-xs text-slate-400 dark:text-white/20">{catList.length} {lang === "en" ? "domains" : "领域"}</span>
+              </div>
+
+              <svg viewBox={`0 0 ${svgW} ${svgH}`} className="w-full h-auto" preserveAspectRatio="xMidYMid meet">
+                <defs>
+                  <radialGradient id="kgCenter">
+                    <stop offset="0%" stopColor="rgb(139,92,246)" stopOpacity="0.2" />
+                    <stop offset="100%" stopColor="rgb(139,92,246)" stopOpacity="0" />
+                  </radialGradient>
+                </defs>
+
+                {/* Center glow */}
+                <circle cx={cx} cy={cy} r={50} fill="url(#kgCenter)" />
+
+                {/* Center-to-node edges */}
+                {centerEdges.map((e, i) => (
+                  <line key={`ce-${i}`} x1={cx} y1={cy} x2={nodes[e.to].x} y2={nodes[e.to].y}
+                    stroke={nodes[e.to].color} strokeWidth={0.5} opacity={e.strength} />
+                ))}
+
+                {/* Node-to-node edges */}
+                {edges.map((e, i) => (
+                  <line key={`e-${i}`} x1={nodes[e.from].x} y1={nodes[e.from].y} x2={nodes[e.to].x} y2={nodes[e.to].y}
+                    stroke="rgb(139,92,246)" strokeWidth={0.8} opacity={e.strength} strokeDasharray={e.strength < 0.5 ? "3 3" : "none"} />
+                ))}
+
+                {/* Center node */}
+                <circle cx={cx} cy={cy} r={10} fill="rgb(139,92,246)" opacity={0.6} />
+                <circle cx={cx} cy={cy} r={6} fill="rgb(167,139,250)" opacity={0.9} />
+                <text x={cx} y={cy + 22} textAnchor="middle" className="fill-violet-400 dark:fill-violet-300" fontSize="9" fontWeight="bold">Hive Mind</text>
+
+                {/* Domain nodes */}
+                {nodes.map((node) => (
+                  <g key={node.id}>
+                    <circle cx={node.x} cy={node.y} r={node.size + 8} fill={node.color} opacity={0.08} />
+                    <circle cx={node.x} cy={node.y} r={node.size} fill={node.color} opacity={0.7} />
+                    <circle cx={node.x} cy={node.y} r={node.size - 2} fill={node.color} opacity={0.9} />
+                    <text x={node.x} y={node.y + node.size + 12} textAnchor="middle"
+                      className="fill-slate-400 dark:fill-white/30" fontSize="8" fontWeight="500">
+                      {node.id.replace(/_/g, " ")}
+                    </text>
+                  </g>
+                ))}
+              </svg>
+            </section>
+          );
+        })()}
 
         {/* ── Category filter ── */}
         <div className="flex flex-wrap items-center gap-2">
@@ -478,7 +575,7 @@ export default function HiveMindPage() {
                   : "border border-gray-200 bg-white text-slate-500 hover:border-violet-200 hover:text-violet-600 dark:border-white/[0.08] dark:bg-white/[0.03] dark:text-white/30 dark:hover:border-violet-500/20 dark:hover:text-white/50 dark:hover:bg-violet-500/5"
               }`}
             >
-              {cat === "all" ? "All Domains" : cat}
+              {cat === "all" ? t.hive_filter_all : cat}
             </button>
           ))}
         </div>
@@ -509,18 +606,18 @@ export default function HiveMindPage() {
               </div>
             </div>
             <div>
-              <h3 className="font-display text-xl font-bold text-slate-600 dark:text-white/60">No contributions yet</h3>
+              <h3 className="font-display text-xl font-bold text-slate-600 dark:text-white/60">{t.hive_empty_title}</h3>
               <p className="mt-2 max-w-sm text-sm text-slate-400 dark:text-white/25">
-                As agents interact, learn, and grow, their collective knowledge will appear here — stored forever on 0G Network.
+                {t.hive_empty_desc}
               </p>
             </div>
           </div>
         ) : (
           <>
-            <p className="text-xs text-slate-400 font-mono dark:text-white/20">{contributions.length} contributions</p>
+            <p className="text-xs text-slate-400 font-mono dark:text-white/20">{contributions.length} {t.hive_contributions_count}</p>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {contributions.map((item, i) => (
-                <ContributionCard key={item.id} item={item} index={i} />
+                <ContributionCard key={item.id} item={item} index={i} mergedLabel={t.hive_contributions_merged} />
               ))}
             </div>
           </>
@@ -539,9 +636,9 @@ export default function HiveMindPage() {
               </svg>
             </div>
 
-            <h2 className="font-display text-2xl font-bold text-slate-800 dark:text-white">Connect Your Agent</h2>
+            <h2 className="font-display text-2xl font-bold text-slate-800 dark:text-white">{t.hive_cta_title}</h2>
             <p className="mx-auto mt-3 max-w-md text-sm text-slate-500 dark:text-white/30">
-              Every inference, interaction, and discovery your agent makes contributes to the collective intelligence of the Hive Mind.
+              {t.hive_cta_desc}
             </p>
 
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
@@ -550,7 +647,7 @@ export default function HiveMindPage() {
                 className="group relative inline-flex items-center gap-2.5 overflow-hidden rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-8 py-3.5 text-sm font-bold text-white shadow-lg shadow-violet-500/25 transition-all hover:shadow-xl hover:shadow-violet-500/30 hover:-translate-y-0.5"
               >
                 <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                <span className="relative">Create Agent</span>
+                <span className="relative">{t.hive_cta_create}</span>
                 <svg className="relative h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
@@ -559,7 +656,7 @@ export default function HiveMindPage() {
                 href="/explore"
                 className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-8 py-3.5 text-sm font-semibold text-slate-600 transition-all hover:border-violet-200 hover:text-violet-600 hover:-translate-y-0.5 dark:border-white/10 dark:bg-white/[0.03] dark:text-white/50 dark:hover:border-violet-500/20 dark:hover:text-white/70"
               >
-                Explore Agents
+                {t.hive_cta_explore}
               </Link>
             </div>
           </div>

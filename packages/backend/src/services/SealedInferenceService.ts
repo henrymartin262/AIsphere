@@ -188,7 +188,43 @@ export async function inference(
     }
   }
 
-  // ── Layer 2: DeepSeek API ──────────────────────────────────────────────────
+  // ── Layer 2: GLM (ZhiPu AI) — Primary real inference ───────────────────────
+  if (env.GLM_API_KEY) {
+    try {
+      const response = await fetch(`${env.GLM_BASE_URL}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${env.GLM_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: env.GLM_MODEL,
+          messages: [
+            { role: "system", content: context || "You are a helpful AI agent on SealMind, a privacy-sovereign AI Agent OS built on 0G Network." },
+            { role: "user", content: userMessage }
+          ],
+          max_tokens: 1024,
+          temperature: 0.7
+        })
+      });
+
+      if (response.ok) {
+        const data = (await response.json()) as {
+          choices: Array<{ message: { content: string } }>;
+        };
+        const text = data.choices?.[0]?.message?.content ?? "";
+        const proof = buildProof(env.GLM_MODEL, userMessage, text, false, "real");
+        console.log(`[SealedInference] GLM (${env.GLM_MODEL}) inference succeeded`);
+        return { response: text, proof };
+      } else {
+        console.warn("[SealedInference] GLM API returned non-OK status:", response.status);
+      }
+    } catch (err) {
+      console.warn("[SealedInference] GLM inference failed, falling back to DeepSeek:", err);
+    }
+  }
+
+  // ── Layer 3: DeepSeek API (fallback) ──────────────────────────────────────
   if (env.DEEPSEEK_API_KEY) {
     try {
       const response = await fetch(`${env.DEEPSEEK_BASE_URL}/chat/completions`, {
@@ -223,7 +259,7 @@ export async function inference(
     }
   }
 
-  // ── Layer 3: Mock fallback ─────────────────────────────────────────────────
+  // ── Layer 4: Mock fallback ─────────────────────────────────────────────────
   const mockResponse = generateMockResponse(agentId, userMessage, context);
   const proof = buildProof(model, userMessage, mockResponse, false, "mock");
   return { response: mockResponse, proof };
@@ -244,6 +280,7 @@ export async function listAvailableModels(): Promise<ModelInfo[]> {
   return [
     { id: "teeml-llama3", name: "LLaMA-3 (TeeML)", provider: "0G-TeeML", teeSupported: true },
     { id: "deepseek-chat", name: "DeepSeek Chat", provider: "DeepSeek", teeSupported: false },
+    ...(env.GLM_API_KEY ? [{ id: env.GLM_MODEL, name: `GLM (${env.GLM_MODEL})`, provider: "ZhiPu AI", teeSupported: false }] : []),
     { id: "mock-gpt", name: "Mock GPT (Dev)", provider: "local", teeSupported: false }
   ];
 }

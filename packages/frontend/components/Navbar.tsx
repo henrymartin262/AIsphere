@@ -156,11 +156,10 @@ export function Navbar() {
           <ThemeToggle />
           <button
             onClick={toggleLang}
-            className="flex h-10 items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3.5 text-sm font-medium text-gray-500 transition-all hover:border-indigo-300 hover:text-indigo-600 hover:shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-slate-400 dark:hover:border-indigo-400/50 dark:hover:text-indigo-300"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-xs font-bold text-gray-500 shadow-sm transition-all hover:border-indigo-300 hover:text-indigo-600 hover:shadow dark:border-white/10 dark:bg-white/5 dark:text-slate-400 dark:hover:border-indigo-400/50 dark:hover:text-indigo-300"
             title={lang === "zh" ? "Switch to English" : "切换为中文"}
           >
-            <span className="text-sm leading-none">{lang === "zh" ? "🇨🇳" : "🇺🇸"}</span>
-            <span>{lang === "zh" ? "EN" : "中文"}</span>
+            {lang === "zh" ? "EN" : "中"}
           </button>
           <WalletConnectButton />
         </div>

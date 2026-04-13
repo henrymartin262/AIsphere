@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useAccount, useWaitForTransactionReceipt, useSendTransaction } from "wagmi";
+import { parseEther } from "viem";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
 import { useLang } from "../../contexts/LangContext";
@@ -20,7 +21,6 @@ interface ExploreStats {
   totalInferences: number;
   totalBounties: number;
 }
-
 // ─── Level styles ──────────────────────────────────────────────────────────────
 
 const LEVEL_STYLES: Record<number, { border: string; badge: string; accent: string; glow: string }> = {
@@ -70,44 +70,34 @@ function SkeletonCard() {
 
 // ─── Buy Modal ─────────────────────────────────────────────────────────────────
 
-// ERC-721 ABI for safeTransferFrom
-const ERC721_ABI = [
-  {
-    name: "safeTransferFrom",
-    type: "function",
-    stateMutability: "nonpayable",
-    inputs: [
-      { name: "from", type: "address" },
-      { name: "to", type: "address" },
-      { name: "tokenId", type: "uint256" },
-    ],
-    outputs: [],
-  },
-] as const;
-
-const INFT_ADDRESS = (process.env.NEXT_PUBLIC_INFT_ADDRESS ?? "") as `0x${string}`;
-
 function BuyModal({ agent, onClose, lang }: { agent: Agent; onClose: () => void; lang: string }) {
   const [status, setStatus] = useState<"confirm" | "pending" | "done" | "error">("confirm");
   const [errorMsg, setErrorMsg] = useState("");
+  const [txHashDisplay, setTxHashDisplay] = useState("");
   const isEn = lang === "en";
   const { address } = useAccount();
 
-  const { writeContract, data: txHash, error: writeError } = useWriteContract();
-  const { isSuccess: txConfirmed, isLoading: txPending } = useWaitForTransactionReceipt({ hash: txHash });
+  // Step 1: Send A0GI payment to owner
+  const { sendTransaction, data: payHash, error: payError, isPending: payPending } = useSendTransaction();
 
-  // Watch for tx confirmation
-  useEffect(() => {
-    if (txConfirmed) setStatus("done");
-  }, [txConfirmed]);
+  // Watch for payment tx hash
+  const { isSuccess: payConfirmed } = useWaitForTransactionReceipt({ hash: payHash });
 
-  // Watch for write errors
+  // Watch payment confirmation
   useEffect(() => {
-    if (writeError) {
-      setStatus("error");
-      setErrorMsg(writeError.message?.slice(0, 120) ?? "Transaction failed");
+    if (payConfirmed) {
+      setTxHashDisplay(payHash ?? "");
+      setStatus("done");
     }
-  }, [writeError]);
+  }, [payConfirmed, payHash]);
+
+  // Watch for errors
+  useEffect(() => {
+    if (payError) {
+      setStatus("error");
+      setErrorMsg(payError.message?.slice(0, 120) ?? "Payment failed");
+    }
+  }, [payError]);
 
   function handleBuy() {
     if (!address || !agent.owner) return;
@@ -115,15 +105,13 @@ function BuyModal({ agent, onClose, lang }: { agent: Agent; onClose: () => void;
     setErrorMsg("");
 
     try {
-      writeContract({
-        address: INFT_ADDRESS,
-        abi: ERC721_ABI,
-        functionName: "safeTransferFrom",
-        args: [agent.owner as `0x${string}`, address, BigInt(agent.agentId)],
+      sendTransaction({
+        to: agent.owner as `0x${string}`,
+        value: parseEther(agent.price ?? "0"),
       });
     } catch (err: any) {
       setStatus("error");
-      setErrorMsg(err.message?.slice(0, 120) ?? "Failed to send transaction");
+      setErrorMsg(err.message?.slice(0, 120) ?? "Failed to send payment");
     }
   }
 
@@ -145,8 +133,8 @@ function BuyModal({ agent, onClose, lang }: { agent: Agent; onClose: () => void;
                 ? `${agent.profile.name} has been transferred to your wallet.`
                 : `${agent.profile.name} 已转入你的钱包。`}
             </p>
-            {txHash && (
-              <p className="mt-1 text-xs text-slate-400 break-all">tx: {txHash}</p>
+            {txHashDisplay && (
+              <p className="mt-1 text-xs text-slate-400 break-all">tx: {txHashDisplay}</p>
             )}
             <Link
               href={`/agent/${agent.agentId}/chat`}
@@ -214,10 +202,10 @@ function BuyModal({ agent, onClose, lang }: { agent: Agent; onClose: () => void;
               </button>
               <button
                 onClick={handleBuy}
-                disabled={status === "pending" || txPending}
+                disabled={status === "pending" || payPending}
                 className="flex-1 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-70 flex items-center justify-center gap-2"
               >
-                {(status === "pending" || txPending) ? (
+                {(status === "pending" || payPending) ? (
                   <>
                     <svg className="h-3.5 w-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -501,6 +489,9 @@ export default function ExplorePage() {
                 ? "Buy, sell, and interact with AI Agents. Each Agent's identity and history are permanently anchored on-chain via INFT. Try 3 free interactions before purchasing."
                 : "在这里买卖 AI Agent。每个 Agent 的身份与历史永久锚定在链上（INFT）。购买前可免费体验 3 次对话。"}
             </p>
+            <Link href="/agent/compare" className="mt-3 inline-flex items-center gap-2 rounded-lg border border-pink-200 bg-pink-50 px-4 py-2 text-xs font-semibold text-pink-600 transition-all hover:bg-pink-100 hover:border-pink-300 dark:border-pink-500/20 dark:bg-pink-500/10 dark:text-pink-300 dark:hover:bg-pink-500/20">
+              <span>⚖️</span> {isEn ? "Compare Agent Souls" : "对比 Agent 灵魂"}
+            </Link>
           </div>
           <div className="flex shrink-0 flex-col items-end gap-1">
             <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{totalValue.toFixed(1)}</p>

@@ -2,6 +2,8 @@ import { Router, type Router as ExpressRouter } from "express";
 import * as MemoryVaultService from "../services/MemoryVaultService.js";
 import * as SealedInferenceService from "../services/SealedInferenceService.js";
 import * as DecisionChainService from "../services/DecisionChainService.js";
+import { soulService } from "../services/SoulService.js";
+import { ExperienceType } from "../services/SoulService.js";
 import { initialize0GClients } from "../config/og.js";
 import { contracts } from "../config/contracts.js";
 import { ethers } from "ethers";
@@ -81,7 +83,8 @@ router.post("/:agentId", async (req, res) => {
     );
 
     // 4. Record decision with importance based on proof verification
-    const importance = proof.teeVerified ? 4 : 2;
+    // TEE verified → immediate on-chain (4); Real LLM → batch queue (3); Mock → local only (2)
+    const importance = proof.teeVerified ? 4 : proof.inferenceMode === "real" ? 3 : 2;
     const decisionPromise = DecisionChainService.recordDecision(agentId, proof, importance);
 
     await Promise.all([userMemoryPromise, agentMemoryPromise, decisionPromise]);

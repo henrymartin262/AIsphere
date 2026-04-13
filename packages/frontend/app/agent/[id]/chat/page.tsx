@@ -47,7 +47,7 @@ export default function AgentChatPage() {
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, thinkStep]);
 
   async function handleSend() {
-    if (!input.trim() || !isConnected || chatLoading) return;
+    if (!input.trim() || chatLoading) return;
     const content = input.trim();
     setInput("");
     setThinkStep(0);
@@ -222,8 +222,8 @@ export default function AgentChatPage() {
           <div className="flex gap-3">
             <textarea
               value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown}
-              disabled={!isConnected || chatLoading} rows={2}
-              placeholder={isConnected ? t("chat_placeholder") : lang === "zh" ? "请先连接钱包以开始对话" : "Connect wallet to start chatting"}
+              disabled={chatLoading} rows={2}
+              placeholder={t("chat_placeholder")}
               className="flex-1 resize-none rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 disabled:opacity-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder-slate-600 dark:focus:border-indigo-400/50 dark:focus:ring-indigo-400/10"
             />
             <button onClick={handleSend}

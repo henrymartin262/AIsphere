@@ -8,6 +8,7 @@ import { useDecisions } from "../../../../hooks/useDecisions";
 import { useLang } from "../../../../contexts/LangContext";
 import { SoulSignature } from "../../../../components/SoulSignature";
 import type { Decision } from "../../../../types";
+import { useAccount } from "wagmi";
 
 function truncate(hash: string, front = 8, back = 6): string {
   if (!hash) return "";
@@ -148,14 +149,43 @@ export default function AgentProfilePage() {
 
   const { t } = useLang();
   const isEn = t("nav_home") === "Home";
+  const { address: connectedAddress } = useAccount();
 
   const [shareCopied, setShareCopied] = useState(false);
+  const [showTransfer, setShowTransfer] = useState(false);
+  const [transferTo, setTransferTo] = useState("");
+  const [transferring, setTransferring] = useState(false);
+  const [transferResult, setTransferResult] = useState<{ success: boolean; txHash?: string; memoriesMigrated?: number } | null>(null);
 
   function handleShare() {
     if (typeof window !== "undefined") {
       navigator.clipboard.writeText(window.location.href);
       setShareCopied(true);
       setTimeout(() => setShareCopied(false), 2000);
+    }
+  }
+
+  async function handleTransfer() {
+    if (!transferTo.trim() || !connectedAddress) return;
+    setTransferring(true);
+    setTransferResult(null);
+    try {
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
+      const res = await fetch(`${API_BASE}/transfer/${agentId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-wallet-address": connectedAddress },
+        body: JSON.stringify({ fromAddress: connectedAddress, toAddress: transferTo.trim() }),
+      });
+      const json = await res.json();
+      if (json.success && json.data) {
+        setTransferResult(json.data);
+      } else {
+        setTransferResult({ success: false });
+      }
+    } catch {
+      setTransferResult({ success: false });
+    } finally {
+      setTransferring(false);
     }
   }
 
@@ -401,6 +431,78 @@ export default function AgentProfilePage() {
               </div>
             ) : null;
           })()}
+        </div>
+      )}
+
+      {/* ── Transfer Panel ── */}
+      {connectedAddress && (
+        <div className="card mt-4 p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
+              {isEn ? "🔄 Transfer Agent" : "🔄 转让 Agent"}
+            </h2>
+            <button
+              onClick={() => setShowTransfer(!showTransfer)}
+              className="text-xs text-indigo-500 hover:text-indigo-700 dark:text-indigo-400"
+            >
+              {showTransfer ? (isEn ? "Hide" : "收起") : (isEn ? "Show" : "展开")}
+            </button>
+          </div>
+
+          {showTransfer && (
+            <div className="space-y-3">
+              <p className="text-xs text-gray-400 dark:text-slate-500">
+                {isEn
+                  ? "Transfer this Agent's INFT to another wallet. All memories will be re-encrypted for the new owner."
+                  : "将此 Agent 的 INFT 转让给另一个钱包。所有记忆将为新所有者重新加密。"}
+              </p>
+
+              <div>
+                <label className="block text-xs text-gray-500 dark:text-slate-400 mb-1">
+                  {isEn ? "Recipient Address" : "接收地址"}
+                </label>
+                <input
+                  type="text"
+                  value={transferTo}
+                  onChange={(e) => setTransferTo(e.target.value)}
+                  placeholder="0x..."
+                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
+                />
+              </div>
+
+              {transferResult && (
+                <div className={`rounded-xl border px-4 py-3 text-xs ${
+                  transferResult.success
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300"
+                    : "border-red-200 bg-red-50 text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300"
+                }`}>
+                  {transferResult.success ? (
+                    <>
+                      ✅ {isEn ? "Transfer complete!" : "转让完成！"}
+                      {transferResult.memoriesMigrated ? ` ${transferResult.memoriesMigrated} ${isEn ? "memories migrated" : "条记忆已迁移"}` : ""}
+                      {transferResult.txHash && <p className="mt-1 font-mono text-[10px] break-all opacity-60">tx: {transferResult.txHash}</p>}
+                    </>
+                  ) : (isEn ? "❌ Transfer failed" : "❌ 转让失败")}
+                </div>
+              )}
+
+              <button
+                onClick={handleTransfer}
+                disabled={transferring || !transferTo.trim()}
+                className="w-full rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-orange-600 disabled:opacity-50 transition flex items-center justify-center gap-2"
+              >
+                {transferring ? (
+                  <>
+                    <svg className="h-3.5 w-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    {isEn ? "Transferring…" : "转让中…"}
+                  </>
+                ) : (isEn ? "Transfer Agent" : "确认转让")}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </main>

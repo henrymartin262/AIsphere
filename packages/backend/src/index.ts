@@ -24,6 +24,8 @@ import hiveMindRoutes from "./routes/hiveMindRoutes.js";
 import gatewayRoutes from "./routes/gatewayRoutes.js";
 import mediaRoutes from "./routes/mediaRoutes.js";
 import computeRoutes from "./routes/computeRoutes.js";
+import transferRoutes from "./routes/transferRoutes.js";
+import subBountyRoutes from "./routes/subBountyRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
@@ -77,16 +79,27 @@ app.use("/api/hivemind",    hiveMindRoutes);
 app.use("/api/gateway",     gatewayRoutes);
 app.use("/api/compute",     walletAuth, computeRoutes);
 app.use("/api/media",       walletAuth, mediaRoutes);
+app.use("/api/transfer",    walletAuth, transferRoutes);
+app.use("/api/sub-bounty",  subBountyRoutes);
 app.use(errorHandler);
 
 async function bootstrap() {
   await initialize0GClients();
-  await passportService.init();
-  await soulService.init();
-  await hiveMindService.init();
+
+  // Init services with timeout protection (don't let hydration block startup)
+  const initTimeout = (fn: () => Promise<void>, name: string, ms = 10_000) =>
+    Promise.race([
+      fn(),
+      new Promise<void>((_, reject) => setTimeout(() => reject(new Error(`${name} init timeout`)), ms)),
+    ]).catch((err) => console.warn(`[Bootstrap] ${name} init failed (non-fatal):`, (err as Error).message));
+
+  await Promise.all([
+    initTimeout(() => passportService.init(), "PassportService"),
+    initTimeout(() => soulService.init(), "SoulService"),
+    initTimeout(() => hiveMindService.init(), "HiveMindService", 15_000),
+  ]);
 
   // Pre-warm caches so first user request is instant (not RPC timeout)
-  // Warm both limit=20 (stats page) and limit=100 (explore page uses this)
   console.log("[Bootstrap] Pre-warming caches...");
   await Promise.allSettled([
     AgentService.listPublicAgents(0, 20),

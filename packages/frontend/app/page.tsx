@@ -1,8 +1,135 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useLang } from "../contexts/LangContext";
+
+/* ═══════════════════════════════════════════════
+   灵魂演化动画 — Living Soul Evolution
+   ═══════════════════════════════════════════════ */
+const SOUL_STAGES = [
+  { hash: "0x0000...0000", exp: 0, label_en: "Genesis", label_zh: "创世", color: "from-slate-400 to-slate-500", glow: "rgba(148,163,184,0.3)", ring: "border-slate-300" },
+  { hash: "0xa3f2...91e7", exp: 3, label_en: "First Inference", label_zh: "首次推理", color: "from-blue-400 to-cyan-500", glow: "rgba(59,130,246,0.4)", ring: "border-blue-400" },
+  { hash: "0xd7c1...4b2a", exp: 12, label_en: "Bounty Completed", label_zh: "完成赏金", color: "from-emerald-400 to-teal-500", glow: "rgba(16,185,129,0.4)", ring: "border-emerald-400" },
+  { hash: "0x8e5f...c903", exp: 28, label_en: "Hive Mind Connected", label_zh: "接入蜂巢", color: "from-violet-400 to-purple-500", glow: "rgba(139,92,246,0.5)", ring: "border-violet-400" },
+  { hash: "0xf19a...6d8e", exp: 47, label_en: "Soul Matured", label_zh: "灵魂成熟", color: "from-amber-400 to-orange-500", glow: "rgba(245,158,11,0.5)", ring: "border-amber-400" },
+];
+
+function SoulEvolutionSection({ isEn }: { isEn: boolean }) {
+  const [stage, setStage] = useState(0);
+  const [animating, setAnimating] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    intervalRef.current = setInterval(() => {
+      setAnimating(true);
+      setTimeout(() => {
+        setStage((s) => (s + 1) % SOUL_STAGES.length);
+        setAnimating(false);
+      }, 400);
+    }, 2800);
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, []);
+
+  const current = SOUL_STAGES[stage];
+
+  return (
+    <section className="animate-slide-up stagger-4">
+      <div className="mb-5">
+        <div className="inline-flex items-center gap-2 rounded-full border border-pink-200/60 bg-pink-50 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-pink-600 dark:border-pink-500/20 dark:bg-pink-500/10 dark:text-pink-300">
+          <span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-pink-400 opacity-75" /><span className="relative inline-flex h-2 w-2 rounded-full bg-pink-400" /></span>
+          {isEn ? "Living Soul System" : "活灵魂系统"}
+        </div>
+        <h2 className="mt-2 font-display text-2xl font-extrabold tracking-tight text-slate-800 dark:text-white">
+          {isEn ? "Soul " : "灵魂"}
+          <span className="bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">{isEn ? "Evolution" : "演化"}</span>
+        </h2>
+        <p className="mt-1 text-sm text-slate-400 dark:text-white/40">
+          {isEn
+            ? "A soul is not a static config — it's shaped by every inference, bounty, and interaction."
+            : "灵魂不是出厂设定——而是由每次推理、赏金和交互塑造的。"}
+        </p>
+      </div>
+
+      <div className="relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-8 shadow-sm dark:border-white/8 dark:bg-slate-900">
+        {/* Background glow — subtle in light, stronger in dark */}
+        <div className="pointer-events-none absolute inset-0 opacity-20 dark:opacity-100 transition-all duration-1000" style={{ background: `radial-gradient(ellipse at center, ${current.glow}, transparent 70%)` }} />
+
+        <div className="relative flex flex-col items-center gap-6 md:flex-row md:gap-10">
+          {/* Soul orb */}
+          <div className="relative flex h-32 w-32 shrink-0 items-center justify-center">
+            {/* Outer ring */}
+            <div className={`absolute inset-0 rounded-full border-2 ${current.ring} transition-all duration-700 ${animating ? "scale-110 opacity-0" : "scale-100 opacity-100"}`} />
+            <div className={`absolute inset-2 rounded-full border ${current.ring} opacity-40 transition-all duration-700 ${animating ? "scale-90" : "scale-100"}`} />
+            {/* Core */}
+            <div className={`h-16 w-16 rounded-full bg-gradient-to-br ${current.color} shadow-lg transition-all duration-700 ${animating ? "scale-75 opacity-50" : "scale-100 opacity-100"}`}>
+              <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-white/90">
+                {stage + 1}
+              </div>
+            </div>
+            {/* Pulse rings */}
+            <div className={`absolute inset-0 rounded-full border ${current.ring} opacity-20 animate-ping`} style={{ animationDuration: "3s" }} />
+          </div>
+
+          {/* Info */}
+          <div className="flex-1 text-center md:text-left">
+            <div className={`inline-block rounded-full bg-gradient-to-r ${current.color} px-3 py-1 text-xs font-bold text-white shadow-sm transition-all duration-500 ${animating ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}`}>
+              {isEn ? current.label_en : current.label_zh}
+            </div>
+            <div className={`mt-3 font-mono text-lg tracking-tight transition-all duration-500 ${animating ? "opacity-0" : "opacity-100"}`}>
+              <span className="text-slate-400 dark:text-white/30">soulHash: </span>
+              <span className={`bg-gradient-to-r ${current.color} bg-clip-text font-bold text-transparent`}>{current.hash}</span>
+            </div>
+            <div className={`mt-2 flex items-center gap-4 justify-center md:justify-start transition-all duration-500 ${animating ? "opacity-0" : "opacity-100"}`}>
+              <span className="text-xs text-slate-400 dark:text-white/30">
+                {isEn ? "Experiences" : "经验数"}: <span className="font-bold text-slate-700 dark:text-white/70">{current.exp}</span>
+              </span>
+              <span className="text-xs text-slate-400 dark:text-white/30">
+                {isEn ? "Stage" : "阶段"}: <span className="font-bold text-slate-700 dark:text-white/70">{stage + 1}/5</span>
+              </span>
+            </div>
+          </div>
+
+          {/* Timeline dots */}
+          <div className="flex gap-2 md:flex-col">
+            {SOUL_STAGES.map((s, i) => (
+              <button
+                key={i}
+                onClick={() => { setStage(i); if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; } }}
+                className={`h-3 w-3 rounded-full border-2 transition-all duration-300 ${
+                  i === stage
+                    ? `bg-gradient-to-br ${s.color} border-transparent scale-125 shadow-md`
+                    : i < stage
+                    ? "border-slate-300 bg-slate-200 dark:border-white/20 dark:bg-white/10"
+                    : "border-slate-200 bg-transparent dark:border-white/10"
+                }`}
+                title={isEn ? s.label_en : s.label_zh}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Hash chain visualization */}
+        <div className="mt-6 flex items-center justify-center gap-1 overflow-hidden">
+          {SOUL_STAGES.slice(0, stage + 1).map((s, i) => (
+            <div key={i} className="flex items-center gap-1">
+              {i > 0 && <svg className="h-3 w-6 text-slate-300 dark:text-white/15" viewBox="0 0 24 12"><path d="M0 6h24" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 2" /><path d="M20 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" fill="none" /></svg>}
+              <div className={`rounded-md bg-gradient-to-r ${s.color} px-2 py-0.5 text-[9px] font-mono font-bold text-white shadow-sm`}>
+                {s.hash.slice(0, 8)}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <p className="mt-4 text-center text-[10px] text-slate-400 dark:text-white/20">
+          {isEn
+            ? "Each experience produces a hash → chained with previous → soul evolves. Encrypted in 0G Storage, only hash on-chain."
+            : "每次经验生成哈希 → 与前一个链接 → 灵魂演化。原始数据加密存储在 0G Storage，链上只有哈希。"}
+        </p>
+      </div>
+    </section>
+  );
+}
 
 /* ═══════════════════════════════════════════════
    全屏封面（Cover）— 深蓝紫调
@@ -433,6 +560,9 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* ── Living Soul Evolution ── */}
+        <SoulEvolutionSection isEn={isEn} />
 
         {/* ── Bounty Board Preview ── */}
         <section className="animate-slide-up stagger-3">

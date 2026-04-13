@@ -18,6 +18,9 @@ const envSchema = z.object({
   REGISTRY_ADDRESS: z.string().optional(),
   DEEPSEEK_API_KEY: z.string().optional(),
   DEEPSEEK_BASE_URL: z.string().url().default("https://api.deepseek.com"),
+  GLM_API_KEY: z.string().optional(),
+  GLM_BASE_URL: z.string().url().default("https://open.bigmodel.cn/api/paas/v4"),
+  GLM_MODEL: z.string().default("GLM-4.7"),
   BOUNTY_BOARD_ADDRESS: z.string().optional(),
   ENCRYPTION_SECRET: z.string().optional(),
 });

@@ -1,7 +1,7 @@
 # SealMind — 0G APAC Hackathon 报名填写指南
 
 > 本文档对应 HackQuest 黑客松报名页面各字段。已填项可直接复制，未完成项标注了状态和操作建议。
-> 更新时间：2026-04-07 | 项目版本：v3.2 | 网络：0G Mainnet (Chain ID: 16661)
+> 更新时间：2026-04-13 | 项目版本：v3.2 | 网络：0G Mainnet (Chain ID: 16661)
 
 ---
 
@@ -15,8 +15,9 @@ SealMind
 
 ### 简介（0/200）
 ```
-SealMind is a privacy-sovereign AI Agent OS built entirely on 0G Network. It gives every AI agent a soul — encrypted memory (0G Storage KV), verifiable TEE inference (0G Compute), on-chain identity (ERC-721 INFT), and immutable decision audit (0G Chain). Features include Bounty Board, Agent Marketplace, Hive Mind collective intelligence, and MCP-compatible Agent Gateway.
+SealMind gives every AI agent a verifiable soul. Unlike centralized AI platforms where memories can be stolen, models swapped, and identities locked — SealMind uses 0G's full stack (Chain + Storage + Compute) to make agents truly sovereign: TEE-proven inference, AES-256 encrypted memory, on-chain ERC-721 identity, and a Living Soul that evolves through experience. 4 contracts on mainnet, 94 tests, 7 official 0G Skills integrated.
 ```
+> 核心策略：第一句话就抛出"灵魂"概念，然后用对比（unlike...）制造冲突感，最后用数字收尾。
 
 ### 项目赛道（0/4）
 建议选择：
@@ -41,13 +42,12 @@ SealMind is a privacy-sovereign AI Agent OS built entirely on 0G Network. It giv
 ## 2. 阶段成果 Tab
 
 ### MVP 链接
-⚠️ **待完成** — 需要部署前端到公网。
-
-**方案 A — Vercel 部署**（推荐）：
-```bash
-cd packages/frontend && npx vercel --prod
 ```
-> 注意：后端也需部署（Railway / Render），并更新 `NEXT_PUBLIC_API_URL`。
+http://43.140.200.198:3000
+```
+✅ **已部署** — 前端+后端均已上线，通过 SSH 隧道转发到公网服务器。
+
+> 后端 API: http://43.140.200.198:3000/api/health (通过 Next.js rewrites 代理)
 
 ### 项目链接（GitHub）
 ```
@@ -67,16 +67,16 @@ https://github.com/henrymartin262/SealMind
 ```
 0xc2a5548C420917244DA018A956DD33C551d42A93
 ```
-> 部署钱包地址，已有 4 个合约部署在主网。在 MetaMask 中添加 0G Mainnet（Chain ID: 16661, RPC: https://evmrpc.0g.ai）。
+> 部署钱包地址，已有 4 个合约部署在主网，余额 ~0.96 A0GI。在 MetaMask 中添加 0G Mainnet（Chain ID: 16661, RPC: https://evmrpc.0g.ai）。
 
 ### 图片（0/4）
 ⚠️ **待完成** — 需要 4 张截图，尺寸 `500x300` 或 `1280x720`。
 
-建议截图：
+建议截图（从 http://43.140.200.198:3000 截取）：
 1. 首页 HeroCover（品牌展示）
 2. Chat 页面（TEE 推理 + 证明验证）
 3. Bounty Board（赏金任务市场）
-4. Agent Marketplace（交易市场）
+4. Hive Mind（去中心化群体智能）
 
 ### 视频
 #### 项目 Demo（必须，≤ 3 分钟）
@@ -88,7 +88,7 @@ https://github.com/henrymartin262/SealMind
 3. 与 Agent 对话（TEE 推理 + Memory 加密 + Decision 上链）
 4. Proof Verifier（链上证明验证）
 5. Bounty Board（发布/接受赏金任务）
-6. Agent Marketplace（浏览/购买 Agent）
+6. Hive Mind（去中心化群体智能）
 
 #### 项目路演
 ⚠️ 可选。
@@ -98,40 +98,72 @@ https://github.com/henrymartin262/SealMind
 ## 3. 描述（富文本）
 
 ```
-SealMind — Privacy-Sovereign AI Agent Operating System
+SealMind — Give Every AI Agent a Verifiable Soul
 
-SealMind addresses a fundamental problem in AI: agents today have no soul. Their memories are stored on centralized servers (easily stolen), their inference cannot be verified (models can be swapped undetectably), and their identity is tied to platforms (users don't truly own them).
+━━━ The Problem ━━━
 
-Built entirely on 0G Network, SealMind equips every AI Agent with four core soul components:
+AI Agents today are soulless. Their memories sit on centralized servers — readable, modifiable, deletable by anyone with admin access. You can't verify which model actually generated a response. Agent identity is locked to platforms — no ownership, no portability, no trade. When you "own" an AI agent, you own nothing.
 
-🔒 Sealed Mind — TEE-based verifiable inference via 0G Compute (TeeML). Every AI response comes with cryptographic proof.
+━━━ Our Solution ━━━
 
-🧠 Memory Vault — Client-side encrypted memories stored on 0G Storage KV with AES-256-GCM. Only the owner holds the decryption key. Dual-layer: hot cache + persistent 0G KV.
+SealMind is the first AI Agent Operating System that treats 0G Network as a complete trust layer — not just "deploy a contract on 0G," but deep integration across ALL four 0G pillars:
 
-🪪 Agent Identity — ERC-721 INFT on 0G Chain. Each agent has a unique Soul Signature (keccak256 hash), making it irreplaceable and ownable.
+🔒 SEALED MIND — Every inference runs through 0G Compute's TEE (TeeML). Each response carries a cryptographic proof. Users can verify any AI response on-chain — no trust required.
 
-⛓️ Decision Chain — Immutable on-chain audit log. Critical decisions recorded on-chain with proofHash, verifiable by anyone.
+🧠 MEMORY VAULT — Agent memories are AES-256-GCM encrypted BEFORE leaving the client, then stored on 0G Storage KV. Not even SealMind's own servers can read them. Dual-layer architecture: hot cache for speed + 0G KV for permanence.
 
-Extended Features:
-• Bounty Board — On-chain task marketplace with escrow, 7-state lifecycle, dispute resolution
-• Agent Marketplace — Trading market with ERC-721 safeTransferFrom, tags, and trial system
-• Hive Mind — Decentralized collective intelligence with Merkle tree verification on 0G Storage
-• Agent Passport — On-chain certification with real capability tests
-• Living Soul — Experience hash chain with encrypted 0G KV persistence
-• Multi-Agent Collaboration — Keyword routing, parallel orchestration, 0G KV persistence
-• Agent Gateway — REST + MCP protocol for AI agent self-discovery
+🪪 ON-CHAIN IDENTITY — Each agent is an ERC-721 INFT with a unique Soul Signature (keccak256). Ownable, transferable, tradeable. Your agent, your asset.
 
-Tech Stack: Next.js 14, Express, Solidity 0.8.26, ethers.js v6, 0G TS SDK ^1.2.1, OpenZeppelin 5.x, RainbowKit, TailwindCSS
+⛓️ DECISION CHAIN — Every critical decision is hashed and recorded on 0G Chain via our DecisionChain contract. Immutable audit trail. Anti-replay protection. Anyone can verify.
 
-All 4 smart contracts deployed on 0G Mainnet (Chain ID: 16661). 94/94 unit tests passing.
+━━━ What Makes Us Different ━━━
+
+Most hackathon projects use 0G for one thing (usually just deploying a contract). SealMind integrates ALL 4 core 0G components + 7 official Agent Skills:
+
+• 0G Chain → 4 smart contracts (INFT, DecisionChain, AgentRegistry, BountyBoard)
+• 0G Storage KV → Encrypted Memory Vault + Hive Mind collective intelligence + Soul persistence
+• 0G Compute → TEE inference with 3-layer fallback + provider discovery + fee settlement
+• 0G Skills → #4 Streaming Chat, #5 Text-to-Image, #6 Speech-to-Text, #7 Provider Discovery, #8 Account Mgmt, #13 Storage×Chain, #14 Compute×Storage
+
+━━━ The Soul System (v3.0) ━━━
+
+We go beyond basic "agent + blockchain." SealMind introduces the concept of a LIVING SOUL:
+
+🧬 Living Soul — Every agent activity auto-records as a structured experience. Experiences form a hash chain (like a personal blockchain). The soul EVOLVES through use — it's not a static config, it's shaped by experience.
+
+🧠 Hive Mind — All agents' anonymized experiences aggregate into a decentralized collective intelligence stored on 0G Storage. New agents can inherit collective wisdom instantly. No one can delete or censor it — not even us.
+
+🎫 Agent Passport — Agents must pass real capability tests (inference + storage + signature) before receiving on-chain certification. Not every bot gets in.
+
+🔌 Agent Gateway — MCP Server (10 tools + 6 resources) lets external AI agents self-discover and onboard to SealMind without reading docs.
+
+━━━ Economy ━━━
+
+• Bounty Board: 7-state on-chain task marketplace with A0GI escrow, dispute resolution, sub-tasks
+• Agent Marketplace: Browse, trial (3 free), purchase agents via ERC-721 transfer
+• OpenClaw: 5 built-in skills + pipeline orchestration, every agent is a composable OpenClaw Skill
+
+━━━ Numbers ━━━
+
+• 4 smart contracts deployed on 0G Mainnet (Chain ID: 16661)
+• 94/94 unit tests passing
+• 12 backend services with graceful degradation
+• 16+ frontend pages with modern UI
+• 10 MCP tools + 6 MCP resources
+• 7 official 0G Agent Skills integrated
+
+Live Demo: http://43.140.200.198:3000
+GitHub: https://github.com/henrymartin262/SealMind
 ```
+
+> **策略说明**：先讲痛点（评委共鸣），再讲方案（四大组件），然后强调差异化（"Most projects use 0G for one thing, we use ALL"），接着展示灵魂系统（最大创新点），最后用数字收尾（评委扫一眼就知道工作量）。
 
 ---
 
 ## 4. 本次黑客松进展
 
 ```
-v3.2 — Full Mainnet Deployment:
+v3.2 — Full Mainnet Deployment + Public Access:
 
 ✅ Smart Contracts (4/4 deployed to 0G Mainnet)
 - SealMindINFT: 0xc0238FEb50072797555098DfD529145c86Ab5b59
@@ -140,19 +172,28 @@ v3.2 — Full Mainnet Deployment:
 - BountyBoard: 0x8604482d75aFe56E376cdEE41Caf27599a926E1d
 - 94/94 unit tests passing
 
-✅ 0G Deep Integration (all 4 core components)
+✅ 0G Deep Integration (all 4 core components + 7 official Agent Skills)
 - 0G Storage KV: AES-256-GCM Memory Vault + Hive Mind + Soul persistence
 - 0G Compute: TEE inference with 3-layer fallback + processResponse fee settlement
 - 0G Chain: INFT minting, Decision Chain, Agent Registry, BountyBoard
 - 0G Skills: #4 Streaming Chat, #5 Text-to-Image, #6 Speech-to-Text, #7 Provider Discovery, #8 Account Management, #13 Storage-Chain, #14 Compute-Storage
 
-✅ Full-stack Application
+✅ Full-stack Application (publicly accessible)
+- Live Demo: http://43.140.200.198:3000
 - 12 backend services with graceful degradation
-- 30+ frontend pages with modern UI
-- MCP Server for AI agent self-discovery
-- 5 real Agents minted on mainnet
+- 16+ frontend pages with modern UI (warm-tone design)
+- MCP Server (10 tools + 6 resources) for AI agent self-discovery
+- OpenClaw integration: 5 built-in skills + pipeline orchestration
+
+✅ Soul System (v3.0)
+- Agent Passport: standardized on-chain certification with real capability tests
+- Living Soul: experience-driven hash chain, encrypted 0G KV persistence
+- Hive Mind: decentralized collective intelligence with Merkle tree verification
+- Agent Gateway: REST + MCP protocol, 10 tools + 6 resources
 
 ✅ Key Fixes in v3.1-3.2
+- Hive Mind Merkle tree: fixed odd-layer padding bug causing solidityPacked crash
+- Frontend API routing: NEXT_PUBLIC_API_URL switched to relative /api path for public deployment
 - Hive Mind: real 0G KV persistence + Merkle tree verification
 - Living Soul: encrypted 0G KV storage (was placeholder)
 - Passport: real capability tests (inference + storage + signature, ALL must pass)
@@ -203,6 +244,9 @@ Contracts:
 4. BountyBoard (Task Marketplace):
    Address: 0x8604482d75aFe56E376cdEE41Caf27599a926E1d
    Explorer: https://chainscan.0g.ai/address/0x8604482d75aFe56E376cdEE41Caf27599a926E1d
+
+Live Demo: http://43.140.200.198:3000
+API Health: http://43.140.200.198:3000/api/health
 ```
 
 ---
@@ -219,23 +263,51 @@ Contracts:
 |--------|------|------|------|
 | 🔴 P0 | 3 分钟 Demo 视频 | ❌ 待完成 | HackQuest 硬性要求，必须实操 |
 | 🔴 P0 | X 推文 + #0GHackathon #BuildOn0G | ❌ 待完成 | HackQuest 硬性要求 |
-| 🔴 P0 | MVP 链接（前端+后端部署公网） | ❌ 待完成 | 评委需要能访问 |
-| 🔴 P0 | 项目截图 4 张 | ❌ 待完成 | 报名必填 |
-| 🟡 P1 | 后端部署公网 | ❌ 待完成 | Railway / Render |
+| ✅ | MVP 链接（前端+后端部署公网） | ✅ 已完成 | http://43.140.200.198:3000 |
+| 🔴 P0 | 项目截图 4 张 | ❌ 待完成 | 从公网 MVP 截图 |
+| ✅ | 合约主网部署 | ✅ 已完成 | 4/4 合约已部署 |
+| ✅ | GitHub 仓库 | ✅ 已完成 | https://github.com/henrymartin262/SealMind |
 | 🟡 P1 | 团队信息填写 | ❌ 待填写 | 报名页面"团队"Tab |
 | 🟢 P2 | Pitch 视频 | ❌ 可选 | 如果有路演环节 |
 
 ---
 
+## 🚀 本地启动 & 公网部署
+
+### 本地启动（一键）
+```bash
+cd /path/to/SealMind
+# 后端
+cd packages/backend && nohup pnpm dev > /tmp/sealmind-backend.log 2>&1 &
+# 前端（生产模式，需先 build）
+cd packages/frontend && pnpm build && nohup pnpm start > /tmp/sealmind-frontend.log 2>&1 &
+```
+
+### SSH 隧道转发到公网
+```bash
+ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=3 \
+    -R 0.0.0.0:3000:localhost:3000 \
+    -R 0.0.0.0:4000:localhost:4000 \
+    root@43.140.200.198 -N
+```
+
+### 注意事项
+- 前端 `NEXT_PUBLIC_API_URL=/api`（相对路径），通过 Next.js rewrites 代理到后端
+- SSH 隧道断开后需重新执行上面的 ssh 命令
+- 远程服务器 iptables 已开放 3000/4000 端口
+- 远程服务器 `/etc/ssh/sshd_config` 已配置 `GatewayPorts yes`
+
+---
+
 ## 📊 评审标准（来自 HackQuest）
 
-| 维度 | 权重 | 我们的优势 |
+| 维度 | 权重 | SealMind 优势 |
 |------|------|-----------|
-| **0G 技术集成深度** | 高 | 4 个 0G 组件全集成 + 7 个官方 Skills |
-| **技术实现完整性** | 高 | 4 合约主网部署 + 94 测试 + 12 服务 |
-| **产品价值与市场潜力** | 中 | AI Agent 隐私+自主权是真实痛点 |
-| **UX + Demo 质量** | 高 | 30+ 页面 + 现代 UI，**需录视频** |
-| **团队能力与文档** | 中 | README 完整，需补团队信息 |
+| **0G 技术集成深度** | 高 | **全栈集成**：Chain(4合约) + Storage(加密记忆+HiveMind+Soul) + Compute(TEE推理+费用结算) + 7个官方Skills。大多数项目只用了1-2个组件 |
+| **技术实现完整性** | 高 | 4合约主网部署 + 94测试 + 12服务 + 16+页面 + MCP Server。**不是 demo 级别，是可运行的产品** |
+| **产品价值与市场潜力** | 中 | "AI Agent 隐私自主权"叙事 + Living Soul 概念 + Hive Mind 去中心化群体智能。**核心概念：灵魂不是出厂设定，是经验塑造的** |
+| **UX + Demo 质量** | 高 | 暖色系现代 UI + 完整用户流程 + 公网可访问 |
+| **创新性** | 高 | **Living Soul（经验哈希链）+ Hive Mind（去中心化集体智慧）+ Agent Passport（能力认证）**——这些概念在 Web3 AI Agent 领域是首创 |
 
 ---
 
@@ -243,6 +315,7 @@ Contracts:
 
 | 资源 | 链接 |
 |------|------|
+| **Live Demo** | http://43.140.200.198:3000 |
 | 0G Mainnet Explorer | https://chainscan.0g.ai |
 | 0G Mainnet RPC | https://evmrpc.0g.ai |
 | 0G 官方文档 | https://docs.0g.ai |

@@ -199,6 +199,8 @@ function buildMerkleRoot(leaves: string[]): string {
   // Build tree bottom-up
   let level = padded;
   while (level.length > 1) {
+    // Ensure even number of nodes at every level
+    if (level.length % 2 !== 0) level.push(level[level.length - 1]);
     const next: string[] = [];
     for (let i = 0; i < level.length; i += 2) {
       const left  = level[i];
@@ -227,6 +229,9 @@ function generateMerkleProof(leafHash: string, allLeaves: string[]): { proof: st
   let level = padded;
 
   while (level.length > 1) {
+    // Ensure even number of nodes at every level
+    if (level.length % 2 !== 0) level.push(level[level.length - 1]);
+
     const next: string[] = [];
     const siblingIdx = idx % 2 === 0 ? idx + 1 : idx - 1;
     if (siblingIdx < level.length) {

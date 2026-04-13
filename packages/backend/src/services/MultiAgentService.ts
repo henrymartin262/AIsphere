@@ -4,6 +4,7 @@ import { hashContent } from "../utils/encryption.js";
 import { initialize0GClients, kvBatchWrite } from "../config/og.js";
 import * as SealedInferenceService from "./SealedInferenceService.js";
 import * as MemoryVaultService from "./MemoryVaultService.js";
+import { soulService, ExperienceType } from "./SoulService.js";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -309,6 +310,27 @@ export async function executeTask(
     );
 
     console.log(`[MultiAgent] Task ${taskId} completed by Agent #${task.delegateAgentId}, proof: ${proof.proofHash}`);
+
+    // Auto-record INTERACTION experience for both agents (non-blocking)
+    soulService.recordExperience(task.delegateAgentId, {
+      type: ExperienceType.INTERACTION,
+      category: "agent_collaboration",
+      content: `Completed delegated task from Agent #${task.initiatorAgentId}: "${task.description.slice(0, 100)}"`,
+      context: `Delegation task ${taskId}`,
+      outcome: "success",
+      importance: 0.7,
+      learnings: ["Successfully completed inter-agent delegation task"],
+    }).catch(() => {});
+
+    soulService.recordExperience(task.initiatorAgentId, {
+      type: ExperienceType.INTERACTION,
+      category: "agent_collaboration",
+      content: `Received delegation result from Agent #${task.delegateAgentId} for: "${task.description.slice(0, 100)}"`,
+      context: `Delegation task ${taskId}`,
+      outcome: "success",
+      importance: 0.5,
+      learnings: ["Leveraged multi-agent delegation for task completion"],
+    }).catch(() => {});
   } catch (err) {
     task.status = "failed";
     task.result = `Error: ${(err as Error).message}`;
@@ -501,6 +523,18 @@ export async function handoff(
   );
 
   console.log(`[MultiAgent] Handoff: Agent #${fromAgentId} → Agent #${toAgentId}, reason: ${reason}`);
+
+  // Auto-record INTERACTION experience for handoff (non-blocking)
+  soulService.recordExperience(fromAgentId, {
+    type: ExperienceType.INTERACTION,
+    category: "agent_collaboration",
+    content: `Handed off conversation to Agent #${toAgentId}: "${reason.slice(0, 100)}"`,
+    context: "Agent handoff",
+    outcome: "neutral",
+    importance: 0.4,
+    learnings: ["Delegated via handoff when another agent was better suited"],
+  }).catch(() => {});
+
   return msg;
 }
 

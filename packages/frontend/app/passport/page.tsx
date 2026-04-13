@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { useLang } from "../../contexts/LangContext";
+import { translations } from "../../lib/i18n";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
 
 type Step = 1 | 2 | 3;
 
 interface TestResult {
-  name: string;
+  key: string;
   passed: boolean;
   icon: string;
 }
@@ -20,14 +22,7 @@ interface PassportData {
   walletAddress?: string;
 }
 
-const TESTS: TestResult[] = [
-  { name: "Inference Engine", passed: false, icon: "🔮" },
-  { name: "0G Storage", passed: false, icon: "🗄️" },
-  { name: "Identity Verification", passed: false, icon: "🪪" },
-];
-
-function StepIndicator({ current }: { current: Step }) {
-  const labels = ["Enter ID", "Test", "Issued"];
+function StepIndicator({ current, labels }: { current: Step; labels: string[] }) {
   return (
     <div className="flex items-center justify-center gap-3 mb-8">
       {([1, 2, 3] as Step[]).map((s) => (
@@ -59,7 +54,7 @@ function StepIndicator({ current }: { current: Step }) {
   );
 }
 
-function CopyButton({ text }: { text: string }) {
+function CopyButton({ text, copyLabel, copiedLabel }: { text: string; copyLabel: string; copiedLabel: string }) {
   const [copied, setCopied] = useState(false);
   async function handleCopy() {
     await navigator.clipboard.writeText(text);
@@ -71,16 +66,25 @@ function CopyButton({ text }: { text: string }) {
       onClick={handleCopy}
       className="rounded-lg border border-gray-200 px-2.5 py-1 text-xs text-slate-500 transition hover:border-indigo-300 hover:text-indigo-600 dark:border-white/10 dark:text-slate-400 dark:hover:border-indigo-500/30 dark:hover:text-indigo-300"
     >
-      {copied ? "✓ Copied" : "Copy"}
+      {copied ? `✓ ${copiedLabel}` : copyLabel}
     </button>
   );
 }
 
 export default function PassportPage() {
+  const { lang } = useLang();
+  const t = translations[lang];
+
+  const TEST_KEYS = [
+    { key: "pass_test_inference", icon: "🔮" },
+    { key: "pass_test_storage", icon: "🗄️" },
+    { key: "pass_test_identity", icon: "🪪" },
+  ] as const;
+
   const [step, setStep] = useState<Step>(1);
   const [agentId, setAgentId] = useState("");
   const [walletAddress, setWalletAddress] = useState("");
-  const [tests, setTests] = useState<TestResult[]>(TESTS.map((t) => ({ ...t })));
+  const [tests, setTests] = useState<TestResult[]>(TEST_KEYS.map((tk) => ({ key: tk.key, passed: false, icon: tk.icon })));
   const [passport, setPassport] = useState<PassportData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [shareUrl, setShareUrl] = useState("");
@@ -89,7 +93,7 @@ export default function PassportPage() {
     if (!agentId.trim()) return;
     setError(null);
     setStep(2);
-    setTests(TESTS.map((t) => ({ ...t, passed: false })));
+    setTests(TEST_KEYS.map((tk) => ({ key: tk.key, passed: false, icon: tk.icon })));
 
     try {
       const body: Record<string, string> = { agentId: agentId.trim() };
@@ -103,17 +107,17 @@ export default function PassportPage() {
       const json = await res.json();
 
       const results: boolean[] = json.data?.testResults ?? json.testResults ?? [true, true, true];
-      for (let i = 0; i < TESTS.length; i++) {
+      for (let i = 0; i < TEST_KEYS.length; i++) {
         await new Promise((r) => setTimeout(r, 800 + i * 600));
         setTests((prev) =>
-          prev.map((t, idx) => (idx === i ? { ...t, passed: Boolean(results[i]) } : t))
+          prev.map((item, idx) => (idx === i ? { ...item, passed: Boolean(results[i]) } : item))
         );
       }
 
       await new Promise((r) => setTimeout(r, 400));
 
       if (!res.ok || !json.success) {
-        throw new Error(json.error ?? json.message ?? "Registration failed");
+        throw new Error(json.error ?? json.message ?? t.pass_error_default);
       }
 
       const data: PassportData = json.data ?? json;
@@ -125,10 +129,12 @@ export default function PassportPage() {
       );
       setStep(3);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Registration failed");
+      setError(err instanceof Error ? err.message : t.pass_error_default);
       setStep(1);
     }
   }
+
+  const stepLabels = [t.pass_step_1, t.pass_step_2, t.pass_step_3];
 
   return (
     <main className="mx-auto max-w-7xl px-6 py-10">
@@ -136,29 +142,29 @@ export default function PassportPage() {
       <div className="animate-slide-up mb-8">
         <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-indigo-200/60 bg-indigo-50 px-3 py-1 text-[11px] font-semibold text-indigo-600 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400">
           <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 shadow-[0_0_6px_rgba(99,102,241,0.6)]" />
-          On-Chain Certification
+          {t.pass_badge}
         </div>
         <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
-          Agent Passport
+          {t.pass_title}
         </h1>
         <p className="mt-1.5 max-w-xl text-sm text-slate-500 dark:text-slate-400">
-          Register your agent and receive a permanent on-chain identity certificate.
+          {t.pass_desc}
         </p>
       </div>
 
       {/* ── Wizard Card ── */}
       <div className="mx-auto max-w-lg">
         <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm dark:border-white/8 dark:bg-slate-900">
-          <StepIndicator current={step} />
+          <StepIndicator current={step} labels={stepLabels} />
 
           {/* ── Step 1: Input ── */}
           {step === 1 && (
             <div>
               <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-1">
-                Enter Your Agent ID
+                {t.pass_s1_title}
               </h2>
               <p className="text-xs text-slate-400 dark:text-slate-500 mb-6">
-                Provide your agent ID to begin the certification process
+                {t.pass_s1_desc}
               </p>
 
               {error && (
@@ -170,7 +176,7 @@ export default function PassportPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
-                    Agent ID <span className="text-red-500">*</span>
+                    {t.pass_field_agent_id} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -184,7 +190,7 @@ export default function PassportPage() {
 
                 <div>
                   <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
-                    Wallet Address <span className="text-slate-300 dark:text-slate-600">(optional)</span>
+                    {t.pass_field_wallet} <span className="text-slate-300 dark:text-slate-600">{t.pass_field_wallet_opt}</span>
                   </label>
                   <input
                     type="text"
@@ -200,7 +206,7 @@ export default function PassportPage() {
                   disabled={!agentId.trim()}
                   className="mt-2 w-full rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Begin Registration →
+                  {t.pass_btn_begin}
                 </button>
               </div>
             </div>
@@ -217,19 +223,20 @@ export default function PassportPage() {
                   </svg>
                 </div>
                 <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
-                  Running Capability Tests…
+                  {t.pass_s2_title}
                 </h2>
                 <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-                  Verifying agent #{agentId} capabilities
+                  {t.pass_s2_verifying} #{agentId}
                 </p>
               </div>
 
               <div className="space-y-3">
                 {tests.map((test, idx) => {
-                  const isRunning = tests.slice(0, idx).every((t) => t.passed) && !test.passed;
+                  const isRunning = tests.slice(0, idx).every((item) => item.passed) && !test.passed;
+                  const testName = (t as Record<string, string>)[test.key] ?? test.key;
                   return (
                     <div
-                      key={test.name}
+                      key={test.key}
                       className={`flex items-center gap-3 rounded-xl border px-4 py-3 transition-all duration-500 ${
                         test.passed
                           ? "border-emerald-200 bg-emerald-50 dark:border-emerald-500/30 dark:bg-emerald-500/10"
@@ -246,7 +253,7 @@ export default function PassportPage() {
                           ? "text-indigo-700 dark:text-indigo-300"
                           : "text-slate-400 dark:text-slate-500"
                       }`}>
-                        {test.name}
+                        {testName}
                       </span>
                       {test.passed ? (
                         <span className="text-emerald-500 font-bold">✓</span>
@@ -264,7 +271,7 @@ export default function PassportPage() {
               </div>
 
               <div className="mt-5 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-xs text-slate-400 text-center dark:border-white/8 dark:bg-white/[0.02] dark:text-slate-500">
-                Connecting to 0G Network · Verifying on-chain identity
+                {t.pass_s2_footer}
               </div>
             </div>
           )}
@@ -277,45 +284,45 @@ export default function PassportPage() {
                   <span className="text-3xl">🪪</span>
                 </div>
                 <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
-                  Passport Issued!
+                  {t.pass_s3_title}
                 </h2>
                 <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-                  Agent #{passport.agentId} is now certified on-chain
+                  Agent #{passport.agentId} {t.pass_s3_certified}
                 </p>
               </div>
 
               <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5 space-y-4 dark:border-white/8 dark:bg-white/[0.03]">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wider">Status</span>
+                  <span className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wider">{t.pass_status}</span>
                   <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${
                     passport.isActive
                       ? "border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400"
                       : "border-gray-200 bg-gray-100 text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-400"
                   }`}>
-                    {passport.isActive ? "✓ Active" : "Inactive"}
+                    {passport.isActive ? `✓ ${t.pass_active}` : t.pass_inactive}
                   </span>
                 </div>
 
                 <div>
                   <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1.5">
-                    Passport Hash
+                    {t.pass_hash}
                   </p>
                   <div className="flex items-center gap-2">
                     <code className="flex-1 truncate font-mono text-xs text-indigo-600 bg-white rounded-lg px-3 py-2 border border-gray-200 dark:bg-black/20 dark:border-white/5 dark:text-indigo-300">
                       {passport.passportHash}
                     </code>
-                    <CopyButton text={passport.passportHash} />
+                    <CopyButton text={passport.passportHash} copyLabel={t.pass_copy} copiedLabel={t.pass_copied} />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
-                      Certified At
+                      {t.pass_certified_at}
                     </p>
                     <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
                       {passport.certifiedAt
-                        ? new Date(passport.certifiedAt * 1000).toLocaleDateString(undefined, {
+                        ? new Date(passport.certifiedAt * 1000).toLocaleDateString(lang === "zh" ? "zh-CN" : "en-US", {
                             year: "numeric", month: "long", day: "numeric",
                           })
                         : "—"}
@@ -323,7 +330,7 @@ export default function PassportPage() {
                   </div>
                   <div>
                     <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
-                      Agent ID
+                      {t.pass_agent_id}
                     </p>
                     <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-300">
                       #{passport.agentId}
@@ -334,13 +341,13 @@ export default function PassportPage() {
                 {shareUrl && (
                   <div>
                     <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1.5">
-                      Shareable Link
+                      {t.pass_share_link}
                     </p>
                     <div className="flex items-center gap-2">
                       <code className="flex-1 truncate font-mono text-xs text-slate-500 bg-white rounded-lg px-3 py-2 border border-gray-200 dark:bg-black/20 dark:border-white/5 dark:text-slate-400">
                         {shareUrl}
                       </code>
-                      <CopyButton text={shareUrl} />
+                      <CopyButton text={shareUrl} copyLabel={t.pass_copy} copiedLabel={t.pass_copied} />
                     </div>
                   </div>
                 )}
@@ -351,13 +358,13 @@ export default function PassportPage() {
                   onClick={() => { setStep(1); setAgentId(""); setWalletAddress(""); setPassport(null); setError(null); }}
                   className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-slate-500 transition hover:border-indigo-200 hover:text-indigo-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400"
                 >
-                  Register Another
+                  {t.pass_btn_another}
                 </button>
                 <a
                   href={`/agent/${passport.agentId}/profile`}
                   className="flex-1 rounded-xl bg-indigo-600 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-indigo-700"
                 >
-                  View Agent →
+                  {t.pass_btn_view}
                 </a>
               </div>
             </div>

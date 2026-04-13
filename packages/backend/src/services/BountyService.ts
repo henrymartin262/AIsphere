@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 import { contracts, BOUNTY_BOARD_ABI } from "../config/contracts.js";
 import { initialize0GClients } from "../config/og.js";
+import { soulService, ExperienceType } from "./SoulService.js";
 
 const RPC_TIMEOUT_MS = 3_000;
 const BOUNTY_CACHE_TTL_MS = 30_000;
@@ -509,7 +510,7 @@ function autoRecordBountyExperience(bounty: BountyInfo): void {
       outcome: "success",
       importance: Math.min(1, parseFloat(bounty.rewardEth) / 2),
       learnings: [`Successfully completed task: ${bounty.title}`],
-    }).catch((err) => {
+    }).catch((err: unknown) => {
       console.warn("[BountyService] Auto soul experience record failed (non-fatal):", err);
     });
   }
@@ -589,6 +590,15 @@ export async function getBounties(
       let bounties = rawBounties.map(formatBounty);
       if (statusFilter !== undefined) {
         bounties = bounties.filter((b) => b.status === statusFilter);
+      }
+      // If chain returned empty, merge mock data for demo purposes
+      if (bounties.length === 0 && mockBounties.size > 0) {
+        let mockAll = Array.from(mockBounties.values());
+        if (statusFilter !== undefined) mockAll = mockAll.filter((b) => b.status === statusFilter);
+        bounties = mockAll.slice(offset, offset + limit);
+        const result = { bounties, total: mockAll.length };
+        bountyListCache.set(cacheKey, { data: result, expiresAt: Date.now() + BOUNTY_CACHE_TTL_MS });
+        return result;
       }
       const result = { bounties, total: Number(total) };
       bountyListCache.set(cacheKey, { data: result, expiresAt: Date.now() + BOUNTY_CACHE_TTL_MS });

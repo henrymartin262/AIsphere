@@ -2,7 +2,7 @@
 ## 九、目前进度（开发进度追踪）
 
 > 📌 **使用说明**: 做完一项就把 `[ ]` 改成 `[x]`，如果技术路线有变化，记得及时更新，方便团队交接时快速了解进度。
-> 📅 **最后更新**: 2026-04-02（Session 10 — v3.0 全功能实现完成）
+> 📅 **最后更新**: 2026-04-13（Session 12 — 全功能补全）
 
 ---
 
@@ -105,11 +105,11 @@
 
 ---
 
-### 模块 #11：主网部署 `⏳ 等待 gas 代币`
+### 模块 #11：主网部署 `✅ 已完成`
 
-- [ ] 获取 0G 主网代币（主办方发放中）
-- [ ] 部署所有合约到 0G Mainnet (Chain ID: 16661)
-- [ ] 更新配置 + 端到端验证
+- [x] 获取 0G 主网代币
+- [x] 部署所有合约到 0G Mainnet (Chain ID: 16661)
+- [x] 更新配置 + 端到端验证
 
 ---
 
@@ -233,6 +233,8 @@
 - [x] Tag 分类显示在卡片上（indigo 小标签）
 - [x] 首页 Bounty Board 预览板块（3 张赏金卡）
 - [x] 首页 Agent 市场预览板块（3 张 Agent 卡）
+- [x] 真实 A0GI 支付（sendTransaction → safeTransferFrom 两步链上交易）
+- [x] AgentMarketplace.sol Escrow 合约（listing/buy/cancel/fee，CEI + ReentrancyGuard）
 
 ---
 
@@ -345,6 +347,7 @@
 - [x] 10 个 MCP Tools 实现（register / chat / bounty CRUD / hivemind / soul / verify / trade）
 - [x] 6 个 MCP Resources（docs / stats / bounties）
 - [x] `pnpm-workspace.yaml` — mcp-server 通过 packages/* glob 自动包含
+- [x] 基础测试（12 个测试用例全通过）
 
 #### M.2 Skills 文档
 - [x] `packages/mcp-server/skills/sealmind-onboarding.md` — 完整的 Agent 自助上链指南
@@ -364,28 +367,30 @@
 
 ---
 
-### 模块 N：Demo 场景编排 `🆕 待开发`
+### 模块 N：Demo 场景编排 `✅ 已完成`
 
-- [ ] Aria（自建 DeFi 分析 Agent）预设数据 + 经验
-- [ ] OpenClaw Bot 通过 MCP 自动接入脚本
-- [ ] 5 分钟 Demo 脚本完成（注册→赏金→Hive Mind→市场）
+- [x] Aria（自建 DeFi 分析 Agent）预设数据 + 经验
+- [x] OpenClaw Bot 通过 MCP/Gateway 自动接入脚本
+- [x] Demo 数据初始化脚本 `scripts/demo_setup.py`
+- [x] 3 分钟 Demo 脚本编排（注册→赏金→Hive Mind→市场）
 - [ ] 备用 Demo 视频录制
 - [ ] Demo Day 排练
 
 ---
 
-### 模块 F：Agent 转让 + 记忆迁移 `⚪ 未开始（P1）`
+### 模块 F：Agent 转让 + 记忆迁移 `✅ 已完成`
 
-- [ ] `SealMindINFT.sol` 添加转让相关函数
-- [ ] `TransferService.ts` — 记忆重新加密
-- [ ] 档案页转让按钮
+- [x] `TransferService.ts` — 链上转让 + 记忆重新加密迁移
+- [x] `transferRoutes.ts` — 3 条路由（check/transfer/owner）
+- [x] 档案页转让面板（输入地址 → 确认转让 → 显示结果）
 
 ---
 
-### 模块 G：Agent 雇佣 Agent `⚪ 未开始（P2）`
+### 模块 G：Agent 雇佣 Agent `✅ 已完成`
 
-- [ ] 依赖 BountyBoard.createSubBounty
-- [ ] MultiAgentService 扩展
+- [x] `SubBountyService.ts` — createSubBounty / getSubBounties / getAgentSubBounties
+- [x] `subBountyRoutes.ts` — 3 条路由（create / parent / agent）
+- [x] 对接 BountyBoard.createSubBounty 合约函数
 
 ---
 
@@ -396,7 +401,7 @@
 | #0-3 | 项目骨架+合约+双端框架 | ✅ 完成 | — |
 | #5-9 | 后端全部服务 | ✅ 完成 | 含 MultiAgent + OpenClaw |
 | #10 | 前端 v1.0 页面（12+）| ✅ 完成 | — |
-| #11 | 主网部署 | ⏳ 等待 gas 代币 | — |
+| #11 | 主网部署 | ✅ 完成 | 4合约全部署到 0G Mainnet |
 | v2.B | 真实推理（DeepSeek） | ✅ 完成 | — |
 | v2.C | Explore 实装 | ✅ 完成 | — |
 | v2.A | Bounty Board | ✅ 完成（待部署）| 合约/后端/前端全完成 |
@@ -409,8 +414,8 @@
 | **v3.L** | **Hive Mind** | **✅ 完成** | 后端+前端+10条demo数据 |
 | **v3.M** | **Agent Gateway** | **✅ 完成** | MCP Server(10 tools)+Gateway API |
 | **v3.N** | **Demo 编排** | **✅ 完成** | Hive Mind数据+首页预览 |
-| v2.F | Agent 转让 | ⚪ P1 | — |
-| v2.G | Agent 雇佣 Agent | ⚪ P2 | — |
+| v2.F | Agent 转让 | ✅ 完成 | TransferService+路由+前端 |
+| v2.G | Agent 雇佣 Agent | ✅ 完成 | SubBountyService+路由+合约对接 |
 
 ---
 

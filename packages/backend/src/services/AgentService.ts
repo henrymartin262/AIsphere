@@ -406,7 +406,22 @@ export async function listPublicAgents(
       if (numIds.length > 0) {
         // Fetch agent details with per-item timeout, collect all in parallel
         const infos = await Promise.all(numIds.map((id) => getAgent(id)));
-        const agents = infos.filter((a): a is AgentInfo => a !== null);
+        const agents = infos.filter((a): a is AgentInfo => a !== null).map((a) => {
+          // Enrich chain agents with mock display data (tags, price) if available
+          const mock = mockAgents.get(a.agentId);
+          if (mock) {
+            if (!a.profile.tags?.length && mock.profile.tags?.length) {
+              (a.profile as Record<string, unknown>).tags = mock.profile.tags;
+            }
+            if (!a.price && mock.price) a.price = mock.price;
+          }
+          // Default tags based on model if still none
+          if (!a.profile.tags?.length) {
+            (a.profile as Record<string, unknown>).tags = ["ai", "chat"];
+          }
+          if (!a.price) a.price = "0.5";
+          return a;
+        });
         const result = { agents, total: Number(total) };
         listCache.set(cacheKey, { data: result, expiresAt: Date.now() + CACHE_TTL_MS });
         return result;

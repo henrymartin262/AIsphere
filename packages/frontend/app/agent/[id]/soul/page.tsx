@@ -287,6 +287,80 @@ export default function AgentSoulPage() {
         </div>
       )}
 
+      {/* ── Soul Growth Curve ── */}
+      {!expLoading && experiences.length > 1 && (() => {
+        // Build cumulative experience count over time for the growth chart
+        const sorted = [...experiences].sort((a, b) => a.timestamp - b.timestamp);
+        const points = sorted.map((_, i) => ({ t: sorted[i].timestamp, count: i + 1 }));
+
+        // Normalize to SVG coordinates
+        const svgW = 600, svgH = 180, padX = 40, padY = 20;
+        const tMin = points[0].t;
+        const tMax = points[points.length - 1].t;
+        const tRange = Math.max(tMax - tMin, 1);
+        const maxCount = points[points.length - 1].count;
+
+        const toX = (t: number) => padX + ((t - tMin) / tRange) * (svgW - padX * 2);
+        const toY = (c: number) => svgH - padY - ((c / maxCount) * (svgH - padY * 2));
+
+        const pathD = points.map((p, i) =>
+          `${i === 0 ? "M" : "L"} ${toX(p.t).toFixed(1)} ${toY(p.count).toFixed(1)}`
+        ).join(" ");
+
+        const areaD = pathD + ` L ${toX(tMax).toFixed(1)} ${(svgH - padY).toFixed(1)} L ${toX(tMin).toFixed(1)} ${(svgH - padY).toFixed(1)} Z`;
+
+        // X-axis labels (first, middle, last)
+        const fmtDate = (ts: number) => new Date(ts * 1000).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+        const xLabels = [
+          { x: toX(tMin), label: fmtDate(tMin) },
+          ...(points.length > 2 ? [{ x: toX(points[Math.floor(points.length / 2)].t), label: fmtDate(points[Math.floor(points.length / 2)].t) }] : []),
+          { x: toX(tMax), label: fmtDate(tMax) },
+        ];
+
+        return (
+          <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm dark:border-white/8 dark:bg-slate-900">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-lg">📈</span>
+              <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Soul Growth Curve</h2>
+              <span className="ml-auto text-xs text-slate-400 dark:text-slate-500">{maxCount} total experiences</span>
+            </div>
+            <svg viewBox={`0 0 ${svgW} ${svgH}`} className="w-full h-auto" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <linearGradient id="growthGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="rgb(99,102,241)" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="rgb(99,102,241)" stopOpacity="0.02" />
+                </linearGradient>
+              </defs>
+              {/* Grid lines */}
+              {[0.25, 0.5, 0.75, 1].map((frac) => (
+                <g key={frac}>
+                  <line x1={padX} y1={toY(maxCount * frac)} x2={svgW - padX} y2={toY(maxCount * frac)}
+                    stroke="currentColor" className="text-gray-100 dark:text-white/5" strokeWidth="0.5" />
+                  <text x={padX - 6} y={toY(maxCount * frac) + 3} textAnchor="end"
+                    className="fill-slate-300 dark:fill-white/20" fontSize="8">{Math.round(maxCount * frac)}</text>
+                </g>
+              ))}
+              {/* X-axis */}
+              <line x1={padX} y1={svgH - padY} x2={svgW - padX} y2={svgH - padY}
+                stroke="currentColor" className="text-gray-200 dark:text-white/10" strokeWidth="0.5" />
+              {xLabels.map((l, i) => (
+                <text key={i} x={l.x} y={svgH - 4} textAnchor="middle"
+                  className="fill-slate-300 dark:fill-white/20" fontSize="8">{l.label}</text>
+              ))}
+              {/* Area fill */}
+              <path d={areaD} fill="url(#growthGrad)" />
+              {/* Line */}
+              <path d={pathD} fill="none" stroke="rgb(99,102,241)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              {/* Data points */}
+              {points.map((p, i) => (
+                <circle key={i} cx={toX(p.t)} cy={toY(p.count)} r={points.length > 30 ? 1.5 : 3}
+                  fill="rgb(99,102,241)" stroke="white" strokeWidth="1" className="dark:stroke-slate-900" />
+              ))}
+            </svg>
+          </div>
+        );
+      })()}
+
       {/* ── Experience Timeline ── */}
       <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm dark:border-white/8 dark:bg-slate-900">
         <div className="flex items-center gap-2 mb-5">

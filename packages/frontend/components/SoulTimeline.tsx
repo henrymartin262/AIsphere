@@ -54,10 +54,10 @@ function ImportanceBar({ importance }: { importance: number }) {
       : "bg-slate-500";
   return (
     <div className="flex items-center gap-1.5 mt-1">
-      <div className="h-1 w-20 rounded-full bg-slate-700/50 overflow-hidden">
+      <div className="h-1 w-20 rounded-full bg-gray-100 overflow-hidden dark:bg-slate-700/50">
         <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-[10px] text-slate-500">{(importance * 100).toFixed(0)}%</span>
+      <span className="text-[10px] text-slate-400 dark:text-slate-500">{(importance * 100).toFixed(0)}%</span>
     </div>
   );
 }
@@ -66,13 +66,13 @@ function SkeletonItem() {
   return (
     <div className="flex gap-4 animate-pulse">
       <div className="flex flex-col items-center">
-        <div className="h-8 w-8 rounded-full bg-slate-800" />
-        <div className="w-px flex-1 bg-slate-800 mt-1" />
+        <div className="h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-800" />
+        <div className="w-px flex-1 bg-slate-100 dark:bg-slate-800 mt-1" />
       </div>
       <div className="flex-1 pb-6 space-y-2">
-        <div className="h-3 w-1/3 rounded bg-slate-800" />
-        <div className="h-3 w-2/3 rounded bg-slate-800/70" />
-        <div className="h-1.5 w-20 rounded bg-slate-800/50 mt-2" />
+        <div className="h-3 w-1/3 rounded bg-slate-100 dark:bg-slate-800" />
+        <div className="h-3 w-2/3 rounded bg-slate-100 dark:bg-slate-800/70" />
+        <div className="h-1.5 w-20 rounded bg-slate-100 dark:bg-slate-800/50 mt-2" />
       </div>
     </div>
   );
@@ -105,20 +105,20 @@ export function SoulTimeline({ experiences, loading = false }: SoulTimelineProps
           <div key={exp.id} className="flex gap-4">
             {/* Left: icon + connector line */}
             <div className="flex flex-col items-center shrink-0">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-700 bg-slate-900 text-base shadow-sm z-10">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-white text-base shadow-sm z-10 dark:border-slate-700 dark:bg-slate-900">
                 {typeIcon(exp.type)}
               </div>
               {!isLast && (
-                <div className="w-px flex-1 bg-gradient-to-b from-slate-700 to-slate-800 mt-1" />
+                <div className="w-px flex-1 bg-gradient-to-b from-gray-200 to-gray-100 mt-1 dark:from-slate-700 dark:to-slate-800" />
               )}
             </div>
 
             {/* Right: content */}
             <div className={`flex-1 min-w-0 ${isLast ? "pb-2" : "pb-5"}`}>
               <div className="flex flex-wrap items-center gap-2 mb-1">
-                <span className="text-xs font-semibold text-slate-200 capitalize">{exp.category}</span>
+                <span className="text-xs font-semibold text-slate-700 capitalize dark:text-slate-200">{exp.category}</span>
                 <OutcomeBadge outcome={exp.outcome} />
-                <span className="ml-auto text-[10px] text-slate-600 shrink-0">
+                <span className="ml-auto text-[10px] text-slate-400 shrink-0 dark:text-slate-600">
                   {new Date(exp.timestamp * 1000).toLocaleDateString(undefined, {
                     month: "short",
                     day: "numeric",
@@ -129,7 +129,7 @@ export function SoulTimeline({ experiences, loading = false }: SoulTimelineProps
               </div>
 
               {exp.content && (
-                <p className="text-xs text-slate-400 leading-relaxed line-clamp-2">{exp.content}</p>
+                <p className="text-xs text-slate-500 leading-relaxed line-clamp-2 dark:text-slate-400">{exp.content}</p>
               )}
 
               <ImportanceBar importance={exp.importance} />
