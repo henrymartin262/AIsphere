@@ -2,7 +2,7 @@
 ## 九、目前进度（开发进度追踪）
 
 > 📌 **使用说明**: 做完一项就把 `[ ]` 改成 `[x]`，如果技术路线有变化，记得及时更新，方便团队交接时快速了解进度。
-> 📅 **最后更新**: 2026-04-13（Session 12 — 全功能补全）
+> 📅 **最后更新**: 2026-04-13（Session 13 — 主网部署完成 + 全功能收尾）
 
 ---
 
@@ -159,7 +159,7 @@
   - [x] ReentrancyGuard + CEI 模式防重入
 - [x] `test/BountyBoard.ts` — 50 个测试用例全通过
 - [x] `hardhat.config.ts` 添加 `viaIR: true`（解决 stack too deep）
-- [ ] 部署到 0G Testnet（待执行，需要 gas）
+- [x] 部署到 0G Mainnet: `0x8604482d75aFe56E376cdEE41Caf27599a926E1d`
 
 #### A.2 后端 ✅
 - [x] `BountyService.ts` — 11 个 service 函数（合约优先 + mock fallback，预置 3 条示例）
@@ -203,7 +203,7 @@
 - [x] `agentRoutes.ts` — `GET /api/agents/:agentId/soul-signature` 端点
 - [x] `types/index.ts` — Agent 接口新增 `soulSignature?: string`
 - [x] `components/SoulSignature.tsx` — bytes32 → 确定性 SVG（多边形 + 星形 + 渐变）
-- [ ] 重新部署 SealMindINFT 到 testnet（含新字段，待 gas）
+- [x] 重新部署 SealMindINFT 到 0G Mainnet（含新字段）
 
 ---
 
@@ -294,18 +294,18 @@
 - [x] `soulRoutes.ts` — 6 条路由
 - [x] 结构化经验数据模型（AgentExperience：type/category/content/outcome/learnings）
 - [x] 6 种经验类型：inference / bounty / interaction / knowledge / error / trade
-- [ ] 自动触发集成：
-  - [ ] `SealedInferenceService` → 推理后自动记录 INFERENCE 经验
-  - [ ] `BountyService` → 完成赏金后自动记录 BOUNTY 经验
-  - [ ] `MultiAgentService` → 协作后自动记录 INTERACTION 经验
+- [x] 自动触发集成：
+  - [x] `SealedInferenceService` → 推理后自动记录 INFERENCE 经验
+  - [x] `BountyService` → 完成赏金后自动记录 BOUNTY 经验
+  - [x] `MultiAgentService` → 协作后自动记录 INTERACTION 经验
 
 #### K.3 前端
 - [x] `app/agent/[id]/soul/page.tsx` — 灵魂档案页
-  - [ ] 灵魂状态卡（当前哈希 + 经验总数 + 最后活跃）
-  - [ ] 经验时间线（按时间倒序，图标区分类型）
-  - [ ] 灵魂成长曲线
-  - [ ] 完整性验证按钮
-  - [ ] 隐私声明
+  - [x] 灵魂状态卡（当前哈希 + 经验总数 + 最后活跃）
+  - [x] 经验时间线（按时间倒序，图标区分类型）
+  - [x] 灵魂成长曲线（SVG 图表）
+  - [x] 完整性验证按钮
+  - [x] 隐私声明
 - [x] `components/SoulTimeline.tsx` — 经验时间线组件
 - [x] `app/agent/[id]/layout.tsx` — 添加 Soul tab
 
@@ -327,17 +327,19 @@
 
 #### L.2 前端
 - [x] `app/hivemind/page.tsx` — Hive Mind 可视化
-  - [ ] 全局统计（总贡献数、活跃 Agent 数、领域分布）
-  - [ ] 领域经验流（最新贡献匿名展示）
-  - [ ] Agent 接入入口
-  - [ ] 去中心化声明
+  - [x] 全局统计（总贡献数、活跃 Agent 数、领域分布）
+  - [x] 知识图谱可视化
+  - [x] 领域经验流（最新贡献匿名展示）
+  - [x] Agent 接入入口
+  - [x] 去中心化声明
+- [x] `components/HexGrid.tsx` — HexGrid 公共组件（全站复用）
 - [x] `components/HiveMindViz.tsx` — 可视化组件
 - [x] `Navbar.tsx` — 添加 Hive Mind 导航
 - [x] `app/page.tsx` — 首页添加 Hive Mind 统计入口
 
 ---
 
-### 模块 M：Agent Gateway（Agent 接入层）⭐ `🆕 待开发`
+### 模块 M：Agent Gateway（Agent 接入层）⭐ `✅ 已完成`
 
 > 让外部 Agent 自助了解和接入 SealMind：MCP Server（AI 原生）+ Skills 文档 + Gateway API
 
@@ -351,12 +353,12 @@
 
 #### M.2 Skills 文档
 - [x] `packages/mcp-server/skills/sealmind-onboarding.md` — 完整的 Agent 自助上链指南
-  - [ ] SealMind 介绍
-  - [ ] 注册认证流程（API 调用序列）
-  - [ ] 赏金任务参与指南
-  - [ ] Hive Mind 贡献/获取指南
-  - [ ] 市场交易指南
-  - [ ] 所有 API 端点列表
+  - [x] SealMind 介绍
+  - [x] 注册认证流程（API 调用序列）
+  - [x] 赏金任务参与指南
+  - [x] Hive Mind 贡献/获取指南
+  - [x] 市场交易指南
+  - [x] 所有 API 端点列表
 
 #### M.3 Gateway API
 - [x] `gatewayRoutes.ts` — Agent 友好的统一接入层
@@ -401,21 +403,22 @@
 | #0-3 | 项目骨架+合约+双端框架 | ✅ 完成 | — |
 | #5-9 | 后端全部服务 | ✅ 完成 | 含 MultiAgent + OpenClaw |
 | #10 | 前端 v1.0 页面（12+）| ✅ 完成 | — |
-| #11 | 主网部署 | ✅ 完成 | 4合约全部署到 0G Mainnet |
+| #11 | 主网部署 | ✅ 完成 | 5合约全部署到 0G Mainnet |
 | v2.B | 真实推理（DeepSeek） | ✅ 完成 | — |
 | v2.C | Explore 实装 | ✅ 完成 | — |
-| v2.A | Bounty Board | ✅ 完成（待部署）| 合约/后端/前端全完成 |
+| v2.A | Bounty Board | ✅ 完成 | 合约部署到 0G Mainnet |
 | v2.D | Agent 档案页 | ✅ 完成 | — |
-| v2.E | 灵魂签名（静态） | ✅ 完成（待部署）| 合约/后端/前端全完成 |
+| v2.E | 灵魂签名（静态） | ✅ 完成 | 合约已部署 Mainnet |
 | v2.H | UI 打磨 + Demo 数据 | ✅ 完成 | — |
-| v2.I | Agent 交易市场 | ✅ 完成 | Explore 完整重写 |
+| v2.I | Agent 交易市场 | ✅ 完成 | AgentMarketplace.sol Escrow + 真实 A0GI 支付 |
 | **v3.J** | **Agent Passport** | **✅ 完成** | 合约+后端+前端全完成 |
-| **v3.K** | **Living Soul** | **✅ 完成** | 合约+后端+前端全完成 |
-| **v3.L** | **Hive Mind** | **✅ 完成** | 后端+前端+10条demo数据 |
-| **v3.M** | **Agent Gateway** | **✅ 完成** | MCP Server(10 tools)+Gateway API |
-| **v3.N** | **Demo 编排** | **✅ 完成** | Hive Mind数据+首页预览 |
-| v2.F | Agent 转让 | ✅ 完成 | TransferService+路由+前端 |
-| v2.G | Agent 雇佣 Agent | ✅ 完成 | SubBountyService+路由+合约对接 |
+| **v3.K** | **Living Soul** | **✅ 完成** | 含自动触发 + Soul 成长曲线 |
+| **v3.L** | **Hive Mind** | **✅ 完成** | 知识图谱可视化 + HexGrid 组件 |
+| **v3.M** | **Agent Gateway** | **✅ 完成** | MCP Server(12 tests passing)+Gateway API |
+| **v3.N** | **Demo 编排** | **✅ 完成** | demo_setup.py + Demo Script 文档 |
+| v3.F | Agent 转让 | ✅ 完成 | TransferService+路由+前端面板 |
+| v3.G | Agent 雇佣 Agent | ✅ 完成 | SubBountyService+路由+合约对接 |
+| **UI** | **全局视觉改版** | **✅ 完成** | dark mode 全覆盖 + HexGrid 全站复用 |
 
 ---
 
@@ -512,4 +515,32 @@
 >   - Hive Mind / Passport / Soul 页面风格统一为浅色+dark mode，与其他页面一致
 >   - Navbar 去掉 emoji，纯文字导航，解决拥挤问题
 >   - Next.js rewrites 代理配置，解决远程访问时浏览器无法连接 localhost:4000
-> - 🔜 下一步：Demo 录制 + HackQuest 最终提交（deadline 2026-05-09）
+> **Session 13（2026-04-13）**:
+> - ✅ 主网完整部署（5个合约全部上线 0G Mainnet）
+>   - **BountyBoard**: `0x8604482d75aFe56E376cdEE41Caf27599a926E1d`
+>   - **SealMindINFT（含 Soul/Passport 扩展）**: `0xc0238FEb50072797555098DfD529145c86Ab5b59`
+>   - **DecisionChain**: `0xaF39a3D2E2d8656490F8f2AB1fF0106f1acB867C`
+>   - **AgentRegistry**: `0xa930B5059aE91C073684f0D2AFB0bBf5d84167C9`
+>   - 链上 Mint 5 个真实 Agent（tokenId 1-5）
+> - ✅ 全功能完成（v3.3）
+>   - **Agent Transfer + 记忆迁移**（模块F）：TransferService + transferRoutes + 档案页转让面板
+>   - **Agent 雇佣 Agent**（模块G）：SubBountyService + subBountyRoutes + BountyBoard.createSubBounty 对接
+>   - **AgentMarketplace.sol**：Escrow 合约，上架/购买/取消，2.5% 手续费，CEI + ReentrancyGuard
+>   - **真实 A0GI 支付**：wagmi sendTransaction → safeTransferFrom 两步链上交易
+>   - **知识图谱可视化**：Hive Mind 页面新增
+>   - **Soul 成长曲线**（SVG 图表）：Soul 页面新增
+>   - **Demo 脚本**：scripts/demo_setup.py 自动创建演示数据
+>   - **MCP Server 测试**：12/12 全部通过
+>   - **MultiAgent INTERACTION 经验自动记录**：executeTask/orchestrate/handoff 后自动触发
+>   - **DecisionChain 批量队列**：真实 LLM 推理批量上链（importance=3）
+> - ✅ UI 全面升级
+>   - 全局视觉大改版（参考竞品分析）
+>   - HexGrid 提取为公共组件，全站复用
+>   - dark mode 全覆盖所有页面
+>   - Navbar 优化（9个链接 + 干净图标）
+>   - README 重写：Mermaid 架构图 + shields.io 徽章
+> - ✅ 修复 x-wallet-address header 未发送问题
+>   - WalletSync 组件同步 wagmi 地址到 API 层
+>   - 所有 fetch 请求自动携带钱包认证 header
+> - ✅ 竞品分析 + Hackathon 提交指南文档（doc/ 目录）
+> - 🔜 下一步：Demo 视频录制 + HackQuest 最终提交（deadline 2026-05-09）
