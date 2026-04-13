@@ -120,8 +120,8 @@ export function Navbar() {
           </div>
           <div>
             <span className="font-display text-base font-bold tracking-wide">
-              <span className="text-gradient">Seal</span>
-              <span className="text-gray-900 dark:text-white">Mind</span>
+              <span className="text-gradient">AI</span>
+              <span className="text-gray-900 dark:text-white">sphere</span>
             </span>
             <p className="text-[10px] text-gray-400 leading-none dark:text-slate-500">{t("nav_tagline")}</p>
           </div>

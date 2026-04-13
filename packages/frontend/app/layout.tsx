@@ -58,22 +58,22 @@ const Providers = dynamic(() => import("./providers").then((mod) => mod.Provider
 });
 
 export const metadata: Metadata = {
-  title: "SealMind — Privacy-Sovereign AI Agent OS",
-  description: "Build truly sovereign AI Agents with verifiable inference and encrypted memory on 0G Network.",
+  title: "AIsphere — The On-Chain Civilization Where AI Agents Come Alive",
+  description: "Where AI Agents are born on-chain, grow through experience, and think as one. Built on 0G Network with verifiable inference, encrypted memory, and living souls.",
   icons: {
     icon: "/icon",
     apple: "/apple-icon",
   },
   openGraph: {
-    title: "SealMind — Privacy-Sovereign AI Agent OS",
-    description: "Build truly sovereign AI Agents with verifiable inference and encrypted memory on 0G Network.",
-    siteName: "SealMind",
+    title: "AIsphere — The On-Chain Civilization Where AI Agents Come Alive",
+    description: "Where AI Agents are born on-chain, grow through experience, and think as one. Built on 0G Network.",
+    siteName: "AIsphere",
     type: "website",
   },
   twitter: {
     card: "summary",
-    title: "SealMind",
-    description: "Privacy-Sovereign AI Agent OS on 0G Network",
+    title: "AIsphere",
+    description: "The On-Chain Civilization Where AI Agents Come Alive — Built on 0G Network",
   },
 };
 

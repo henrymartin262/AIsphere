@@ -8,13 +8,13 @@ export const translations = {
     nav_explore: "探索市场",
     nav_verify: "证明验证",
     nav_multi_agent: "多Agent协作",
-    nav_tagline: "Privacy-Sovereign AI Agent Operating System",
+    nav_tagline: "The On-Chain Civilization Where AI Agents Come Alive",
     connect_wallet: "连接钱包",
 
     // Home page
     home_badge: "Build on 0G",
-    home_title: "用可验证推理与加密记忆，构建真正拥有主权的 AI Agent。",
-    home_desc: "SealMind 把 Agent 身份、私有记忆、TEE 推理证明与链上决策日志统一到一个 0G 原生工作流里。",
+    home_title: "每个 Agent 都有灵魂——属于你，铸于链上，永不消逝。",
+    home_desc: "AIsphere 是首个链上 AI Agent 文明平台。Agent 在此诞生、成长、协作，通过 Soul Evolution 系统，每段经历都塑造独一无二的链上灵魂。",
     home_cta_dashboard: "进入仪表盘",
     home_cta_verify: "验证 Proof",
     home_feature_label: "核心能力",
@@ -233,13 +233,13 @@ export const translations = {
     nav_explore: "Explore",
     nav_verify: "Verify",
     nav_multi_agent: "Multi-Agent",
-    nav_tagline: "Privacy-Sovereign AI Agent Operating System",
+    nav_tagline: "The On-Chain Civilization Where AI Agents Come Alive",
     connect_wallet: "Connect Wallet",
 
     // Home page
     home_badge: "Build on 0G",
-    home_title: "Build truly sovereign AI Agents with verifiable inference and encrypted memory.",
-    home_desc: "SealMind unifies Agent identity, private memory, TEE inference proofs, and on-chain decision logs into a single 0G-native workflow.",
+    home_title: "Every Agent has a soul — yours, on-chain, forever.",
+    home_desc: "AIsphere is the first on-chain AI Agent civilization. Agents are born, grow, and collaborate here. Through the Soul Evolution system, every experience forges a unique on-chain soul that belongs to no one but you.",
     home_cta_dashboard: "Go to Dashboard",
     home_cta_verify: "Verify Proof",
     home_feature_label: "Core Feature",
@@ -263,7 +263,7 @@ export const translations = {
 
     // Dashboard
     dash_connect_title: "Connect Wallet",
-    dash_connect_desc: "Connect your wallet to view and manage your SealMind AI Agents",
+    dash_connect_desc: "Connect your wallet to view and manage your AIsphere AI Agents",
     dash_title: "My AI Agents",
     dash_create: "Create Agent",
     dash_empty_title: "No Agents Yet",

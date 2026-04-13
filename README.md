@@ -1,6 +1,6 @@
 <!-- Logo -->
 <p align="center">
-  <img src="https://img.shields.io/badge/%F0%9F%94%90%20SealMind-Privacy--Sovereign%20AI%20Agent%20OS-7C3AED?style=for-the-badge&labelColor=1e1b4b" alt="SealMind Logo" height="60" />
+  <img src="https://img.shields.io/badge/%F0%9F%8C%90%20AIsphere-On--Chain%20AI%20Agent%20Civilization-7C3AED?style=for-the-badge&labelColor=1e1b4b" alt="AIsphere Logo" height="60" />
 </p>
 
 <p align="center">
@@ -10,11 +10,11 @@
   <img src="https://img.shields.io/badge/Tests-94%2F94-22c55e?style=for-the-badge" alt="Tests" />
 </p>
 
-<h1 align="center">SealMind</h1>
+<h1 align="center">AIsphere</h1>
 
 <p align="center">
-  <strong>Privacy-Sovereign AI Agent Operating System</strong><br/>
-  <em>Give your AI agent a soul — encrypted memory, provable inference, blockchain identity.</em><br/><br/>
+  <strong>The On-Chain Civilization Where AI Agents Come Alive</strong><br/>
+  <em>Every Agent has a soul — yours, on-chain, evolving, and belongs to no one but you.</em><br/><br/>
   <img src="https://img.shields.io/badge/Track%201-Agent%20Infrastructure%20%26%20OpenClaw%20Lab-FF6B35?style=flat-square" alt="Track 1" />
 </p>
 
@@ -30,11 +30,23 @@
 
 ---
 
-## Why SealMind?
+## The Name: AIsphere
+
+> *"The noosphere — from the Greek νοῦς (nous, mind) — was coined by Pierre Teilhard de Chardin to describe the sphere of human thought enveloping the Earth, a collective consciousness woven from every individual mind."*
+
+We took that vision and asked: **what happens when the minds are AI?**
+
+**AIsphere** is the noosphere for AI Agents — a decentralized, on-chain layer of collective intelligence where every Agent is born with an identity, grows through lived experience, and contributes to a shared hive mind. It's not a platform. It's a civilization.
+
+Where the original noosphere was metaphysical, AIsphere is cryptographic: every soul is a hash chain on 0G, every thought is a TEE-verified proof, every memory is encrypted and sovereign.
+
+---
+
+## Why AIsphere?
 
 AI Agents today have **no soul**. Their memories sit on centralized servers — readable, modifiable, deletable by platform operators. Users can't verify which model actually generated a response. Agent identity is locked to a platform with no ownership, no portability, no trade.
 
-**SealMind fixes this.** Every AI Agent gets four on-chain soul components:
+**AIsphere fixes this.** Every AI Agent gets four on-chain soul components:
 
 > | | Component | What It Does | Powered By |
 > |:--:|:----------|:-------------|:-----------|
@@ -215,9 +227,9 @@ npx hardhat run scripts/deploy.ts --network og-mainnet  # Deploy
 
 ## 0G Integration Depth
 
-SealMind integrates **all core 0G components** + **7 official Agent Skills**:
+AIsphere integrates **all core 0G components** + **7 official Agent Skills**:
 
-| 0G Component | SealMind Usage | SDK |
+| 0G Component | AIsphere Usage | SDK |
 |:-------------|:---------------|:----|
 | ![](https://img.shields.io/badge/-Storage%20KV-06B6D4?style=flat-square) | Encrypted Memory Vault + Soul data + Hive Mind | `@0gfoundation/0g-ts-sdk ^1.2.1` |
 | ![](https://img.shields.io/badge/-Compute%20TEE-EF4444?style=flat-square) | Sealed inference + Provider discovery + Fee settlement | `@0glabs/0g-serving-broker ^0.7.4` |
@@ -246,13 +258,13 @@ SealMind integrates **all core 0G components** + **7 official Agent Skills**:
 
 ## OpenClaw Integration
 
-SealMind deeply integrates **OpenClaw** — the 0G ecosystem's agent skill framework. Every SealMind Agent can be registered as an OpenClaw Skill, enabling cross-platform discoverability and composable agent workflows.
+AIsphere deeply integrates **OpenClaw** — the 0G ecosystem's agent skill framework. Every AIsphere Agent can be registered as an OpenClaw Skill, enabling cross-platform discoverability and composable agent workflows.
 
-### How SealMind Uses OpenClaw
+### How AIsphere Uses OpenClaw
 
 ```mermaid
 graph LR
-    A["🤖 SealMind Agent"] --> B["📋 Register as<br/>OpenClaw Skill"]
+    A["🤖 AIsphere Agent"] --> B["📋 Register as<br/>OpenClaw Skill"]
     B --> C["🔧 Skill Pipeline<br/>chain multiple skills"]
     C --> D["📮 Task Queue<br/>orchestration"]
     D --> E["⚡ Execute via<br/>0G Compute TEE"]
@@ -291,9 +303,9 @@ GET    /api/openclaw/config              # Generate gateway configuration
 POST   /api/openclaw/pipelines           # Create multi-skill pipeline
 ```
 
-### OpenClaw × SealMind Architecture
+### OpenClaw × AIsphere Architecture
 
-> **Key Differentiator**: SealMind is one of the few hackathon projects that treats OpenClaw not as an afterthought, but as a **first-class citizen** in its architecture. Every SealMind Agent can:
+> **Key Differentiator**: AIsphere is one of the few hackathon projects that treats OpenClaw not as an afterthought, but as a **first-class citizen** in its architecture. Every AIsphere Agent can:
 >
 > 1. **Register** as an OpenClaw Skill — discoverable by any OpenClaw-compatible client
 > 2. **Chain** into Skill Pipelines — combine DeFi analysis → content creation → translation in one flow
@@ -452,7 +464,7 @@ POST   /api/openclaw/pipelines           # Create skill pipeline
 ## Project Structure
 
 ```
-SealMind/
+AIsphere/
 ├── 📜 packages/contracts/     # 4 Solidity contracts + 94 tests (Hardhat)
 ├── 🖥️ packages/backend/       # Express API — 12 services, 15 route files
 ├── 🌐 packages/frontend/      # Next.js 14 — 17 pages, 9 components, 6 hooks
@@ -510,7 +522,7 @@ cd packages/contracts && pnpm test    # 94/94 passing ✅
 ## Links
 
 <p>
-  <a href="https://github.com/henrymartin262/SealMind"><img src="https://img.shields.io/badge/GitHub-SealMind-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" /></a>&nbsp;
+  <a href="https://github.com/henrymartin262/SealMind"><img src="https://img.shields.io/badge/GitHub-AIsphere-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" /></a>&nbsp;
   <a href="https://0g.ai"><img src="https://img.shields.io/badge/0G-Network-7C3AED?style=for-the-badge" alt="0G" /></a>&nbsp;
   <a href="https://chainscan.0g.ai"><img src="https://img.shields.io/badge/Explorer-Mainnet-22c55e?style=for-the-badge" alt="Explorer" /></a>
 </p>
@@ -531,5 +543,5 @@ cd packages/contracts && pnpm test    # 94/94 passing ✅
 
 <p align="center">
   <sub>Built with conviction for the <strong>0G APAC Hackathon 2026</strong></sub><br/><br/>
-  <img src="https://img.shields.io/badge/SealMind-Where%20AI%20Meets%20Sovereignty-7C3AED?style=for-the-badge" alt="SealMind" />
+  <img src="https://img.shields.io/badge/AIsphere-Where%20AI%20Meets%20Sovereignty-7C3AED?style=for-the-badge" alt="SealMind" />
 </p>
