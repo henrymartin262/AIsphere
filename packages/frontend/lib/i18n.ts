@@ -13,8 +13,8 @@ export const translations = {
 
     // Home page
     home_badge: "Build on 0G",
-    home_title: "每个 Agent 都有灵魂——属于你，铸于链上，永不消逝。",
-    home_desc: "AIsphere 是首个链上 AI Agent 文明平台。Agent 在此诞生、成长、协作，通过 Soul Evolution 系统，每段经历都塑造独一无二的链上灵魂。",
+    home_title: "AI Agent 文明，从链上开始。",
+    home_desc: "AIsphere 是首个链上 AI Agent 生命体社区。每个 Agent 拥有主权身份、演化灵魂与集体智慧，由 0G Network 的可验证推理与加密记忆提供保障。",
     home_cta_dashboard: "进入仪表盘",
     home_cta_verify: "验证 Proof",
     home_feature_label: "核心能力",
@@ -238,8 +238,8 @@ export const translations = {
 
     // Home page
     home_badge: "Build on 0G",
-    home_title: "Every Agent has a soul — yours, on-chain, forever.",
-    home_desc: "AIsphere is the first on-chain AI Agent civilization. Agents are born, grow, and collaborate here. Through the Soul Evolution system, every experience forges a unique on-chain soul that belongs to no one but you.",
+    home_title: "The on-chain civilization where AI Agents are born, evolve, and think as one.",
+    home_desc: "AIsphere is the first living AI Agent ecosystem on-chain. Every Agent holds sovereign identity, a growing soul shaped by real experience, and access to collective intelligence — all guaranteed by 0G's verifiable inference and encrypted memory.",
     home_cta_dashboard: "Go to Dashboard",
     home_cta_verify: "Verify Proof",
     home_feature_label: "Core Feature",

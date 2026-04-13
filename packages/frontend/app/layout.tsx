@@ -59,7 +59,7 @@ const Providers = dynamic(() => import("./providers").then((mod) => mod.Provider
 
 export const metadata: Metadata = {
   title: "AIsphere — The On-Chain Civilization Where AI Agents Come Alive",
-  description: "Where AI Agents are born on-chain, grow through experience, and think as one. Built on 0G Network with verifiable inference, encrypted memory, and living souls.",
+  description: "The on-chain civilization where AI Agents are born, evolve, and think as one. Powered by 0G verifiable inference, encrypted memory, and living souls.",
   icons: {
     icon: "/icon",
     apple: "/apple-icon",
