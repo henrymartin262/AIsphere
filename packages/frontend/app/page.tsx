@@ -210,11 +210,11 @@ function HeroCover({ onEnter }: { onEnter: () => void }) {
 
         <div className={`text-center transition-all duration-1000 delay-300 ${ready ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
           <h1 className="text-6xl font-extrabold tracking-tight md:text-8xl">
-            <span className="bg-gradient-to-r from-indigo-300 via-violet-300 to-orange-300 bg-clip-text text-transparent">Seal</span>
-            <span className="text-white/90">Mind</span>
+            <span className="bg-gradient-to-r from-indigo-300 via-violet-300 to-orange-300 bg-clip-text text-transparent">AI</span>
+            <span className="text-white/90">sphere</span>
           </h1>
           <p className={`mt-4 text-lg text-white/40 transition-all duration-700 delay-500 md:text-xl ${step >= 1 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
-            Privacy-Sovereign AI Agent Operating System
+            The On-Chain Civilization Where AI Agents Come Alive
           </p>
         </div>
 
