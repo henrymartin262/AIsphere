@@ -102,11 +102,19 @@ export async function inference(
   const clients = await initialize0GClients();
 
   // ── Layer 1: 0G Compute Broker (TeeML) ────────────────────────────────────
-  if (clients.brokerStatus === "ready" && clients.signer) {
+  // Use testnet signer for Compute Broker — testnet has active TEE providers + 30 A0GI balance
+  if (clients.brokerStatus === "ready" && env.PRIVATE_KEY) {
     try {
       const { createZGComputeNetworkBroker } = await import("@0glabs/0g-serving-broker");
+      const { ethers: ethersLib } = await import("ethers");
+
+      // Create a testnet-specific signer for the Compute Broker
+      const TESTNET_RPC = "https://evmrpc-testnet.0g.ai";
+      const testProvider = new ethersLib.JsonRpcProvider(TESTNET_RPC);
+      const testSigner = new ethersLib.Wallet(env.PRIVATE_KEY, testProvider);
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const broker = await createZGComputeNetworkBroker(clients.signer as any);
+      const broker = await createZGComputeNetworkBroker(testSigner as any);
 
       const prompt = context
         ? `System context:\n${context}\n\nUser: ${userMessage}\nAssistant:`

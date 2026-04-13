@@ -300,6 +300,213 @@ function SkeletonCard() {
   );
 }
 
+/* ═══════════════════════ Knowledge Graph (Animated Canvas) ═══════════════════════ */
+
+const KG_COLORS: Record<string, string> = {
+  defi_analysis: "#8b5cf6", code_review: "#6366f1", bounty_completion: "#f59e0b",
+  agent_collaboration: "#3b82f6", knowledge_acquisition: "#10b981", error_recovery: "#ef4444",
+  market_trading: "#ec4899", general_inference: "#06b6d4",
+};
+
+function hexToRgb(hex: string): [number, number, number] {
+  const h = hex.replace("#", "");
+  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+}
+
+function KnowledgeGraphCanvas({ categories, totalContributions, lang }: { categories: string[]; totalContributions: number; lang: string }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const W = 700, H = 360;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = `${W}px`;
+    canvas.style.height = `${H}px`;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const cx = W / 2, cy = H / 2;
+    const baseR = 120;
+
+    // Create nodes with physics
+    const nodes = categories.map((cat, i) => {
+      const angle = (i / categories.length) * Math.PI * 2 - Math.PI / 2;
+      const r = baseR + (i % 2) * 20;
+      const color = KG_COLORS[cat] ?? "#8b5cf6";
+      const [cr, cg, cb] = hexToRgb(color);
+      return {
+        id: cat,
+        baseX: cx + Math.cos(angle) * r,
+        baseY: cy + Math.sin(angle) * r,
+        x: cx + Math.cos(angle) * r,
+        y: cy + Math.sin(angle) * r,
+        size: totalContributions > 0 ? 10 : 7,
+        color, cr, cg, cb,
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.3 + Math.random() * 0.4,
+        drift: 3 + Math.random() * 4,
+      };
+    });
+
+    // Edges: adjacent + skip-1
+    const edges: Array<{ a: number; b: number; strong: boolean }> = [];
+    for (let i = 0; i < nodes.length; i++) {
+      edges.push({ a: i, b: (i + 1) % nodes.length, strong: true });
+      if (nodes.length > 4) edges.push({ a: i, b: (i + 2) % nodes.length, strong: false });
+    }
+
+    // Pulse particles on edges
+    const particles = edges.map((_, i) => ({
+      pos: Math.random(),
+      speed: 0.003 + Math.random() * 0.004,
+      offset: i * 0.7,
+    }));
+
+    let time = 0;
+    let animId = 0;
+
+    function draw() {
+      time += 0.016;
+      ctx!.clearRect(0, 0, W, H);
+
+      // Update node positions (gentle floating)
+      nodes.forEach((n) => {
+        n.x = n.baseX + Math.sin(time * n.speed + n.phase) * n.drift;
+        n.y = n.baseY + Math.cos(time * n.speed * 0.7 + n.phase) * n.drift * 0.8;
+      });
+
+      // Center glow pulse
+      const cPulse = Math.sin(time * 1.2) * 0.15 + 0.85;
+      const cGrd = ctx!.createRadialGradient(cx, cy, 0, cx, cy, 60);
+      cGrd.addColorStop(0, `rgba(139, 92, 246, ${0.12 * cPulse})`);
+      cGrd.addColorStop(1, "rgba(139, 92, 246, 0)");
+      ctx!.fillStyle = cGrd;
+      ctx!.fillRect(cx - 60, cy - 60, 120, 120);
+
+      // Draw center-to-node edges
+      nodes.forEach((n) => {
+        ctx!.beginPath();
+        ctx!.moveTo(cx, cy);
+        ctx!.lineTo(n.x, n.y);
+        ctx!.strokeStyle = `rgba(${n.cr}, ${n.cg}, ${n.cb}, 0.15)`;
+        ctx!.lineWidth = 0.8;
+        ctx!.stroke();
+      });
+
+      // Draw node-to-node edges + particles
+      edges.forEach((e, ei) => {
+        const a = nodes[e.a], b = nodes[e.b];
+        const alpha = e.strong ? 0.35 : 0.15;
+
+        // Edge line
+        ctx!.beginPath();
+        ctx!.moveTo(a.x, a.y);
+        ctx!.lineTo(b.x, b.y);
+        if (e.strong) {
+          ctx!.strokeStyle = `rgba(139, 92, 246, ${alpha})`;
+          ctx!.lineWidth = 1;
+          ctx!.setLineDash([]);
+        } else {
+          ctx!.strokeStyle = `rgba(139, 92, 246, ${alpha})`;
+          ctx!.lineWidth = 0.6;
+          ctx!.setLineDash([4, 4]);
+        }
+        ctx!.stroke();
+        ctx!.setLineDash([]);
+
+        // Flowing particle
+        const p = particles[ei];
+        p.pos = (p.pos + p.speed) % 1;
+        const px = a.x + (b.x - a.x) * p.pos;
+        const py = a.y + (b.y - a.y) * p.pos;
+        const pAlpha = Math.sin(p.pos * Math.PI) * 0.8;
+        ctx!.beginPath();
+        ctx!.arc(px, py, 2, 0, Math.PI * 2);
+        ctx!.fillStyle = `rgba(167, 139, 250, ${pAlpha})`;
+        ctx!.fill();
+      });
+
+      // Draw center node
+      const cPulse2 = Math.sin(time * 1.5) * 0.3 + 0.7;
+      ctx!.beginPath();
+      ctx!.arc(cx, cy, 14, 0, Math.PI * 2);
+      ctx!.fillStyle = `rgba(139, 92, 246, ${0.15 * cPulse2})`;
+      ctx!.fill();
+      ctx!.beginPath();
+      ctx!.arc(cx, cy, 9, 0, Math.PI * 2);
+      ctx!.fillStyle = `rgba(139, 92, 246, ${0.4 * cPulse2})`;
+      ctx!.fill();
+      ctx!.beginPath();
+      ctx!.arc(cx, cy, 5, 0, Math.PI * 2);
+      ctx!.fillStyle = `rgba(167, 139, 250, ${0.8 + cPulse2 * 0.2})`;
+      ctx!.fill();
+
+      // Center label
+      ctx!.font = "bold 9px system-ui, sans-serif";
+      ctx!.textAlign = "center";
+      ctx!.fillStyle = `rgba(139, 92, 246, ${0.6 + cPulse2 * 0.3})`;
+      ctx!.fillText("Hive Mind", cx, cy + 24);
+
+      // Draw domain nodes
+      nodes.forEach((n) => {
+        const pulse = Math.sin(time * 2 + n.phase) * 0.3 + 0.7;
+
+        // Outer glow
+        const grd = ctx!.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.size * 3);
+        grd.addColorStop(0, `rgba(${n.cr}, ${n.cg}, ${n.cb}, ${0.15 * pulse})`);
+        grd.addColorStop(1, `rgba(${n.cr}, ${n.cg}, ${n.cb}, 0)`);
+        ctx!.fillStyle = grd;
+        ctx!.fillRect(n.x - n.size * 3, n.y - n.size * 3, n.size * 6, n.size * 6);
+
+        // Ring (pulsing)
+        ctx!.beginPath();
+        ctx!.arc(n.x, n.y, n.size + 2 + pulse * 2, 0, Math.PI * 2);
+        ctx!.strokeStyle = `rgba(${n.cr}, ${n.cg}, ${n.cb}, ${0.15 + pulse * 0.1})`;
+        ctx!.lineWidth = 0.5;
+        ctx!.stroke();
+
+        // Main circle
+        ctx!.beginPath();
+        ctx!.arc(n.x, n.y, n.size, 0, Math.PI * 2);
+        ctx!.fillStyle = `rgba(${n.cr}, ${n.cg}, ${n.cb}, ${0.6 + pulse * 0.3})`;
+        ctx!.fill();
+
+        // Inner bright core
+        ctx!.beginPath();
+        ctx!.arc(n.x, n.y, n.size * 0.55, 0, Math.PI * 2);
+        ctx!.fillStyle = `rgba(${n.cr}, ${n.cg}, ${n.cb}, ${0.85 + pulse * 0.15})`;
+        ctx!.fill();
+
+        // Label
+        ctx!.font = "500 8px system-ui, sans-serif";
+        ctx!.textAlign = "center";
+        ctx!.fillStyle = "rgba(148, 163, 184, 0.6)";
+        ctx!.fillText(n.id.replace(/_/g, " "), n.x, n.y + n.size + 14);
+      });
+
+      animId = requestAnimationFrame(draw);
+    }
+    draw();
+    return () => cancelAnimationFrame(animId);
+  }, [categories, totalContributions]);
+
+  return (
+    <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:border-white/[0.06] dark:bg-transparent">
+      <div className="flex items-center gap-2 mb-4">
+        <span className="text-lg">🕸️</span>
+        <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">{lang === "en" ? "Knowledge Graph" : "知识图谱"}</h2>
+        <span className="ml-auto text-xs text-slate-400 dark:text-white/20">{categories.length} {lang === "en" ? "domains" : "领域"}</span>
+      </div>
+      <canvas ref={canvasRef} className="w-full" />
+    </section>
+  );
+}
+
 /* ═══════════════════════ MAIN PAGE ═══════════════════════ */
 export default function HiveMindPage() {
   const { lang } = useLang();
@@ -475,92 +682,10 @@ export default function HiveMindPage() {
           />
         </section>
 
-        {/* ── Knowledge Graph ── */}
+        {/* ── Knowledge Graph (Animated Canvas) ── */}
         {!loadingStats && categories.length > 0 && (() => {
-          // Build domain-category relationship data for visualization
           const catList = categories.length > 0 ? categories : ["defi_analysis", "code_review", "bounty_completion", "agent_collaboration", "knowledge_acquisition", "error_recovery", "market_trading"];
-          const catColors: Record<string, string> = {
-            defi_analysis: "#8b5cf6", code_review: "#6366f1", bounty_completion: "#f59e0b",
-            agent_collaboration: "#3b82f6", knowledge_acquisition: "#10b981", error_recovery: "#ef4444",
-            market_trading: "#ec4899", general_inference: "#06b6d4",
-          };
-          const svgW = 700, svgH = 320;
-          const cx = svgW / 2, cy = svgH / 2;
-          const mainR = 100;
-
-          // Position categories in a circle
-          const nodes = catList.map((cat, i) => {
-            const angle = (i / catList.length) * Math.PI * 2 - Math.PI / 2;
-            const r = mainR + 30 + (i % 2) * 25;
-            return {
-              id: cat,
-              x: cx + Math.cos(angle) * r,
-              y: cy + Math.sin(angle) * r,
-              color: catColors[cat] ?? "#8b5cf6",
-              size: 6 + (stats.totalContributions > 0 ? 4 : 0),
-            };
-          });
-
-          // Create edges (connect categories that share domains — simplified: connect adjacent + cross-connections)
-          const edges: Array<{ from: number; to: number; strength: number }> = [];
-          for (let i = 0; i < nodes.length; i++) {
-            edges.push({ from: i, to: (i + 1) % nodes.length, strength: 0.6 });
-            if (nodes.length > 4) edges.push({ from: i, to: (i + 2) % nodes.length, strength: 0.3 });
-          }
-          // Connect each to center
-          const centerEdges = nodes.map((_, i) => ({ from: -1, to: i, strength: 0.4 }));
-
-          return (
-            <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:border-white/[0.06] dark:bg-transparent">
-              <div className="flex items-center gap-2 mb-4">
-                <span className="text-lg">🕸️</span>
-                <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">{lang === "en" ? "Knowledge Graph" : "知识图谱"}</h2>
-                <span className="ml-auto text-xs text-slate-400 dark:text-white/20">{catList.length} {lang === "en" ? "domains" : "领域"}</span>
-              </div>
-
-              <svg viewBox={`0 0 ${svgW} ${svgH}`} className="w-full h-auto" preserveAspectRatio="xMidYMid meet">
-                <defs>
-                  <radialGradient id="kgCenter">
-                    <stop offset="0%" stopColor="rgb(139,92,246)" stopOpacity="0.2" />
-                    <stop offset="100%" stopColor="rgb(139,92,246)" stopOpacity="0" />
-                  </radialGradient>
-                </defs>
-
-                {/* Center glow */}
-                <circle cx={cx} cy={cy} r={50} fill="url(#kgCenter)" />
-
-                {/* Center-to-node edges */}
-                {centerEdges.map((e, i) => (
-                  <line key={`ce-${i}`} x1={cx} y1={cy} x2={nodes[e.to].x} y2={nodes[e.to].y}
-                    stroke={nodes[e.to].color} strokeWidth={0.5} opacity={e.strength} />
-                ))}
-
-                {/* Node-to-node edges */}
-                {edges.map((e, i) => (
-                  <line key={`e-${i}`} x1={nodes[e.from].x} y1={nodes[e.from].y} x2={nodes[e.to].x} y2={nodes[e.to].y}
-                    stroke="rgb(139,92,246)" strokeWidth={0.8} opacity={e.strength} strokeDasharray={e.strength < 0.5 ? "3 3" : "none"} />
-                ))}
-
-                {/* Center node */}
-                <circle cx={cx} cy={cy} r={10} fill="rgb(139,92,246)" opacity={0.6} />
-                <circle cx={cx} cy={cy} r={6} fill="rgb(167,139,250)" opacity={0.9} />
-                <text x={cx} y={cy + 22} textAnchor="middle" className="fill-violet-400 dark:fill-violet-300" fontSize="9" fontWeight="bold">Hive Mind</text>
-
-                {/* Domain nodes */}
-                {nodes.map((node) => (
-                  <g key={node.id}>
-                    <circle cx={node.x} cy={node.y} r={node.size + 8} fill={node.color} opacity={0.08} />
-                    <circle cx={node.x} cy={node.y} r={node.size} fill={node.color} opacity={0.7} />
-                    <circle cx={node.x} cy={node.y} r={node.size - 2} fill={node.color} opacity={0.9} />
-                    <text x={node.x} y={node.y + node.size + 12} textAnchor="middle"
-                      className="fill-slate-400 dark:fill-white/30" fontSize="8" fontWeight="500">
-                      {node.id.replace(/_/g, " ")}
-                    </text>
-                  </g>
-                ))}
-              </svg>
-            </section>
-          );
+          return <KnowledgeGraphCanvas categories={catList} totalContributions={stats.totalContributions} lang={lang} />;
         })()}
 
         {/* ── Category filter ── */}
