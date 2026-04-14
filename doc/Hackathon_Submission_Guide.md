@@ -51,9 +51,9 @@ http://43.140.200.198:3000
 
 ### 项目链接（GitHub）
 ```
-https://github.com/henrymartin262/SealMind
+https://github.com/henrymartin262/AIsphere
 ```
-✅ 已有公开仓库（品牌已更名为 AIsphere，仓库名保留 SealMind）。
+✅ 已有公开仓库。
 
 ### 推特链接（X）
 ⚠️ **待完成** — 必须发布公开推文（HackQuest 硬性要求）。
@@ -154,7 +154,7 @@ We go beyond basic "agent + blockchain." AIsphere introduces the concept of a LI
 • 7 official 0G Agent Skills integrated
 
 Live Demo: http://43.140.200.198:3000
-GitHub: https://github.com/henrymartin262/SealMind
+GitHub: https://github.com/henrymartin262/AIsphere
 ```
 
 > **策略说明**：先讲痛点（评委共鸣），再讲方案（四大组件），然后强调差异化（"Most projects use 0G for one thing, we use ALL"），接着展示灵魂系统（最大创新点），最后用数字收尾（评委扫一眼就知道工作量）。
@@ -278,7 +278,7 @@ API Health: http://43.140.200.198:3000/api/health
 | ✅ | MVP 链接（前端+后端部署公网） | ✅ 已完成 | http://43.140.200.198:3000 |
 | 🔴 P0 | 项目截图 4 张 | ❌ 待完成 | 从公网 MVP 截图 |
 | ✅ | 合约主网部署 | ✅ 已完成 | 5/5 合约已部署（AgentMarketplace 待部署） |
-| ✅ | GitHub 仓库 | ✅ 已完成 | https://github.com/henrymartin262/SealMind |
+| ✅ | GitHub 仓库 | ✅ 已完成 | https://github.com/henrymartin262/AIsphere |
 | 🟡 P1 | 团队信息填写 | ❌ 待填写 | 报名页面"团队"Tab |
 | 🟢 P2 | Pitch 视频 | ❌ 可选 | 如果有路演环节 |
 
@@ -332,7 +332,7 @@ ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=3 \
 | 0G Mainnet RPC | https://evmrpc.0g.ai |
 | 0G 官方文档 | https://docs.0g.ai |
 | HackQuest 报名 | https://www.hackquest.io/zh-cn/hackathons/0G-APAC-Hackathon |
-| GitHub | https://github.com/henrymartin262/SealMind |
+| GitHub | https://github.com/henrymartin262/AIsphere |
 
 ---
 
