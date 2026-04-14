@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useAccount } from "wagmi";
-import { apiPost, apiGet, setApiWalletAddress, getApiWalletAddress } from "../lib/api";
+import { apiPost, apiGet, setApiWalletAddress, getApiWalletAddress, CHAT_TIMEOUT } from "../lib/api";
 import type { ChatMessage, InferenceProof } from "../types";
 
 interface RawMessage {
@@ -87,7 +87,7 @@ export function useChat(agentId: string) {
           message: content,
           importance,
           walletAddress: effectiveWallet,
-        });
+        }, CHAT_TIMEOUT);
 
         // Restore previous wallet address
         if (!prevWallet) setApiWalletAddress(prevWallet);

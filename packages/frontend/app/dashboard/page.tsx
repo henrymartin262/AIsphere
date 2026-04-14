@@ -112,13 +112,25 @@ export default function DashboardPage() {
   const { address, isConnected } = useAccount();
   const { agents, isLoading, error, refetch } = useAgents(address);
   const { t } = useLang();
-  const [localAgents, setLocalAgents] = useState<number[]>([]);
+
+  // 持久化已删除的 agent ID（localStorage）
+  const [deletedIds, setDeletedIds] = useState<Set<number>>(() => {
+    if (typeof window === "undefined") return new Set();
+    try {
+      const stored = localStorage.getItem("aisphere:deleted-agents");
+      return new Set(stored ? JSON.parse(stored) : []);
+    } catch { return new Set(); }
+  });
 
   const handleDelete = useCallback((agentId: number) => {
-    setLocalAgents((prev) => [...prev, agentId]);
+    setDeletedIds((prev) => {
+      const next = new Set(prev).add(agentId);
+      localStorage.setItem("aisphere:deleted-agents", JSON.stringify([...next]));
+      return next;
+    });
   }, []);
 
-  const visibleAgents = agents.filter((a) => !localAgents.includes(a.agentId));
+  const visibleAgents = agents.filter((a) => !deletedIds.has(a.agentId));
 
   if (!isConnected) {
     return <ConnectWalletPrompt />;

@@ -3,6 +3,9 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
 /** 默认请求超时时间（毫秒） */
 const DEFAULT_TIMEOUT = 15_000; // 15 秒
 
+/** Chat 推理专用超时 — TEE inference 可能需要 60s+ */
+export const CHAT_TIMEOUT = 90_000; // 90 秒
+
 /** ── 全局钱包地址（自动附带到需要认证的请求） ── */
 let _walletAddress: string | null = null;
 

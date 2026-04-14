@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import type { Agent } from "../types";
 import { useLang } from "../contexts/LangContext";
+import { apiDelete, getApiWalletAddress } from "../lib/api";
 
 const LEVEL_STYLES: Record<number, { border: string; badge: string; glow: string; icon: string }> = {
   1: { border: "hover:border-slate-300", badge: "border-slate-200 bg-slate-50 text-slate-600", glow: "bg-slate-100", icon: "text-slate-400" },
@@ -31,11 +32,7 @@ export function AgentCard({ agent, onDelete }: AgentCardProps) {
     if (!confirmDelete) { setConfirmDelete(true); return; }
     setDeleting(true);
     try {
-      const walletAddress = (window as any).__walletAddress ?? "";
-      await fetch(`/api/agents/${agent.agentId}`, {
-        method: "DELETE",
-        headers: { "x-wallet-address": walletAddress },
-      });
+      await apiDelete(`/agents/${agent.agentId}`);
       onDelete?.(agent.agentId);
     } catch {
       setDeleting(false);

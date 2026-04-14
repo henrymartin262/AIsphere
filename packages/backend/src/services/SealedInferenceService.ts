@@ -123,10 +123,18 @@ export async function inference(
       // listService returns tuple arrays; pick TEE provider first, fall back to any chatbot
       const services = (await broker.inference.listService()) as unknown[][];
       const chatbotServices = services.filter(
-        (s) => Array.isArray(s) && (s[1] as string) === "chatbot"
+        (s) => Array.isArray(s) && (
+          (s[1] as string) === "chatbot" ||
+          (s[1] as string) === "inference" ||
+          (s[1] as string) === "llm"
+        )
       );
-      const teeProviders = chatbotServices.filter((s) => s[10] === true);
-      const anyProviders = chatbotServices;
+      // Fall back to ANY service if no chatbot-type found
+      const candidates = chatbotServices.length > 0 ? chatbotServices : services.filter(Array.isArray);
+      const teeProviders = candidates.filter((s) => s[10] === true);
+      const anyProviders = candidates;
+
+      console.log(`[SealedInference] services=${services.length} chatbot=${chatbotServices.length} tee=${teeProviders.length}`);
 
       const provider = teeProviders[0] ?? anyProviders[0] ?? null;
 
