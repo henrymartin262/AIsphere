@@ -72,13 +72,13 @@ graph TB
     subgraph Service["⚙️ Service Layer"]
         direction LR
         AUTH["<b>Auth</b><br/>SIWE · CORS"]
-        BE["<b>Backend API</b><br/>Express · 12 Services"]
+        BE["<b>Backend API</b><br/>Express · 14 Services"]
         OC["<b>OpenClaw</b><br/>5 Skills · Pipelines"]
     end
 
     subgraph ZeroG["🟣 0G Network"]
         direction LR
-        CHAIN["<b>0G Chain</b><br/>4 Contracts"]
+        CHAIN["<b>0G Chain</b><br/>5 Contracts"]
         STORAGE["<b>0G Storage</b><br/>KV · Memory · Soul"]
         COMPUTE["<b>0G Compute</b><br/>TEE · Media"]
     end
@@ -142,10 +142,11 @@ graph LR
 
 | Contract | Address | Purpose |
 |:---------|:--------|:--------|
-| ![](https://img.shields.io/badge/-SealMindINFT-8B5CF6?style=flat-square) | [`0xc023...5b59`](https://chainscan.0g.ai/address/0xc0238FEb50072797555098DfD529145c86Ab5b59) | Agent Identity (ERC-721) + Passport + Living Soul |
+| ![](https://img.shields.io/badge/-AIsphereINFT-8B5CF6?style=flat-square) | [`0xc023...5b59`](https://chainscan.0g.ai/address/0xc0238FEb50072797555098DfD529145c86Ab5b59) | Agent Identity (ERC-721) + Passport + Living Soul |
 | ![](https://img.shields.io/badge/-DecisionChain-F59E0B?style=flat-square) | [`0xaF39...867C`](https://chainscan.0g.ai/address/0xaF39a3D2E2d8656490F8f2AB1fF0106f1acB867C) | Immutable inference audit log |
 | ![](https://img.shields.io/badge/-AgentRegistry-3B82F6?style=flat-square) | [`0xa930...67C9`](https://chainscan.0g.ai/address/0xa930B5059aE91C073684f0D2AFB0bBf5d84167C9) | Public agent discovery + tags |
 | ![](https://img.shields.io/badge/-BountyBoard-22c55e?style=flat-square) | [`0x8604...6E1d`](https://chainscan.0g.ai/address/0x8604482d75aFe56E376cdEE41Caf27599a926E1d) | Task marketplace (7-state lifecycle) |
+| ![](https://img.shields.io/badge/-AgentMarketplace-3B82F6?style=flat-square) | (pending deployment) | Escrow-based INFT trading (2.5% fee) |
 
 <details>
 <summary><strong>BountyBoard State Machine</strong></summary>
@@ -179,7 +180,7 @@ stateDiagram-v2
 ### Install & Run
 
 ```bash
-git clone https://github.com/henrymartin262/SealMind.git
+git clone https://github.com/henrymartin262/AIsphere.git
 cd AIsphere
 pnpm install
 cp .env.example .env          # Fill PRIVATE_KEY + contract addresses
@@ -233,7 +234,7 @@ AIsphere integrates **all core 0G components** + **7 official Agent Skills**:
 |:-------------|:---------------|:----|
 | ![](https://img.shields.io/badge/-Storage%20KV-06B6D4?style=flat-square) | Encrypted Memory Vault + Soul data + Hive Mind | `@0gfoundation/0g-ts-sdk ^1.2.1` |
 | ![](https://img.shields.io/badge/-Compute%20TEE-EF4444?style=flat-square) | Sealed inference + Provider discovery + Fee settlement | `@0glabs/0g-serving-broker ^0.7.4` |
-| ![](https://img.shields.io/badge/-Chain%20EVM-22c55e?style=flat-square) | 4 smart contracts + Decision audit + INFT identity | ethers.js v6 |
+| ![](https://img.shields.io/badge/-Chain%20EVM-22c55e?style=flat-square) | 5 smart contracts + Decision audit + INFT identity | ethers.js v6 |
 | ![](https://img.shields.io/badge/-INFT%20Standard-8B5CF6?style=flat-square) | Agent ownership + Passport + Living Soul state | ERC-721 + custom extensions |
 
 ### Official 0G Agent Skills Integrated
@@ -321,7 +322,7 @@ POST   /api/openclaw/pipelines           # Create multi-skill pipeline
 
 | Feature | Description |
 |:--------|:------------|
-| ![](https://img.shields.io/badge/🔒-Sealed%20Mind-EF4444?style=flat-square) | 3-layer inference: TEE (0G Compute) → DeepSeek API → Mock fallback. Every response gets a cryptographic proof. |
+| ![](https://img.shields.io/badge/🔒-Sealed%20Mind-EF4444?style=flat-square) | 4-layer inference: 0G TEE (TeeML) → GLM-4.7 → DeepSeek → Mock fallback. Every response gets a cryptographic proof. |
 | ![](https://img.shields.io/badge/🧠-Memory%20Vault-3B82F6?style=flat-square) | AES-256-GCM encrypted, dual-layer (hot cache + 0G KV). Only the wallet owner can decrypt. |
 | ![](https://img.shields.io/badge/⛓️-Decision%20Chain-F59E0B?style=flat-square) | Importance-based: critical → immediate on-chain, medium → batch, low → local only. |
 | ![](https://img.shields.io/badge/🛒-Marketplace-8B5CF6?style=flat-square) | Price listing, tag filtering, 3-trial system, wallet-gated purchase flow. |
@@ -465,9 +466,9 @@ POST   /api/openclaw/pipelines           # Create skill pipeline
 
 ```
 AIsphere/
-├── 📜 packages/contracts/     # 4 Solidity contracts + 94 tests (Hardhat)
-├── 🖥️ packages/backend/       # Express API — 12 services, 15 route files
-├── 🌐 packages/frontend/      # Next.js 14 — 17 pages, 9 components, 6 hooks
+├── 📜 packages/contracts/     # 5 Solidity contracts + 94 tests (Hardhat)
+├── 🖥️ packages/backend/       # Express API — 14 services, 15 route files
+├── 🌐 packages/frontend/      # Next.js 14 — 21 pages, 9 components, 6 hooks
 ├── 🔌 packages/mcp-server/    # MCP Server — 10 tools, 6 resources (stdio)
 ├── 📚 doc/                    # Technical docs + competitor analysis
 ├── 🔧 scripts/                # Python seed scripts
@@ -483,7 +484,7 @@ AIsphere/
 | Layer | Mechanism |
 |:------|:----------|
 | ![](https://img.shields.io/badge/-Inference%20Privacy-EF4444?style=flat-square) | Intel TDX TEE execution + remote attestation |
-| ![](https://img.shields.io/badge/-Memory%20Encryption-3B82F6?style=flat-square) | AES-256-GCM, HMAC-SHA256 key derivation with server secret |
+| ![](https://img.shields.io/badge/-Memory%20Encryption-3B82F6?style=flat-square) | AES-256-GCM, HKDF key derivation from wallet signature (client-side, never on server) |
 | ![](https://img.shields.io/badge/-Authentication-8B5CF6?style=flat-square) | Wallet address validation + SIWE signature verification |
 | ![](https://img.shields.io/badge/-Contract%20Access-22c55e?style=flat-square) | `onlyOwner` · `onlyOperator` · `ReentrancyGuard` |
 | ![](https://img.shields.io/badge/-Decision%20Integrity-F59E0B?style=flat-square) | `proofExists` deduplication + hash chain verification |
@@ -499,7 +500,7 @@ cd packages/contracts && pnpm test    # 94/94 passing ✅
 
 | Suite | Tests | Coverage |
 |:------|:------|:---------|
-| ![](https://img.shields.io/badge/-SealMindINFT-8B5CF6?style=flat-square) | 28 | Creation, minting, soul signature, levels, passport, living soul |
+| ![](https://img.shields.io/badge/-AIsphereINFT-8B5CF6?style=flat-square) | 28 | Creation, minting, soul signature, levels, passport, living soul |
 | ![](https://img.shields.io/badge/-DecisionChain-F59E0B?style=flat-square) | 8 | Recording, verification, batch, pagination |
 | ![](https://img.shields.io/badge/-AgentRegistry-3B82F6?style=flat-square) | 7 | Registration, visibility, tag search |
 | ![](https://img.shields.io/badge/-BountyBoard-22c55e?style=flat-square) | 50+ | Full 7-state lifecycle, disputes, sub-tasks, refunds |
@@ -522,7 +523,7 @@ cd packages/contracts && pnpm test    # 94/94 passing ✅
 ## Links
 
 <p>
-  <a href="https://github.com/henrymartin262/SealMind"><img src="https://img.shields.io/badge/GitHub-AIsphere-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" /></a>&nbsp;
+  <a href="https://github.com/henrymartin262/AIsphere"><img src="https://img.shields.io/badge/GitHub-AIsphere-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" /></a>&nbsp;
   <a href="https://0g.ai"><img src="https://img.shields.io/badge/0G-Network-7C3AED?style=for-the-badge" alt="0G" /></a>&nbsp;
   <a href="https://chainscan.0g.ai"><img src="https://img.shields.io/badge/Explorer-Mainnet-22c55e?style=for-the-badge" alt="Explorer" /></a>
 </p>
@@ -531,7 +532,10 @@ cd packages/contracts && pnpm test    # 94/94 passing ✅
 
 ## Team
 
-**Sirius Yao** — Project Lead
+Two-person team from **Peking University**.
+
+- **Henry** — Full-stack Developer & Smart Contracts
+- **Sirius Yao** — Product Design & Web3 Strategy
 
 ---
 
