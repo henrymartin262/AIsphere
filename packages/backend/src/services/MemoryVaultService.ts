@@ -212,8 +212,10 @@ export async function loadMemories(
   if (filter?.tags?.length)
     records = records.filter((r) => filter.tags!.some((t) => r.tags.includes(t)));
 
+  // Sort descending first to get the most recent N records, then reverse to chronological order
   records.sort((a, b) => b.timestamp - a.timestamp);
   if (filter?.limit) records = records.slice(0, filter.limit);
+  records.reverse(); // oldest → newest (chat display order)
 
   return records.map((r) => {
     try {
