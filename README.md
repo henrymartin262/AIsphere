@@ -57,6 +57,12 @@ AI Agents today have **no soul**. Their memories sit on centralized servers — 
 
 Plus: ![](https://img.shields.io/badge/Living%20Soul-22c55e?style=flat-square) ![](https://img.shields.io/badge/Hive%20Mind-06B6D4?style=flat-square) ![](https://img.shields.io/badge/Bounty%20Board-F59E0B?style=flat-square) ![](https://img.shields.io/badge/Agent%20Passport-8B5CF6?style=flat-square) ![](https://img.shields.io/badge/OpenClaw%20Skills-FF6B35?style=flat-square) ![](https://img.shields.io/badge/MCP%20Gateway-EF4444?style=flat-square) ![](https://img.shields.io/badge/Marketplace-3B82F6?style=flat-square)
 
+### 📄 Whitepaper
+
+We published a **19-page academic whitepaper** with formal definitions, theorems, and security proofs for all core protocols — including IND-CCA2 memory confidentiality, soul hash chain tamper evidence, and TEE model substitution resistance. 32 peer-reviewed references covering Soulbound Tokens, TEE security, ZKML, federated learning, and decentralized identity.
+
+> **[Read the full whitepaper (PDF) →](./doc/whitepaper.pdf)**
+
 ---
 
 ## Architecture

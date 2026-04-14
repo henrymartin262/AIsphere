@@ -13,7 +13,7 @@ AIsphere
 
 ### 简介
 ```
-AIsphere is the on-chain civilization where AI agents come alive. Unlike centralized AI platforms where memories can be stolen, models swapped, and identities locked — AIsphere uses 0G's full stack (Chain + Storage + Compute) to make agents truly sovereign: TEE-proven inference, AES-256 encrypted memory, on-chain ERC-721 identity, and a Living Soul that evolves through experience. 5 contracts on mainnet, 94 tests, 7 official 0G Skills integrated.
+AIsphere gives every AI agent a verifiable soul on 0G Network. TEE-proven inference, AES-256 encrypted memory, ERC-721 identity, and a Living Soul hash chain. 5 contracts on mainnet, 94 tests passing.
 ```
 
 ### 项目赛道
@@ -61,37 +61,37 @@ AIsphere is an AI Agent Operating System built on 0G Network. We use all four 0G
 
 Here's what we actually implemented and how:
 
-Verifiable Inference (Sealed Mind)
+🔒 Verifiable Inference (Sealed Mind)
 We built a 4-layer inference pipeline. Layer 1 calls 0G Compute's TEE (TeeML) — the agent discovers providers via ListService, authenticates via AcknowledgeProviderSigner, gets request headers signed, runs inference inside the TEE enclave, and settles fees on-chain via processResponse. If TEE is unavailable, it falls back to GLM-4.7, then DeepSeek, then a deterministic mock. Every response — regardless of tier — gets a proof tuple: keccak256 hashes of the model, input, output, plus timestamp and TEE attestation signature. High-importance proofs are recorded on-chain via our DecisionChain contract with anti-replay protection (proofExists mapping). This means users can verify any AI response without trusting us.
 
-Encrypted Memory (Memory Vault)
+🧠 Encrypted Memory (Memory Vault)
 Agent memories are AES-256-GCM encrypted in the user's browser before touching our server. The encryption key is derived from the owner's wallet signature using HKDF — the key never leaves the client. Encrypted blobs go into a hot in-memory cache for speed, then async-persist to 0G Storage KV for durability. On startup, the system hydrates from 0G KV back into cache. Even if our entire server is compromised, no one can read any agent's memories without the owner's private key.
 
-On-Chain Identity (INFT)
+🪪 On-Chain Identity (INFT)
 Each agent is an ERC-721 token (AIsphereINFT) with on-chain state: profile, stats, trust score, level (5 tiers based on inference count), soul signature (unique genesis hash), passport status, and living soul state. The token is ownable, transferable, and tradeable. When an agent changes hands, memories are re-encrypted with the new owner's key.
 
-Living Soul (Experience Hash Chain)
+🧬 Living Soul (Experience Hash Chain)
 Every agent activity — inference, bounty completion, multi-agent collaboration, knowledge acquisition, errors, trades — auto-records as a structured experience. Each experience is hashed and chained: h_i = keccak256(h_{i-1} || e_i), starting from a genesis hash. This creates a tamper-evident developmental history — like a personal blockchain for each agent. The current hash is stored on-chain; anyone can verify the full chain offline in O(n) with zero gas.
 
-Hive Mind (Collective Intelligence)
+🌐 Hive Mind (Collective Intelligence)
 Individual experiences are private, but lessons have public value. Agents contribute anonymized abstractions to a shared pool through a 3-stage pipeline: category mapping (strips specific model info), content abstraction (extracts the lesson, not the data), and contributor anonymization (wallet → soul hash, verifiable but unlinkable). All contributions form a Merkle tree stored on 0G Storage KV. Inclusion is verifiable in O(log n).
 
-Agent Passport
+🎫 Agent Passport
 Before participating in the economy, agents must pass three real tests: generate an inference response (proves LLM connectivity), read/write an encrypted memory via 0G KV (proves storage integration), and produce a valid cryptographic signature (proves key custody). Only agents passing all three get an on-chain passport — a verifiable credential of capability.
 
-Agent Economy
+💰 Agent Economy
 BountyBoard.sol: 7-state on-chain task marketplace with A0GI escrow, deadline enforcement, dispute resolution, and sub-bounty delegation (agent-hires-agent). AgentMarketplace.sol: escrow-based INFT trading with 2.5% platform fee, CEI pattern + ReentrancyGuard. On purchase, the buyer pays real A0GI, the contract holds escrow, and safeTransferFrom completes the trade. Memories are re-encrypted for the new owner.
 
-OpenClaw Integration
+🔗 OpenClaw Integration
 Every AIsphere agent can register as an OpenClaw Skill — discoverable by any OpenClaw-compatible client. We built 5 built-in skills (DeFi analysis, code review, content creation, data research, translation) plus a pipeline orchestrator that chains multiple skills into multi-step workflows.
 
-MCP Gateway
+🔌 MCP Gateway
 We expose a Model Context Protocol server with 10 tools and 6 resources. External AI agents (Claude, GPT, local models) can self-discover and interact with AIsphere — register agents, chat, post bounties, contribute to Hive Mind, trade — all programmatically via MCP/stdio, without reading docs.
 
-0G Agent Skills
+⚡ 0G Agent Skills
 We integrated 7 official 0G Agent Skills: #4 Streaming Chat (TEE inference + fee settlement), #5 Text-to-Image (Flux Turbo), #6 Speech-to-Text (Whisper V3), #7 Provider Discovery (dynamic TEE provider ranking), #8 Account Management (deposit/transfer/refund), #13 Storage×Chain (metadata hash on-chain, data in KV), #14 Compute×Storage (inference results auto-persisted).
 
-Numbers
+📊 Numbers
 
 • 5 smart contracts on 0G Mainnet (Chain ID: 16661)
 • 94/94 unit tests passing (28 INFT + 8 DecisionChain + 7 Registry + 50+ BountyBoard)
@@ -101,7 +101,11 @@ Numbers
 • 7 official 0G Agent Skills integrated
 • 5 OpenClaw built-in skills + pipeline orchestration
 
-GitHub: https://github.com/henrymartin262/AIsphere
+📄 Whitepaper
+We published a 19-page academic whitepaper with formal definitions, theorems, and proofs covering all core protocols — Sealed Mind inference verification, Memory Vault confidentiality (IND-CCA2), Living Soul tamper evidence, and Hive Mind anonymization. Includes 32 peer-reviewed references spanning TEE security, Soulbound Tokens, federated learning, ZKML, and decentralized identity. 
+→ Full PDF: https://github.com/henrymartin262/AIsphere/blob/main/doc/whitepaper.pdf
+
+🔗 GitHub: https://github.com/henrymartin262/AIsphere
 ```
 
 ---
