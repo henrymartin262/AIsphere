@@ -1,6 +1,6 @@
-# SealMind Demo 视频录制脚本（3 分钟版）
+# AIsphere Demo 视频录制脚本（3 分钟版）
 
-> **目标**：向评委最大化展示 SealMind 的 **全部特色** 和 **0G 全栈集成深度**
+> **目标**：向评委最大化展示 AIsphere 的 **全部特色** 和 **0G 全栈集成深度**
 > **时长**：≤ 3 分钟（HackQuest 硬性要求）
 > **录制工具**：OBS / 屏幕录制 + 画外音（英文）
 > **访问地址**：http://43.140.200.198:3000
@@ -48,7 +48,7 @@ python scripts/demo_setup.py
 2. 点击 **Connect Wallet** → MetaMask 确认
 
 **画外音**：
-> "SealMind gives every AI Agent a verifiable soul.
+> "AIsphere gives every AI Agent a verifiable soul.
 > Built on 0G Network — encrypted memory, provable inference, on-chain identity, and a living soul that evolves through experience.
 > Let's connect our wallet to 0G Mainnet."
 
@@ -93,7 +93,7 @@ python scripts/demo_setup.py
 > "Ask Aria to analyze DeFi trends. The inference runs through our 4-layer fallback:
 > 0G TEE first, then GLM-4.7, DeepSeek, and finally mock.
 > Every response carries a cryptographic proof — you can verify it on-chain at any time.
-> Memories are AES-256-GCM encrypted before storage on 0G KV — not even SealMind can read them.
+> Memories are AES-256-GCM encrypted before storage on 0G KV — not even AIsphere can read them.
 > Real LLM inferences are automatically batched and recorded to our DecisionChain contract."
 
 **展示特色**：4层推理降级、ProofModal 证明验证、加密记忆、决策批量上链
@@ -112,7 +112,7 @@ python scripts/demo_setup.py
 4. 点击 **Verify Integrity** 按钮 → 展示验证结果
 
 **画外音**：
-> "This is the Living Soul — the core innovation of SealMind.
+> "This is the Living Soul — the core innovation of AIsphere.
 > Every activity automatically records as a structured experience.
 > Experiences form a hash chain — like a personal blockchain for the agent.
 > The growth curve shows how this soul has evolved over time.
@@ -192,8 +192,8 @@ python scripts/demo_setup.py
 3. 提一句 Gateway API
 
 **画外音**：
-> "SealMind also provides an MCP Server — Model Context Protocol — with 10 tools and 6 resources.
-> Any AI agent, whether from Claude Desktop, Cursor, or Copilot, can self-discover and onboard to SealMind without reading documentation.
+> "AIsphere also provides an MCP Server — Model Context Protocol — with 10 tools and 6 resources.
+> Any AI agent, whether from Claude Desktop, Cursor, or Copilot, can self-discover and onboard to AIsphere without reading documentation.
 > We also have a Gateway REST API with automatic action discovery — true agent-native infrastructure."
 
 **展示特色**：MCP Server (10 tools + 6 resources)、AI 原生接入、Gateway API
@@ -207,7 +207,7 @@ python scripts/demo_setup.py
 2. 回到首页 → 快速滚动展示全部功能板块
 
 **画外音**：
-> "To summarize — SealMind deeply integrates ALL four 0G pillars plus 7 official Agent Skills:
+> "To summarize — AIsphere deeply integrates ALL four 0G pillars plus 7 official Agent Skills:
 > Chain: 5 smart contracts on mainnet, 94 tests passing.
 > Storage: encrypted memory vault, Hive Mind collective intelligence, soul persistence.
 > Compute: TEE inference with 4-layer fallback and fee settlement.
@@ -215,7 +215,7 @@ python scripts/demo_setup.py
 > Agent marketplace with real payment, transfer with memory migration,
 > MCP Server for AI-native access, and a knowledge graph for collective intelligence.
 > 14 backend services, 21 frontend pages, 5 contracts.
-> SealMind — where AI meets sovereignty. Thank you."
+> AIsphere — where AI meets sovereignty. Thank you."
 
 ---
 

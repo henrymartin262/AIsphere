@@ -374,8 +374,8 @@ await broker.inference.processResponse(providerAddress, chatID, data.usage);
 
 ```bash
 # 克隆仓库
-git clone https://github.com/henrymartin262/SealMind.git
-cd SealMind
+git clone https://github.com/henrymartin262/AIsphere.git
+cd AIsphere
 
 # 安装依赖（monorepo）
 pnpm install
@@ -812,7 +812,7 @@ MIT
 
 ## 🔗 相关链接
 
-- **GitHub**：https://github.com/henrymartin262/SealMind
+- **GitHub**：https://github.com/henrymartin262/AIsphere
 - **0G Network**：https://0g.ai
 - **0G 测试网浏览器**：https://chainscan-galileo.0g.ai
 - **0G 主网浏览器**：https://chainscan.0g.ai
@@ -829,7 +829,7 @@ MIT
 ## 💬 问题与支持
 
 如有问题或 Bug：
-- 提交 [GitHub Issue](https://github.com/siriusyao/SealMind/issues)
+- 提交 [GitHub Issue](https://github.com/siriusyao/AIsphere/issues)
 - Discord：[0G 社区](https://discord.gg/0g)
 
 ---

@@ -23,7 +23,7 @@ router.get("/status", async (_req, res) => {
 
 /**
  * POST /api/openclaw/agents
- * Register a SealMind agent as an OpenClaw agent.
+ * Register a AIsphere agent as an OpenClaw agent.
  *
  * Body: { sealMindTokenId, agentName, skills?, bindings? }
  */

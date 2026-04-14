@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-SealMind is a **privacy-sovereign AI Agent operating system** built on [0G Network](https://0g.ai). Every AI Agent gets:
+AIsphere is a **privacy-sovereign AI Agent operating system** built on [0G Network](https://0g.ai). Every AI Agent gets:
 - **INFT** — On-chain ERC-721 identity (SealMindINFT.sol)
 - **Memory Vault** — Client-encrypted KV memory via 0G Storage
 - **Sealed Inference** — TEE-based verifiable inference via 0G Compute

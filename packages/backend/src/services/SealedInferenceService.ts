@@ -208,7 +208,7 @@ export async function inference(
         body: JSON.stringify({
           model: env.GLM_MODEL,
           messages: [
-            { role: "system", content: context || "You are a helpful AI agent on SealMind, a privacy-sovereign AI Agent OS built on 0G Network." },
+            { role: "system", content: context || "You are a helpful AI agent on AIsphere, a privacy-sovereign AI Agent OS built on 0G Network." },
             { role: "user", content: userMessage }
           ],
           max_tokens: 1024,

@@ -381,7 +381,7 @@ export default function AgentSoulPage() {
           <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
             Your experiences are encrypted and stored on{" "}
             <span className="text-indigo-600 dark:text-indigo-300 font-medium">0G Storage</span>. Only the hash is
-            recorded on-chain. Even SealMind cannot see the original data. Integrity can be
+            recorded on-chain. Even AIsphere cannot see the original data. Integrity can be
             verified by anyone at any time without revealing the contents.
           </p>
         </div>

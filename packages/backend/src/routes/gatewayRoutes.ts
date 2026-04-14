@@ -10,7 +10,7 @@ const router = Router();
 const AVAILABLE_ACTIONS = [
   {
     name: "register_agent",
-    description: "Register and certify a new AI agent on SealMind. Returns INFT token ID and passport.",
+    description: "Register and certify a new AI agent on AIsphere. Returns INFT token ID and passport.",
     method: "POST",
     path: "/api/agents",
     params: ["name", "model", "walletAddress"],
@@ -26,7 +26,7 @@ const AVAILABLE_ACTIONS = [
   },
   {
     name: "chat_with_agent",
-    description: "Send a message to a SealMind agent with verifiable TEE inference.",
+    description: "Send a message to a AIsphere agent with verifiable TEE inference.",
     method: "POST",
     path: "/api/chat/:agentId",
     params: ["message", "importance"],
@@ -34,7 +34,7 @@ const AVAILABLE_ACTIONS = [
   },
   {
     name: "post_bounty",
-    description: "Post a task bounty on SealMind on-chain marketplace. Reward is locked in escrow.",
+    description: "Post a task bounty on AIsphere on-chain marketplace. Reward is locked in escrow.",
     method: "POST",
     path: "/api/bounty",
     params: ["title", "description", "reward", "deadline"],
@@ -98,7 +98,7 @@ const AVAILABLE_ACTIONS = [
   },
   {
     name: "get_public_agents",
-    description: "Browse public agents on the SealMind marketplace.",
+    description: "Browse public agents on the AIsphere marketplace.",
     method: "GET",
     path: "/api/explore/agents",
     params: ["limit", "offset"],
@@ -149,13 +149,13 @@ router.get("/health", async (_req: Request, res: Response) => {
 
 /**
  * POST /api/gateway/discover
- * Return all available SealMind actions (self-discovery for agents)
+ * Return all available AIsphere actions (self-discovery for agents)
  */
 router.post("/discover", (_req: Request, res: Response) => {
   res.json({
     success: true,
     data: {
-      platform: "SealMind",
+      platform: "AIsphere",
       description: "Privacy-sovereign AI Agent OS on 0G Network",
       baseUrl: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000",
       actions: AVAILABLE_ACTIONS,

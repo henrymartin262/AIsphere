@@ -144,7 +144,7 @@ for (const skill of BUILT_IN_SKILLS) {
 // ─── Service ──────────────────────────────────────────────────────────────────
 
 /**
- * Register a SealMind agent as an OpenClaw agent with capabilities.
+ * Register a AIsphere agent as an OpenClaw agent with capabilities.
  */
 export async function registerAgent(
   sealMindTokenId: number,
@@ -223,7 +223,7 @@ export async function listSkills(): Promise<OpenClawSkill[]> {
 
 /**
  * Execute a skill on a specific agent.
- * Routes through SealMind's inference/memory/decision pipeline.
+ * Routes through AIsphere's inference/memory/decision pipeline.
  */
 export async function executeSkill(
   skillId: string,
@@ -235,7 +235,7 @@ export async function executeSkill(
   const skill = skillRegistry.get(skillId);
   if (!skill) throw new Error(`Skill not found: ${skillId}`);
 
-  // Resolve SealMind token ID
+  // Resolve AIsphere token ID
   const tokenId = typeof agentIdOrTokenId === "number"
     ? agentIdOrTokenId
     : parseInt(agentIdOrTokenId.replace("sealmind-agent-", ""), 10);

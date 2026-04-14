@@ -38,7 +38,7 @@ export const translations = {
 
     // Dashboard
     dash_connect_title: "请先连接钱包",
-    dash_connect_desc: "连接钱包后即可查看和管理你的 SealMind AI Agent",
+    dash_connect_desc: "连接钱包后即可查看和管理你的 AIsphere AI Agent",
     dash_title: "我的 AI Agents",
     dash_create: "创建 Agent",
     dash_empty_title: "还没有 Agent",

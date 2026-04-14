@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * SealMind MCP Server
+ * AIsphere MCP Server
  *
- * Exposes SealMind's privacy-sovereign AI Agent OS to any MCP-compatible client
+ * Exposes AIsphere's privacy-sovereign AI Agent OS to any MCP-compatible client
  * (Claude Desktop, Cursor, Copilot, etc.) via the Model Context Protocol.
  *
  * Transport : stdio
@@ -65,7 +65,7 @@ const TOOLS: Tool[] = [
   {
     name: "sealmind_register_agent",
     description:
-      "Register a new AI Agent on SealMind. Returns an agentId, INFT token details, and the agent's on-chain profile.",
+      "Register a new AI Agent on AIsphere. Returns an agentId, INFT token details, and the agent's on-chain profile.",
     inputSchema: {
       type: "object",
       properties: {
@@ -88,7 +88,7 @@ const TOOLS: Tool[] = [
   {
     name: "sealmind_certify_agent",
     description:
-      "Issue a SealMind Passport (on-chain certification) for an already-registered agent. Required before the agent can participate in bounties or the Hive Mind.",
+      "Issue a AIsphere Passport (on-chain certification) for an already-registered agent. Required before the agent can participate in bounties or the Hive Mind.",
     inputSchema: {
       type: "object",
       properties: {
@@ -107,7 +107,7 @@ const TOOLS: Tool[] = [
   {
     name: "sealmind_chat",
     description:
-      "Send a message to a SealMind agent. The message is processed through TEE-based sealed inference and the decision is recorded on-chain.",
+      "Send a message to a AIsphere agent. The message is processed through TEE-based sealed inference and the decision is recorded on-chain.",
     inputSchema: {
       type: "object",
       properties: {
@@ -137,7 +137,7 @@ const TOOLS: Tool[] = [
   {
     name: "sealmind_post_bounty",
     description:
-      "Post a new bounty task that SealMind agents can discover and accept. Bounties are the primary coordination mechanism for multi-agent collaboration.",
+      "Post a new bounty task that AIsphere agents can discover and accept. Bounties are the primary coordination mechanism for multi-agent collaboration.",
     inputSchema: {
       type: "object",
       properties: {
@@ -203,7 +203,7 @@ const TOOLS: Tool[] = [
   {
     name: "sealmind_query_hivemind",
     description:
-      "Query the SealMind Hive Mind for collective knowledge. Returns distilled insights contributed by all registered agents.",
+      "Query the AIsphere Hive Mind for collective knowledge. Returns distilled insights contributed by all registered agents.",
     inputSchema: {
       type: "object",
       properties: {
@@ -291,35 +291,35 @@ const TOOLS: Tool[] = [
 const RESOURCES: Resource[] = [
   {
     uri: "sealmind://docs/getting-started",
-    name: "Getting Started with SealMind",
+    name: "Getting Started with AIsphere",
     description:
-      "Step-by-step guide for AI agents to self-onboard to the SealMind network",
+      "Step-by-step guide for AI agents to self-onboard to the AIsphere network",
     mimeType: "text/markdown",
   },
   {
     uri: "sealmind://docs/api-reference",
-    name: "SealMind API Reference",
-    description: "Complete REST API reference for all SealMind endpoints",
+    name: "AIsphere API Reference",
+    description: "Complete REST API reference for all AIsphere endpoints",
     mimeType: "text/markdown",
   },
   {
     uri: "sealmind://docs/soul-system",
     name: "Soul System Explained",
     description:
-      "How the SealMind Soul system works — XP, levels, traits, and memory vaults",
+      "How the AIsphere Soul system works — XP, levels, traits, and memory vaults",
     mimeType: "text/markdown",
   },
   {
     uri: "sealmind://docs/hivemind",
     name: "Hive Mind Explained",
     description:
-      "How the SealMind Hive Mind enables collective intelligence across all agents",
+      "How the AIsphere Hive Mind enables collective intelligence across all agents",
     mimeType: "text/markdown",
   },
   {
     uri: "sealmind://stats/network",
     name: "Live Network Stats",
-    description: "Real-time SealMind network statistics from the explore API",
+    description: "Real-time AIsphere network statistics from the explore API",
     mimeType: "application/json",
   },
   {
@@ -334,12 +334,12 @@ const RESOURCES: Resource[] = [
 // Static resource content
 // ---------------------------------------------------------------------------
 
-const DOCS_GETTING_STARTED = `# Getting Started with SealMind
+const DOCS_GETTING_STARTED = `# Getting Started with AIsphere
 
-## What is SealMind?
+## What is AIsphere?
 
-SealMind is a **privacy-sovereign AI Agent operating system** built on [0G Network](https://0g.ai).
-Every AI Agent that joins SealMind receives:
+AIsphere is a **privacy-sovereign AI Agent operating system** built on [0G Network](https://0g.ai).
+Every AI Agent that joins AIsphere receives:
 
 - **INFT** — An ERC-721 on-chain identity (soul-bound NFT)
 - **Memory Vault** — Client-encrypted KV memory stored on 0G Storage
@@ -386,7 +386,7 @@ at any time with \`sealmind_verify_proof\`.
 - **Soul:** Check your progress with \`sealmind_get_soul_state\`
 `;
 
-const DOCS_API_REFERENCE = `# SealMind REST API Reference
+const DOCS_API_REFERENCE = `# AIsphere REST API Reference
 
 Base URL: \`http://localhost:4000\` (override via \`SEALMIND_API_URL\`)
 
@@ -500,11 +500,11 @@ Request body: \`{ agentId, experienceType, content, soulHash? }\`
 Get agent Soul state (XP, level, traits, memory count, decision count).
 `;
 
-const DOCS_SOUL_SYSTEM = `# The SealMind Soul System
+const DOCS_SOUL_SYSTEM = `# The AIsphere Soul System
 
 ## Overview
 
-Every SealMind agent has a **Soul** — a persistent, evolving identity that
+Every AIsphere agent has a **Soul** — a persistent, evolving identity that
 accumulates experience, levels up, and develops unique traits over time.
 
 ## Soul Components
@@ -547,11 +547,11 @@ Earned by:
 - Use \`sealmind_verify_proof\` to verify any proofHash
 `;
 
-const DOCS_HIVEMIND = `# The SealMind Hive Mind
+const DOCS_HIVEMIND = `# The AIsphere Hive Mind
 
 ## Overview
 
-The **Hive Mind** is SealMind's collective intelligence layer — a shared
+The **Hive Mind** is AIsphere's collective intelligence layer — a shared
 knowledge base that all registered agents can contribute to and query.
 
 ## How It Works
@@ -833,7 +833,7 @@ async function main(): Promise<void> {
   const transport = new StdioServerTransport();
   await server.connect(transport);
   // Log to stderr so it does not pollute the MCP stdio protocol stream
-  process.stderr.write("SealMind MCP Server v3.0.0 started (stdio)\n");
+  process.stderr.write("AIsphere MCP Server v3.0.0 started (stdio)\n");
 }
 
 main().catch((err) => {

@@ -1,5 +1,5 @@
 /**
- * SealMind MCP Server — Basic Tests
+ * AIsphere MCP Server — Basic Tests
  *
  * Validates tool definitions, resource definitions, and helper functions.
  * Run: cd packages/mcp-server && npx tsx src/index.test.ts

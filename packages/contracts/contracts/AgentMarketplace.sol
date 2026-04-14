@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 /**
  * @title AgentMarketplace
- * @notice Escrow-based marketplace for buying/selling SealMind Agent INFTs
+ * @notice Escrow-based marketplace for buying/selling AIsphere Agent INFTs
  * @dev Seller lists agent → buyer pays A0GI → contract transfers INFT + releases funds
  */
 contract AgentMarketplace is ReentrancyGuard {

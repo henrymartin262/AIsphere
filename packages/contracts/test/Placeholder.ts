@@ -7,6 +7,6 @@ describe("Placeholder", () => {
     const contract = await factory.deploy();
     await contract.waitForDeployment();
 
-    expect(await contract.NAME()).to.equal("SealMind Bootstrap");
+    expect(await contract.NAME()).to.equal("AIsphere Bootstrap");
   });
 });

@@ -1,7 +1,7 @@
 # 0G APAC Hackathon 2026 — 竞品深度分析报告
 
 > 数据采集时间：2026-04-12 | 来源：HackQuest 项目展示页
-> 分析视角：以 SealMind 为基准，全面分析同赛道竞品
+> 分析视角：以 AIsphere 为基准，全面分析同赛道竞品
 
 ---
 
@@ -52,7 +52,7 @@
 
 ### 3.1 MindVault — ⚠️ 最直接竞品（威胁等级：🔴 高）
 
-| 维度 | MindVault | SealMind |
+| 维度 | MindVault | AIsphere |
 |:-----|:----------|:---------|
 | **点赞数** | 8,320 | — |
 | **核心定位** | AI Agent 记忆与身份层 | 隐私自主 AI Agent 操作系统 |
@@ -81,7 +81,7 @@
 - **缺少 MCP 协议**：无标准化 Agent 接入网关
 - **缺少 AI Media**：无文生图/语音转文字能力
 - **ERC-7857 vs ERC-721**：使用了尚未广泛采用的 ERC-7857 标准
-- **合约数量少**：3个 vs SealMind 的4个
+- **合约数量少**：3个 vs AIsphere 的4个
 
 ---
 
@@ -111,7 +111,7 @@
 #### 弱点
 - **赛道不同**：专注 DeFi 预言机，不做 Agent 操作系统
 - **功能窄**：仅做市场情报验证，无记忆/身份/市场等
-- **与 SealMind 不直接竞争**：除非评审看整体创新性
+- **与 AIsphere 不直接竞争**：除非评审看整体创新性
 
 ---
 
@@ -178,9 +178,9 @@
 - 多方收益分配（SplitVault）
 - TypeScript SDK
 
-#### 与 SealMind 对比
-- **互补关系**：AgentPay 做支付，SealMind 做操作系统，理论上可以集成
-- **BountyBoard 重叠**：SealMind 的 BountyBoard 有类似的任务-支付流程
+#### 与 AIsphere 对比
+- **互补关系**：AgentPay 做支付，AIsphere 做操作系统，理论上可以集成
+- **BountyBoard 重叠**：AIsphere 的 BountyBoard 有类似的任务-支付流程
 - **不做记忆/身份**：定位更窄
 
 ---
@@ -212,7 +212,7 @@
 
 #### 弱点
 - **偏人类声誉**：验证人的技能，不是 Agent 的能力
-- **与 SealMind 定位差异大**：SealMind 做 Agent OS，TrustFolio 做人类简历验证
+- **与 AIsphere 定位差异大**：AIsphere 做 Agent OS，TrustFolio 做人类简历验证
 - **代币经济过于复杂**：对黑客松项目来说可能显得不聚焦
 
 ---
@@ -231,8 +231,8 @@
 - 赞数最高但完成度一般（AI 验证层仍在早期，0G 架构仍在规划中）
 - 0G 集成仅停留在设计阶段，尚未深度实现
 
-#### 与 SealMind 关系
-- **完全不同赛道**：LocalHero 做现实世界游戏化，SealMind 做 AI Agent OS
+#### 与 AIsphere 关系
+- **完全不同赛道**：LocalHero 做现实世界游戏化，AIsphere 做 AI Agent OS
 - **不构成竞争**
 
 ---
@@ -254,7 +254,7 @@
 
 | 项目 | Storage | Storage KV | Compute (TEE) | Chain | DA | INFT | 合约数 | 测试数 |
 |:-----|:--------|:-----------|:---------------|:------|:---|:-----|:-------|:-------|
-| **SealMind** | ✅ | ✅ 双层 | ✅ 3层降级 | ✅ 主网 | — | ✅ ERC-721 | 4 | 94 |
+| **AIsphere** | ✅ | ✅ 双层 | ✅ 3层降级 | ✅ 主网 | — | ✅ ERC-721 | 4 | 94 |
 | **MindVault** | ✅ Merkle | ✅ | ✅ | ✅ 主网 | — | ✅ ERC-7857 | 3 | 未公开 |
 | **VeraSignal** | — | ✅ | ✅ | ✅ 主网 | — | — | 1 | 70 |
 | **Coal** | ✅ | ✅ | ✅ | ✅ 主网 | ✅ gRPC | — | 1 | 未公开 |
@@ -266,7 +266,7 @@
 
 ## 五、功能覆盖对比矩阵
 
-| 功能 | SealMind | MindVault | VeraSignal | Coal | AgentPay | TrustFolio |
+| 功能 | AIsphere | MindVault | VeraSignal | Coal | AgentPay | TrustFolio |
 |:-----|:---------|:----------|:-----------|:-----|:---------|:-----------|
 | **Agent 记忆** | ✅ AES加密+双层 | ✅ Merkle+语义 | — | 商家记忆 | — | — |
 | **TEE 推理** | ✅ 3层降级 | ✅ | ✅ | ✅ | ✅ 定价 | ✅ 评分 |
@@ -313,14 +313,14 @@ Orbit AI       █                                                   140
 
 ### 7.1 赛场格局
 
-1. **真正有竞争力的项目约 5-6 个**：SealMind、MindVault、VeraSignal、Coal、AgentPay、TrustFolio
+1. **真正有竞争力的项目约 5-6 个**：AIsphere、MindVault、VeraSignal、Coal、AgentPay、TrustFolio
 2. **高赞项目不一定高质量**：LocalHero (9769赞) 0G集成仍在规划阶段
 3. **独立开发者居多**：大部分项目为单人开发，说明工程量差距不大
 4. **MindVault 是最需要警惕的对手**：功能重叠度最高
 
 ### 7.2 评审可能关注点
 
-| 评审维度 | 权重预估 | SealMind 表现 |
+| 评审维度 | 权重预估 | AIsphere 表现 |
 |:---------|:---------|:-------------|
 | **0G 集成深度** | 高 | ✅ 4组件深度集成 + 7个官方 Skill |
 | **代码质量** | 高 | ✅ 94个测试，TypeScript 全栈 |
@@ -329,7 +329,7 @@ Orbit AI       █                                                   140
 | **主网部署** | 中 | ✅ 4个合约已部署主网 |
 | **社区投票** | 低-中 | ⚠️ 赞数未知，需要推广 |
 
-### 7.3 SealMind 独有优势（无竞品覆盖）
+### 7.3 AIsphere 独有优势（无竞品覆盖）
 
 1. **🧬 Living Soul**：经验驱动的动态灵魂，哈希链上链，无竞品有
 2. **🧠 Hive Mind**：去中心化集体智慧，匿名经验永久存储，无竞品有
@@ -355,4 +355,4 @@ Orbit AI       █                                                   140
 
 ---
 
-*报告完毕 — 下一步：参见 [SealMind_Competitive_Strategy.md](./SealMind_Competitive_Strategy.md) 获取差异化策略建议*
+*报告完毕 — 下一步：参见 [AIsphere_Competitive_Strategy.md](./AIsphere_Competitive_Strategy.md) 获取差异化策略建议*

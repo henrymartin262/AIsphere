@@ -180,7 +180,7 @@ stateDiagram-v2
 
 ```bash
 git clone https://github.com/henrymartin262/SealMind.git
-cd SealMind
+cd AIsphere
 pnpm install
 cp .env.example .env          # Fill PRIVATE_KEY + contract addresses
 ```

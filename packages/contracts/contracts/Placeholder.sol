@@ -2,5 +2,5 @@
 pragma solidity ^0.8.26;
 
 contract Placeholder {
-    string public constant NAME = "SealMind Bootstrap";
+    string public constant NAME = "AIsphere Bootstrap";
 }

@@ -115,8 +115,8 @@ export default function OpenClawPage() {
             </h1>
             <p className="mt-2 max-w-2xl text-slate-500 leading-relaxed text-sm">
               {isEn
-                ? "Register SealMind Agents as OpenClaw Skills, build skill pipelines, and orchestrate tasks through the unified gateway."
-                : "将 SealMind Agent 注册为 OpenClaw 技能，构建技能流水线，通过统一网关编排任务。"}
+                ? "Register AIsphere Agents as OpenClaw Skills, build skill pipelines, and orchestrate tasks through the unified gateway."
+                : "将 AIsphere Agent 注册为 OpenClaw 技能，构建技能流水线，通过统一网关编排任务。"}
             </p>
           </div>
           {/* Status indicator */}
@@ -189,7 +189,7 @@ export default function OpenClawPage() {
                   {isEn ? "Built-in Skills" : "内置技能"}
                 </h2>
                 <p className="mt-1 text-xs text-slate-400">
-                  {isEn ? "SealMind native capabilities exposed as OpenClaw Skills" : "SealMind 原生能力作为 OpenClaw 技能暴露"}
+                  {isEn ? "AIsphere native capabilities exposed as OpenClaw Skills" : "AIsphere 原生能力作为 OpenClaw 技能暴露"}
                 </p>
                 <div className="mt-4 space-y-2">
                   {(status?.builtInSkills ?? []).map((skillId) => (
@@ -221,7 +221,7 @@ export default function OpenClawPage() {
                   {isEn ? "Architecture" : "架构概览"}
                 </h2>
                 <p className="mt-1 text-xs text-slate-400">
-                  {isEn ? "How OpenClaw integrates with SealMind" : "OpenClaw 如何与 SealMind 集成"}
+                  {isEn ? "How OpenClaw integrates with AIsphere" : "OpenClaw 如何与 AIsphere 集成"}
                 </p>
                 <div className="mt-4 rounded-xl bg-slate-50 border border-slate-100 p-5 font-mono text-[11px] text-slate-500 leading-relaxed whitespace-pre">
 {`┌─────────────────────────┐
@@ -233,7 +233,7 @@ export default function OpenClawPage() {
 └──────┼──────────┼──────┘
        │          │
 ┌──────▼──────────▼──────┐
-│      SealMind Core     │
+│      AIsphere Core     │
 │ ┌──────┐ ┌───────────┐ │
 │ │Memory│ │  Sealed   │ │
 │ │Vault │ │ Inference │ │
@@ -289,11 +289,11 @@ export default function OpenClawPage() {
                   {isEn ? "Register Agent in OpenClaw" : "注册 Agent 到 OpenClaw"}
                 </h2>
                 <p className="mt-1 text-xs text-slate-400">
-                  {isEn ? "Register your SealMind Agent as an OpenClaw agent to enable skill execution." : "将您的 SealMind Agent 注册为 OpenClaw Agent 以启用技能执行。"}
+                  {isEn ? "Register your AIsphere Agent as an OpenClaw agent to enable skill execution." : "将您的 AIsphere Agent 注册为 OpenClaw Agent 以启用技能执行。"}
                 </p>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="text-sm font-medium text-slate-600">SealMind Token ID</label>
+                    <label className="text-sm font-medium text-slate-600">AIsphere Token ID</label>
                     <input
                       type="text"
                       value={regTokenId}

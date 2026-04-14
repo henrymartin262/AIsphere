@@ -1,4 +1,4 @@
-# 🧠 SealMind — 隐私自主 AI Agent 操作系统
+# 🧠 AIsphere — 隐私自主 AI Agent 操作系统
 
 ## 技术实现方案 v2.0
 
@@ -40,7 +40,7 @@
 
 ### 1.2 解决方案
 
-SealMind 为每个 AI Agent 提供四大能力：
+AIsphere 为每个 AI Agent 提供四大能力：
 
 - 🔒 **Sealed Mind**：TEE 硬件密室中推理，每次生成密码学签名证明
 - 🧠 **Memory Vault**：客户端加密的去中心化记忆库，只有所有者可解密
@@ -49,11 +49,11 @@ SealMind 为每个 AI Agent 提供四大能力：
 
 ### 1.3 核心叙事
 
-> "如果 AI Agent 是 Web 4.0 的'数字公民'，那它需要一个不可篡改的灵魂——隐私记忆 + 可验证推理 + 链上身份。SealMind 用 0G 的全栈能力构建了这个灵魂容器。"
+> "如果 AI Agent 是 Web 4.0 的'数字公民'，那它需要一个不可篡改的灵魂——隐私记忆 + 可验证推理 + 链上身份。AIsphere 用 0G 的全栈能力构建了这个灵魂容器。"
 
 ### 1.4 为什么选择 0G？
 
-| 0G 组件 | 在 SealMind 中的角色 | 不可替代性 |
+| 0G 组件 | 在 AIsphere 中的角色 | 不可替代性 |
 |---------|---------------------|-----------|
 | **0G Compute (Sealed Inference)** | TEE 推理 + 密码学签名 | 唯一支持 TeeML 可验证推理的去中心化 GPU 市场 |
 | **0G Storage** | 加密记忆存储 | PB 级去中心化存储 + KV Store + Merkle 验证 |
@@ -68,7 +68,7 @@ SealMind 为每个 AI Agent 提供四大能力：
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                        SealMind                              │
+│                        AIsphere                              │
 │                                                              │
 │  ┌─────────────────────────────────────────────────────────┐ │
 │  │                    Frontend (Next.js)                     │ │
@@ -444,7 +444,7 @@ Level 5 (Master)   ─── 解锁创作者收益分成
 
 ```
 ┌──────────────────────────────────────────────────────┐
-│                 SealMind 合约体系                      │
+│                 AIsphere 合约体系                      │
 │                                                       │
 │  ┌──────────────────┐                                 │
 │  │  AgentRegistry   │  Agent 注册表                    │
@@ -468,7 +468,7 @@ Level 5 (Master)   ─── 解锁创作者收益分成
 
 **继承关系**：`ERC721Enumerable` + `Ownable` + `ReentrancyGuard`
 
-**代币名称**：`SealMind Agent`（符号：`SMIND`）
+**代币名称**：`AIsphere Agent`（符号：`SMIND`）
 
 **核心存储：**
 
@@ -890,7 +890,7 @@ sealmind/
 
 ### 9.3 四大组件集成点对照
 
-| SealMind 操作 | 0G 组件 | SDK 方法 | 时机 |
+| AIsphere 操作 | 0G 组件 | SDK 方法 | 时机 |
 |--------------|---------|----------|------|
 | 创建 Agent | 0G Chain | ethers 合约调用 `createAgent()` | 用户点击创建 |
 | 初始化记忆库 | 0G Storage | Batcher + KV Stream 写入 | 创建 Agent 后 |
@@ -910,7 +910,7 @@ sealmind/
 
 ```
 [0:00-0:20] 开场
-  "你信任你的 AI 吗？SealMind 让每句 AI 回复都可在链上验证。"
+  "你信任你的 AI 吗？AIsphere 让每句 AI 回复都可在链上验证。"
   展示: 首页 + 全网统计
 
 [0:20-1:00] 创建 Agent
@@ -1129,7 +1129,7 @@ npm run dev
 
 ## 附录：提交 Checklist
 
-- [ ] **项目名称**: SealMind
+- [ ] **项目名称**: AIsphere
 - [ ] **一句话描述**: AI Agent 的可验证灵魂容器——集成 0G Storage + Compute + Chain + INFT
 - [ ] **GitHub Repo**: 公开，有实质性 commit
 - [ ] **0G 主网合约地址**: SealMindINFT + DecisionChain + AgentRegistry

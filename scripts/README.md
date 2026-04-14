@@ -1,4 +1,4 @@
-# SealMind Scripts
+# AIsphere Scripts
 
 ## Demo Data Seeder
 

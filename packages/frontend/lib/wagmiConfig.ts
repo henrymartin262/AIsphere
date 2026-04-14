@@ -70,7 +70,7 @@ export function createWagmiConfig() {
     process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || undefined;
 
   return getDefaultConfig({
-    appName: "SealMind",
+    appName: "AIsphere",
     /* 没有 projectId 时传 undefined，RainbowKit 会跳过 WalletConnect 初始化，避免假 ID 超时 */
     projectId: walletConnectProjectId ?? "placeholder",
     ssr: true,
