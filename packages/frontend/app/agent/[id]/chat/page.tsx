@@ -38,7 +38,7 @@ export default function AgentChatPage() {
 
   const {
     sessions, activeSession, activeSessionId,
-    updateSessionMessages, newSession, deleteSession, switchSession,
+    updateSessionMessages, newSession, deleteSession, switchSession, renameSession,
   } = useChatSessions(agentId);
 
   const THINKING_STEPS = [
@@ -58,7 +58,10 @@ export default function AgentChatPage() {
   const [thinkStep, setThinkStep] = useState<number | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
+  const renameInputRef = useRef<HTMLInputElement>(null);
   const isZh = lang === "zh";
 
   // Load history from backend on first mount
@@ -119,6 +122,24 @@ export default function AgentChatPage() {
     }, 300);
   }
 
+  function handleStartRename(e: React.MouseEvent, sessionId: string, currentTitle: string) {
+    e.stopPropagation();
+    setEditingId(sessionId);
+    setEditingTitle(currentTitle === "New Chat" ? "" : currentTitle);
+    setTimeout(() => renameInputRef.current?.focus(), 50);
+  }
+
+  function handleRenameSubmit(sessionId: string) {
+    renameSession(sessionId, editingTitle || "New Chat");
+    setEditingId(null);
+    setEditingTitle("");
+  }
+
+  function handleRenameKeyDown(e: React.KeyboardEvent, sessionId: string) {
+    if (e.key === "Enter") { e.preventDefault(); handleRenameSubmit(sessionId); }
+    if (e.key === "Escape") { setEditingId(null); setEditingTitle(""); }
+  }
+
   const level = agent?.stats?.level ?? 1;
   const importanceLabel =
     importance >= 4 ? (isZh ? "高优先级" : "High Priority")
@@ -162,7 +183,7 @@ export default function AgentChatPage() {
             {sessions.map((s) => (
               <div
                 key={s.id}
-                onClick={() => handleSwitchSession(s.id)}
+                onClick={() => editingId !== s.id && handleSwitchSession(s.id)}
                 className={`group relative mx-2 mb-0.5 flex cursor-pointer items-start gap-2 rounded-xl px-3 py-2.5 transition-all ${
                   deletingId === s.id ? "opacity-0 scale-95" : "opacity-100"
                 } ${
@@ -174,19 +195,51 @@ export default function AgentChatPage() {
                 <svg className="mt-0.5 h-3.5 w-3.5 shrink-0 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm3.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm3.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
                 </svg>
+
                 <div className="flex-1 min-w-0">
-                  <p className="truncate text-xs font-medium leading-tight">{s.title}</p>
+                  {editingId === s.id ? (
+                    /* ── Rename input ── */
+                    <input
+                      ref={renameInputRef}
+                      value={editingTitle}
+                      onChange={(e) => setEditingTitle(e.target.value)}
+                      onBlur={() => handleRenameSubmit(s.id)}
+                      onKeyDown={(e) => handleRenameKeyDown(e, s.id)}
+                      onClick={(e) => e.stopPropagation()}
+                      placeholder={s.title}
+                      className="w-full rounded bg-white px-1 py-0 text-xs font-medium text-gray-800 outline-none ring-1 ring-indigo-400 dark:bg-slate-800 dark:text-white"
+                    />
+                  ) : (
+                    <p className="truncate text-xs font-medium leading-tight">{s.title}</p>
+                  )}
                   <p className="mt-0.5 text-[10px] opacity-50">{formatTime(s.updatedAt)}</p>
                 </div>
-                {/* Delete button */}
-                <button
-                  onClick={(e) => handleDeleteSession(e, s.id)}
-                  className="absolute right-2 top-2 hidden h-5 w-5 items-center justify-center rounded-md text-gray-400 hover:text-red-400 group-hover:flex dark:text-slate-600 dark:hover:text-red-400"
-                >
-                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+
+                {/* Action buttons — show on hover */}
+                {editingId !== s.id && (
+                  <div className="absolute right-2 top-2 hidden items-center gap-0.5 group-hover:flex">
+                    {/* Rename */}
+                    <button
+                      onClick={(e) => handleStartRename(e, s.id, s.title)}
+                      className="flex h-5 w-5 items-center justify-center rounded text-gray-400 hover:text-indigo-500 dark:text-slate-600 dark:hover:text-indigo-400"
+                      title={isZh ? "重命名" : "Rename"}
+                    >
+                      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                      </svg>
+                    </button>
+                    {/* Delete */}
+                    <button
+                      onClick={(e) => handleDeleteSession(e, s.id)}
+                      className="flex h-5 w-5 items-center justify-center rounded text-gray-400 hover:text-red-400 dark:text-slate-600 dark:hover:text-red-400"
+                      title={isZh ? "删除" : "Delete"}
+                    >
+                      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
