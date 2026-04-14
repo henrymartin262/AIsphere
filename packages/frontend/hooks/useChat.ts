@@ -63,7 +63,7 @@ export function useChat(agentId: string) {
   }, [agentId, walletAddress]);
 
   const sendMessage = useCallback(
-    async (content: string, importance = 3): Promise<void> => {
+    async (content: string, importance = 3, isCancelled?: () => boolean): Promise<void> => {
       if (!content.trim() || !agentId) return;
 
       const userMsg: ChatMessage = {
@@ -92,6 +92,9 @@ export function useChat(agentId: string) {
         // Restore previous wallet address
         if (!prevWallet) setApiWalletAddress(prevWallet);
 
+        // If session was switched while waiting, discard the assistant reply
+        if (isCancelled?.()) return;
+
         // backend returns { response, proof } — support both "response" and "reply"
         const replyText = data.response ?? data.reply ?? "(no response)";
 
@@ -113,8 +116,10 @@ export function useChat(agentId: string) {
         };
         setMessages((prev) => [...prev, assistantMsg]);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to send message");
-        setMessages((prev) => prev.filter((m) => m.id !== userMsg.id));
+        if (!isCancelled?.()) {
+          setError(err instanceof Error ? err.message : "Failed to send message");
+          setMessages((prev) => prev.filter((m) => m.id !== userMsg.id));
+        }
       } finally {
         setIsLoading(false);
       }

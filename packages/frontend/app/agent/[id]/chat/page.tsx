@@ -60,8 +60,12 @@ export default function AgentChatPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
+  const [queueCount, setQueueCount] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
   const renameInputRef = useRef<HTMLInputElement>(null);
+  const queueRef = useRef<Array<{ content: string; importance: number }>>([]);
+  const processingRef = useRef(false);
+  const cancelledRef = useRef(false);
   const isZh = lang === "zh";
 
   // Load history from backend on first mount
@@ -85,30 +89,69 @@ export default function AgentChatPage() {
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, thinkStep]);
 
-  async function handleSend() {
-    if (!input.trim() || chatLoading) return;
-    const content = input.trim();
-    setInput("");
-    setThinkStep(0);
-    for (let i = 1; i < THINKING_STEPS.length - 1; i++) {
-      await new Promise((r) => setTimeout(r, 600));
-      setThinkStep(i);
+  // ── Message queue processor ──────────────────────────────────────────────────
+  async function processQueue() {
+    if (processingRef.current) return;
+    processingRef.current = true;
+    cancelledRef.current = false;
+
+    while (queueRef.current.length > 0) {
+      if (cancelledRef.current) break;
+
+      const item = queueRef.current[0];
+      setQueueCount(queueRef.current.length - 1);
+
+      setThinkStep(0);
+      for (let i = 1; i < THINKING_STEPS.length - 1; i++) {
+        if (cancelledRef.current) break;
+        await new Promise((r) => setTimeout(r, 600));
+        setThinkStep(i);
+      }
+
+      if (!cancelledRef.current) {
+        await sendMessage(item.content, item.importance, () => cancelledRef.current);
+      }
+
+      setThinkStep(null);
+      queueRef.current.shift();
+      setQueueCount(queueRef.current.length);
     }
-    await sendMessage(content, importance);
-    setThinkStep(null);
+
+    processingRef.current = false;
+  }
+
+  function handleSend() {
+    if (!input.trim()) return;
+    const content = input.trim();
+    const imp = importance;
+    setInput("");
+
+    queueRef.current.push({ content, importance: imp });
+    setQueueCount(queueRef.current.length);
+    processQueue();
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
   }
 
+  function resetQueueState() {
+    cancelledRef.current = true;
+    queueRef.current = [];
+    processingRef.current = false;
+    setQueueCount(0);
+    setThinkStep(null);
+  }
+
   function handleNewChat() {
+    resetQueueState();
     newSession();
     setMessages([]);
   }
 
   function handleSwitchSession(sessionId: string) {
     if (sessionId === activeSessionId) return;
+    resetQueueState();
     switchSession(sessionId);
   }
 
@@ -118,7 +161,10 @@ export default function AgentChatPage() {
     setTimeout(() => {
       deleteSession(sessionId);
       setDeletingId(null);
-      if (sessionId === activeSessionId) setMessages([]);
+      if (sessionId === activeSessionId) {
+        resetQueueState();
+        setMessages([]);
+      }
     }, 300);
   }
 
@@ -387,14 +433,21 @@ export default function AgentChatPage() {
           </div>
           <div className="flex gap-3">
             <textarea value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown}
-              disabled={chatLoading} rows={2} placeholder={t("chat_placeholder")}
-              className="flex-1 resize-none rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 disabled:opacity-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder-slate-600 dark:focus:border-indigo-400/50 dark:focus:ring-indigo-400/10" />
-            <button onClick={handleSend} disabled={!isConnected || chatLoading || !input.trim()}
-              className="self-end rounded-2xl bg-indigo-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-600 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
-              {chatLoading
-                ? <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                : t("chat_send")}
-            </button>
+              rows={2} placeholder={t("chat_placeholder")}
+              className="flex-1 resize-none rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder-slate-600 dark:focus:border-indigo-400/50 dark:focus:ring-indigo-400/10" />
+            <div className="flex flex-col items-end gap-1.5">
+              <button onClick={handleSend} disabled={!isConnected || !input.trim()}
+                className="rounded-2xl bg-indigo-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-600 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
+                {chatLoading
+                  ? <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                  : t("chat_send")}
+              </button>
+              {queueCount > 0 && (
+                <span className="text-[10px] text-indigo-400 dark:text-indigo-500">
+                  {isZh ? `队列中 ${queueCount} 条` : `${queueCount} queued`}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>
