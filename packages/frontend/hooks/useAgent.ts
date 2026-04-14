@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { apiGet, apiPost } from "../lib/api";
+import { apiGet, apiPost, setApiWalletAddress } from "../lib/api";
 import type { Agent } from "../types";
 
 interface CreateAgentPayload {
@@ -58,6 +58,8 @@ export function useAgents(ownerAddress?: string) {
     setIsLoading(true);
     setError(null);
     try {
+      // Ensure wallet address is set before request (WalletSync may not have fired yet)
+      setApiWalletAddress(ownerAddress);
       const data = await apiGet<Agent[]>(`/agents/owner/${ownerAddress}`);
       const list = Array.isArray(data) ? data : [];
       agentsCache.set(ownerAddress, { data: list, expiresAt: Date.now() + CACHE_TTL });

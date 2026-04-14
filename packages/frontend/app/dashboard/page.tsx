@@ -147,12 +147,24 @@ export default function DashboardPage() {
             <p className="text-sm text-slate-400 font-mono truncate max-w-xs">{address}</p>
           </div>
         </div>
-        <Link href="/agent/create" className="btn-primary shrink-0">
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" d="M12 4v16m8-8H4" />
-          </svg>
-          {t("dash_create")}
-        </Link>
+        <div className="flex items-center gap-2 shrink-0">
+          {deletedIds.size > 0 && (
+            <Link href="/dashboard/trash"
+              className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-500 hover:border-red-200 hover:text-red-500 transition-colors">
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+              {t("nav_home") === "Home" ? "Trash" : "回收站"}
+              <span className="rounded-full bg-red-100 px-1.5 text-[10px] font-bold text-red-500">{deletedIds.size}</span>
+            </Link>
+          )}
+          <Link href="/agent/create" className="btn-primary">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" d="M12 4v16m8-8H4" />
+            </svg>
+            {t("dash_create")}
+          </Link>
+        </div>
       </div>
 
       {/* Error */}
