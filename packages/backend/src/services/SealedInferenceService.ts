@@ -140,51 +140,81 @@ export async function inference(
 
       if (provider) {
         const providerAddress = provider[0] as string;
-        const providerUrl = provider[2] as string;
-        const providerModel = (provider[6] as string) ?? (provider[3] as string) ?? model;
         const isTeeVerified = provider[10] === true;
+
+        // Get service metadata (endpoint + model) from broker — official SKILL pattern
+        let endpoint: string;
+        let providerModel: string;
+        try {
+          const meta = await (broker.inference as any).getServiceMetadata(providerAddress);
+          endpoint = meta.endpoint as string;
+          providerModel = (meta.model as string) ?? ((provider[6] as string) ?? (provider[3] as string) ?? model);
+          console.log(`[SealedInference] metadata: endpoint=${endpoint} model=${providerModel}`);
+        } catch (metaErr) {
+          // fallback to raw service tuple values
+          endpoint = (provider[2] as string);
+          providerModel = (provider[6] as string) ?? (provider[3] as string) ?? model;
+          console.warn(`[SealedInference] getServiceMetadata failed, using tuple: ${endpoint}`, (metaErr as Error).message);
+        }
 
         // Acknowledge provider signer before first use
         try {
           await broker.inference.acknowledgeProviderSigner(providerAddress);
+          console.log(`[SealedInference] acknowledgeProviderSigner ok: ${providerAddress}`);
         } catch (ackErr) {
-          console.warn("[SealedInference] acknowledgeProviderSigner failed (non-fatal):", ackErr);
+          console.warn("[SealedInference] acknowledgeProviderSigner failed (non-fatal):", (ackErr as Error).message);
         }
 
-        const rawHeaders = await broker.inference.getRequestHeaders(providerAddress, prompt);
-        // ServingRequestHeaders doesn't have an index signature — spread via unknown
-        const headers = rawHeaders as unknown as Record<string, string>;
+        // getRequestHeaders — no prompt arg per official SKILL.md
+        let rawHeaders: unknown;
+        try {
+          rawHeaders = await (broker.inference as any).getRequestHeaders(providerAddress);
+          console.log(`[SealedInference] getRequestHeaders ok`);
+        } catch (hdrErr) {
+          console.warn("[SealedInference] getRequestHeaders failed, falling back:", (hdrErr as Error).message);
+          throw hdrErr;
+        }
+        const headers = rawHeaders as Record<string, string>;
 
-        const response = await fetch(`${providerUrl}/v1/chat/completions`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...headers
-          },
-          body: JSON.stringify({
-            model: providerModel,
-            messages: [{ role: "user", content: prompt }],
-            max_tokens: 512
-          })
-        });
+        // Use endpoint from metadata (no /v1 prefix — per official SKILL.md)
+        const chatUrl = `${endpoint}/chat/completions`;
+        console.log(`[SealedInference] Calling ${chatUrl} model=${providerModel}`);
+        let response: Response;
+        try {
+          response = await fetch(chatUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", ...headers },
+            body: JSON.stringify({
+              model: providerModel,
+              messages: [{ role: "user", content: prompt }],
+              max_tokens: 512
+            })
+          });
+          console.log(`[SealedInference] Provider response status: ${response.status}`);
+        } catch (fetchErr) {
+          console.warn("[SealedInference] fetch failed:", (fetchErr as Error).message);
+          throw fetchErr;
+        }
 
         if (response.ok) {
-          // Extract chatID from response header for fee settlement
-          const chatID = response.headers.get("ZG-Res-Key") ?? "";
-
           const data = (await response.json()) as {
+            id?: string;
             choices: Array<{ message: { content: string } }>;
             usage?: unknown;
             signatures?: { attestation: string };
           };
           const text = data.choices?.[0]?.message?.content ?? "";
 
-          // processResponse is required for fee settlement — must be called after inference
+          // Per official SKILL.md: ZG-Res-Key header first, data.id as fallback
+          const chatID = response.headers.get("ZG-Res-Key") ?? response.headers.get("zg-res-key") ?? data.id ?? "";
+          console.log(`[SealedInference] TEE response ok, chatID=${chatID} tee=${isTeeVerified}`);
+
+          // processResponse is CRITICAL for fee settlement — must be called after inference
           if (chatID) {
             try {
-              await broker.inference.processResponse(providerAddress, chatID, data.usage as string | undefined);
+              await broker.inference.processResponse(providerAddress, chatID, JSON.stringify(data.usage ?? {}));
             } catch (processErr) {
-              console.warn("[SealedInference] processResponse failed (non-fatal):", processErr);
+              console.warn("[SealedInference] processResponse failed (non-fatal):", (processErr as Error).message);
             }
           }
 
