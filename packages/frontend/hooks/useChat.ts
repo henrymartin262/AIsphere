@@ -122,5 +122,5 @@ export function useChat(agentId: string) {
     [agentId, walletAddress]
   );
 
-  return { messages, sendMessage, isLoading, error, loadHistory };
+  return { messages, setMessages, sendMessage, isLoading, error, loadHistory };
 }
