@@ -1,5 +1,6 @@
 import { Router, type Router as ExpressRouter } from "express";
 import * as AgentService from "../services/AgentService.js";
+import { listAvailableModels } from "../services/SealedInferenceService.js";
 
 const router: ExpressRouter = Router();
 
@@ -64,6 +65,70 @@ router.get("/:agentId", async (req, res) => {
     res.status(200).json({ success: true, data: agent });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to fetch agent";
+    res.status(500).json({ error: message });
+  }
+});
+
+// GET /api/agents/models — List available inference models
+router.get("/models", async (_req, res) => {
+  try {
+    const models = await listAvailableModels();
+    res.status(200).json({ success: true, data: models });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to fetch models";
+    res.status(500).json({ error: message });
+  }
+});
+
+// DELETE /api/agents/:agentId — Delete (hide) an agent
+router.delete("/:agentId", async (req, res) => {
+  try {
+    const agentId = parseInt(req.params.agentId, 10);
+    if (isNaN(agentId)) {
+      res.status(400).json({ error: "agentId must be a number" });
+      return;
+    }
+    const walletAddress = req.headers["x-wallet-address"] as string | undefined;
+    if (!walletAddress) {
+      res.status(401).json({ error: "x-wallet-address header required" });
+      return;
+    }
+    await AgentService.deleteAgent(agentId, walletAddress);
+    res.status(200).json({ success: true });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to delete agent";
+    res.status(500).json({ error: message });
+  }
+});
+
+// GET /api/agents/models — List available inference models
+router.get("/models", async (_req, res) => {
+  try {
+    const models = await listAvailableModels();
+    res.status(200).json({ success: true, data: models });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to fetch models";
+    res.status(500).json({ error: message });
+  }
+});
+
+// DELETE /api/agents/:agentId — Delete (hide) an agent
+router.delete("/:agentId", async (req, res) => {
+  try {
+    const agentId = parseInt(req.params.agentId, 10);
+    if (isNaN(agentId)) {
+      res.status(400).json({ error: "agentId must be a number" });
+      return;
+    }
+    const walletAddress = req.headers["x-wallet-address"] as string | undefined;
+    if (!walletAddress) {
+      res.status(401).json({ error: "x-wallet-address header required" });
+      return;
+    }
+    await AgentService.deleteAgent(agentId, walletAddress);
+    res.status(200).json({ success: true });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to delete agent";
     res.status(500).json({ error: message });
   }
 });

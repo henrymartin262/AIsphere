@@ -64,6 +64,17 @@ app.get("/api/health", async (_req, res) => {
   });
 });
 
+// Public endpoints — no auth required
+app.get("/api/agents/models", async (_req, res) => {
+  try {
+    const { listAvailableModels } = await import("./services/SealedInferenceService.js");
+    const models = await listAvailableModels();
+    res.json({ success: true, data: models });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch models" });
+  }
+});
+
 app.use("/api/agents",      walletAuth, agentRoutes);
 app.use("/api/bounty",      bountyRoutes);
 app.use("/api/chat",        walletAuth, chatRoutes);

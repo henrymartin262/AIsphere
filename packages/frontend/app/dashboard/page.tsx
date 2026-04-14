@@ -3,6 +3,7 @@
 import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
+import { useState, useCallback } from "react";
 import { useAgents } from "../../hooks/useAgent";
 import { AgentCard } from "../../components/AgentCard";
 import { useLang } from "../../contexts/LangContext";
@@ -111,6 +112,13 @@ export default function DashboardPage() {
   const { address, isConnected } = useAccount();
   const { agents, isLoading, error, refetch } = useAgents(address);
   const { t } = useLang();
+  const [localAgents, setLocalAgents] = useState<number[]>([]);
+
+  const handleDelete = useCallback((agentId: number) => {
+    setLocalAgents((prev) => [...prev, agentId]);
+  }, []);
+
+  const visibleAgents = agents.filter((a) => !localAgents.includes(a.agentId));
 
   if (!isConnected) {
     return <ConnectWalletPrompt />;
@@ -158,7 +166,7 @@ export default function DashboardPage() {
       )}
 
       {/* Empty state */}
-      {!isLoading && !error && agents.length === 0 && (
+      {!isLoading && !error && visibleAgents.length === 0 && (
         <div className="mt-16 animate-slide-up flex flex-col items-center gap-6 text-center">
           <div className="relative">
             <div className="absolute inset-0 rounded-full bg-brand-400/[0.08] blur-[40px]" />
@@ -184,11 +192,11 @@ export default function DashboardPage() {
       )}
 
       {/* Agent grid */}
-      {!isLoading && agents.length > 0 && (
+      {!isLoading && visibleAgents.length > 0 && (
         <div className="mt-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          {agents.map((agent, i) => (
+          {visibleAgents.map((agent, i) => (
             <div key={agent.agentId} className="animate-slide-up-stagger" style={{ animationDelay: `${i * 0.06}s` }}>
-              <AgentCard agent={agent} />
+              <AgentCard agent={agent} onDelete={handleDelete} />
             </div>
           ))}
         </div>

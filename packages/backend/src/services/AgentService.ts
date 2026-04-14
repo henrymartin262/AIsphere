@@ -10,6 +10,7 @@ export interface AgentProfile {
   model: string;
   metadataHash: string;
   encryptedURI: string;
+  tags?: string[];
 }
 
 export interface AgentStats {
@@ -368,6 +369,33 @@ export async function getAgentsByOwner(address: string): Promise<AgentInfo[]> {
   );
 }
 
+// ─── Delete Agent (mock only — on-chain NFTs can't be burned by this service) ──
+
+const deletedAgentIds: Set<number> = new Set();
+
+export async function deleteAgent(agentId: number, walletAddress: string): Promise<void> {
+  // For on-chain agents: mark as deleted in local set (INFT burn requires owner tx)
+  // For mock agents: remove from map
+  const agent = mockAgents.get(agentId);
+  if (agent) {
+    if (agent.owner.toLowerCase() !== walletAddress.toLowerCase()) {
+      throw new Error("Not authorized: you don't own this agent");
+    }
+    mockAgents.delete(agentId);
+    invalidateAgentCache(agentId);
+    ownerCache.delete(walletAddress.toLowerCase());
+    return;
+  }
+  // For chain agents: add to deleted set and clear cache so it won't show up
+  deletedAgentIds.add(agentId);
+  invalidateAgentCache(agentId);
+  ownerCache.delete(walletAddress.toLowerCase());
+}
+
+export function isDeleted(agentId: number): boolean {
+  return deletedAgentIds.has(agentId);
+}
+
 // ─── Registry ABI (minimal, matches AgentRegistry.sol) ────────────────────────
 
 const REGISTRY_ABI = [
@@ -411,13 +439,13 @@ export async function listPublicAgents(
           const mock = mockAgents.get(a.agentId);
           if (mock) {
             if (!a.profile.tags?.length && mock.profile.tags?.length) {
-              (a.profile as Record<string, unknown>).tags = mock.profile.tags;
+              a.profile.tags = mock.profile.tags;
             }
             if (!a.price && mock.price) a.price = mock.price;
           }
           // Default tags based on model if still none
           if (!a.profile.tags?.length) {
-            (a.profile as Record<string, unknown>).tags = ["ai", "chat"];
+            a.profile.tags = ["ai", "chat"];
           }
           if (!a.price) a.price = "0.5";
           return a;

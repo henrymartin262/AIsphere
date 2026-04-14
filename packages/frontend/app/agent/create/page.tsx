@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
@@ -9,16 +9,37 @@ import { useLang } from "../../../contexts/LangContext";
 
 type Step = "form" | "minting" | "done";
 
+interface ModelInfo {
+  id: string;
+  name: string;
+  provider: string;
+  teeSupported: boolean;
+}
+
+const FALLBACK_MODELS: ModelInfo[] = [
+  { id: "deepseek-chat", name: "DeepSeek Chat", provider: "DeepSeek", teeSupported: false },
+  { id: "teeml-llama3", name: "LLaMA-3 (TeeML)", provider: "0G-TeeML", teeSupported: true },
+];
+
 export default function CreateAgentPage() {
   const router = useRouter();
   const { address, isConnected } = useAccount();
   const { createAgent, isLoading, error } = useCreateAgent();
   const { t, lang } = useLang();
 
-  const MODELS = [
-    { value: "deepseek-v3.1", label: "DeepSeek V3.1", desc: t("create_model_deepseek_desc") },
-    { value: "qwen-2.5-72b",  label: "Qwen 2.5 72B",  desc: t("create_model_qwen_desc") },
-  ];
+  const [models, setModels] = useState<ModelInfo[]>(FALLBACK_MODELS);
+
+  useEffect(() => {
+    fetch("/api/agents/models")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success && Array.isArray(d.data) && d.data.length > 0) {
+          setModels(d.data);
+          setForm((prev) => ({ ...prev, model: d.data[0].id }));
+        }
+      })
+      .catch(() => {/* keep fallback */});
+  }, []);
 
   const MINT_STEPS = [
     t("create_step_1"), t("create_step_2"), t("create_step_3"),
@@ -28,7 +49,7 @@ export default function CreateAgentPage() {
   const [step, setStep] = useState<Step>("form");
   const [mintStep, setMintStep] = useState(0);
   const [createdId, setCreatedId] = useState<number | null>(null);
-  const [form, setForm] = useState({ name: "", model: "deepseek-v3.1", description: "", personality: "" });
+  const [form, setForm] = useState({ name: "", model: FALLBACK_MODELS[0].id, description: "", personality: "" });
   const [formError, setFormError] = useState<string | null>(null);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
@@ -154,18 +175,23 @@ export default function CreateAgentPage() {
             {t("create_field_model")} <span className="text-red-500">*</span>
           </label>
           <div className="grid gap-3 sm:grid-cols-2">
-            {MODELS.map((m) => (
-              <label key={m.value} className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition ${
-                form.model === m.value
+            {models.map((m) => (
+              <label key={m.id} className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition ${
+                form.model === m.id
                   ? "border-indigo-300 bg-indigo-50 dark:border-indigo-400/40 dark:bg-indigo-500/10"
                   : "border-gray-200 bg-white hover:border-indigo-200 dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20"
               }`}>
-                <input type="radio" name="model" value={m.value}
-                  checked={form.model === m.value} onChange={handleChange}
+                <input type="radio" name="model" value={m.id}
+                  checked={form.model === m.id} onChange={handleChange}
                   className="mt-0.5 accent-indigo-500" />
                 <div>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{m.label}</p>
-                  <p className="text-xs text-gray-400 dark:text-slate-500">{m.desc}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{m.name}</p>
+                    {m.teeSupported && (
+                      <span className="rounded-full bg-green-50 border border-green-200 px-1.5 py-0.5 text-[9px] font-semibold text-green-600">TEE</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-400 dark:text-slate-500">{m.provider}</p>
                 </div>
               </label>
             ))}
