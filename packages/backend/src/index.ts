@@ -38,7 +38,7 @@ app.get("/api/health", async (_req, res) => {
   const openclawStatus = await OpenClawService.getStatus();
 
   res.status(200).json({
-    service: "@sealmind/backend",
+    service: "@aisphere/backend",
     version: "3.0.0",
     status: "ok",
     chainId: env.CHAIN_ID,
@@ -109,7 +109,7 @@ async function bootstrap() {
   console.log("[Bootstrap] Cache warm-up complete");
 
   app.listen(env.PORT, () => {
-    console.log(`SealMind backend v3.0 listening on http://localhost:${env.PORT}`);
+    console.log(`AIsphere backend v3.3 listening on http://localhost:${env.PORT}`);
   });
 }
 
