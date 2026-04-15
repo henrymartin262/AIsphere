@@ -61,3 +61,10 @@ README_EXPLORATION.md
 # AI assistant generated docs (not for repo)
 CLAUDE.md
 RENAME_CHECKLIST.md
+
+# Playwright E2E test outputs
+e2e/test-results/
+e2e/report/
+e2e/.auth/
+playwright-report/
+blob-report/
