@@ -1,14 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useAccount } from "wagmi";
 import { useMemory } from "../../../../hooks/useMemory";
 import { useLang } from "../../../../contexts/LangContext";
 import { apiPost, apiDelete, setApiWalletAddress } from "../../../../lib/api";
-import type { MemoryItem } from "../../../../types";
+import type { MemoryItem, ChatMessage } from "../../../../types";
+
+// ─── Local types ─────────────────────────────────────────────────────────────
 
 type MemoryType = "all" | "conversation" | "knowledge" | "personality" | "skill" | "decision";
+
+interface ChatSession {
+  id: string;
+  title: string;
+  createdAt: number;
+  updatedAt: number;
+  messages: ChatMessage[];
+}
+
+// ─── Constants ────────────────────────────────────────────────────────────────
 
 const TYPE_ICON: Record<string, string> = {
   conversation: "💬", knowledge: "📚", personality: "🧠", skill: "⚡", decision: "⛓",
@@ -22,15 +34,47 @@ const TYPE_COLOR: Record<string, string> = {
   decision:     "bg-indigo-50  text-indigo-600  border-indigo-200  dark:bg-indigo-500/10  dark:text-indigo-300  dark:border-indigo-500/30",
 };
 
+// ─── useLocalChatSessions ────────────────────────────────────────────────────
+
+function useLocalChatSessions(agentId: string): ChatSession[] {
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+
+  useEffect(() => {
+    if (!agentId || typeof window === "undefined") return;
+    try {
+      const raw = localStorage.getItem(`aisphere:sessions:${agentId}`);
+      if (!raw) return;
+      const parsed: ChatSession[] = JSON.parse(raw);
+      const filtered = parsed
+        .filter((s) => s.messages && s.messages.length > 0)
+        .sort((a, b) => b.updatedAt - a.updatedAt);
+      setSessions(filtered);
+    } catch {
+      setSessions([]);
+    }
+  }, [agentId]);
+
+  return sessions;
+}
+
+// ─── ImportanceDots ──────────────────────────────────────────────────────────
+
 function ImportanceDots({ value }: { value: number }) {
   return (
     <span className="flex items-center gap-0.5">
-      {[1,2,3,4,5].map((n) => (
-        <span key={n} className={`inline-block h-1.5 w-1.5 rounded-full ${n <= value ? "bg-indigo-500" : "bg-gray-200 dark:bg-white/10"}`} />
+      {[1, 2, 3, 4, 5].map((n) => (
+        <span
+          key={n}
+          className={`inline-block h-1.5 w-1.5 rounded-full ${
+            n <= value ? "bg-indigo-500" : "bg-gray-200 dark:bg-white/10"
+          }`}
+        />
       ))}
     </span>
   );
 }
+
+// ─── SkeletonCard ─────────────────────────────────────────────────────────────
 
 function SkeletonCard() {
   return (
@@ -48,6 +92,178 @@ function SkeletonCard() {
   );
 }
 
+// ─── SessionSheet ─────────────────────────────────────────────────────────────
+
+interface SessionSheetProps {
+  session: ChatSession | null;
+  onClose: () => void;
+}
+
+function SessionSheet({ session, onClose }: SessionSheetProps) {
+  const isOpen = session !== null;
+
+  // Prevent body scroll when sheet is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  function formatMsgTime(ts: number) {
+    return new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+
+  return (
+    <div
+      className={`fixed inset-0 z-50 transition-opacity duration-300 ${
+        isOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
+      }`}
+    >
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      {/* Panel */}
+      <div
+        className={`fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-2xl bg-white shadow-2xl dark:bg-gray-900 transition-transform duration-300 ease-out ${
+          isOpen ? "translate-y-0" : "translate-y-full"
+        }`}
+        style={{ maxHeight: "90vh" }}
+      >
+        {/* Drag handle */}
+        <div className="flex justify-center pt-3 pb-1 shrink-0">
+          <div className="h-1 w-10 rounded-full bg-gray-300 dark:bg-white/20" />
+        </div>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-white/10 shrink-0">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate pr-4">
+            {session?.title ?? ""}
+          </h3>
+          <button
+            onClick={onClose}
+            className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/10 dark:hover:text-white shrink-0"
+            aria-label="Close"
+          >
+            <span className="text-lg leading-none">×</span>
+          </button>
+        </div>
+
+        {/* Message list */}
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+          {session?.messages.map((msg) => (
+            <div
+              key={msg.id}
+              className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}
+            >
+              <div
+                className={
+                  msg.role === "user"
+                    ? "bg-indigo-500 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 max-w-[80%]"
+                    : "bg-gray-100 dark:bg-white/10 text-gray-800 dark:text-slate-200 rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-[80%]"
+                }
+              >
+                <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{msg.content}</p>
+              </div>
+              <span className="mt-1 text-[10px] text-gray-400 dark:text-slate-500 px-1">
+                {formatMsgTime(msg.timestamp)}
+              </span>
+            </div>
+          ))}
+          {session?.messages.length === 0 && (
+            <p className="text-center text-sm text-gray-400 dark:text-slate-500 py-8">No messages</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── ConversationTab ──────────────────────────────────────────────────────────
+
+interface ConversationTabProps {
+  agentId: string;
+}
+
+function ConversationTab({ agentId }: ConversationTabProps) {
+  const sessions = useLocalChatSessions(agentId);
+  const [selectedSession, setSelectedSession] = useState<ChatSession | null>(null);
+
+  function formatDate(ts: number) {
+    return new Date(ts).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
+  }
+
+  if (sessions.length === 0) {
+    return (
+      <div className="flex flex-col items-center gap-3 py-20 text-center">
+        <span className="text-5xl">💬</span>
+        <p className="text-base font-medium text-gray-900 dark:text-white">暂无对话记录</p>
+        <p className="text-sm text-gray-400 dark:text-slate-500">No conversations yet</p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="space-y-3">
+        {sessions.map((session) => {
+          const lastMsg = session.messages[session.messages.length - 1];
+          const preview = lastMsg
+            ? lastMsg.content.slice(0, 60) + (lastMsg.content.length > 60 ? "…" : "")
+            : "";
+          const msgCount = session.messages.length;
+
+          return (
+            <div
+              key={session.id}
+              onClick={() => setSelectedSession(session)}
+              className="card group relative p-4 hover:shadow-md cursor-pointer"
+            >
+              <div className="flex items-start gap-3">
+                {/* Icon */}
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border text-base bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/30">
+                  💬
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
+                    {session.title}
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-gray-400 dark:text-slate-500">
+                    {msgCount} message{msgCount !== 1 ? "s" : ""} · {formatDate(session.updatedAt)}
+                  </p>
+                  {preview && (
+                    <p className="mt-1.5 text-xs text-gray-400 dark:text-slate-500 line-clamp-1">
+                      {preview}
+                    </p>
+                  )}
+                </div>
+
+                {/* Arrow */}
+                <span className="text-xl text-gray-300 group-hover:text-indigo-500 transition-colors dark:text-white/20 dark:group-hover:text-indigo-400 shrink-0 self-center">
+                  ›
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <SessionSheet session={selectedSession} onClose={() => setSelectedSession(null)} />
+    </>
+  );
+}
+
+// ─── AddMemoryModal ───────────────────────────────────────────────────────────
+
 interface AddMemoryModalProps {
   agentId: string;
   walletAddress: string;
@@ -64,7 +280,7 @@ function AddMemoryModal({ agentId, walletAddress, onClose, onSaved }: AddMemoryM
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  const TYPES: Exclude<MemoryType, "all">[] = ["conversation","knowledge","personality","skill","decision"];
+  const TYPES: Exclude<MemoryType, "all">[] = ["conversation", "knowledge", "personality", "skill", "decision"];
   const TYPE_LABEL_KEY: Record<string, string> = {
     conversation: "memory_conversation", knowledge: "memory_knowledge",
     personality: "memory_personality",   skill: "memory_skill", decision: "memory_decision",
@@ -115,7 +331,7 @@ function AddMemoryModal({ agentId, walletAddress, onClose, onSaved }: AddMemoryM
         <div className="mb-4">
           <label className="mb-1.5 block text-xs font-medium text-gray-500 dark:text-slate-400">{t("memory_importance")}</label>
           <div className="flex gap-1.5">
-            {[1,2,3,4,5].map((n) => (
+            {[1, 2, 3, 4, 5].map((n) => (
               <button key={n} onClick={() => setImportance(n)}
                 className={`h-7 w-7 rounded-full text-xs font-semibold transition ${
                   importance === n
@@ -153,6 +369,8 @@ function AddMemoryModal({ agentId, walletAddress, onClose, onSaved }: AddMemoryM
     </div>
   );
 }
+
+// ─── AgentMemoryPage ──────────────────────────────────────────────────────────
 
 export default function AgentMemoryPage() {
   const params = useParams();
@@ -194,8 +412,7 @@ export default function AgentMemoryPage() {
     <main className="mx-auto max-w-4xl px-6 py-8">
       <div className="mb-6 flex items-center justify-between">
         <span className="badge">{t("memory_title")}</span>
-        <button onClick={() => setShowAddModal(true)}
-          className="btn-primary">
+        <button onClick={() => setShowAddModal(true)} className="btn-primary">
           + {t("memory_add")}
         </button>
       </div>
@@ -214,76 +431,87 @@ export default function AgentMemoryPage() {
         ))}
       </div>
 
-      {error && (
-        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
-          ⚠ {error}
-        </div>
+      {/* Conversation tab: local chat sessions */}
+      {activeTab === "conversation" && (
+        <ConversationTab agentId={agentId} />
       )}
 
-      {isLoading && <div className="space-y-3">{[1,2,3].map((n) => <SkeletonCard key={n} />)}</div>}
+      {/* All other tabs: backend memories */}
+      {activeTab !== "conversation" && (
+        <>
+          {error && (
+            <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
+              ⚠ {error}
+            </div>
+          )}
 
-      {!isLoading && !error && filtered.length === 0 && (
-        <div className="flex flex-col items-center gap-3 py-20 text-center">
-          <span className="text-5xl">🧠</span>
-          <p className="text-base font-medium text-gray-900 dark:text-white">{t("memory_empty")}</p>
-          <p className="text-sm text-gray-400 dark:text-slate-500">{t("memory_empty_desc")}</p>
-        </div>
-      )}
+          {isLoading && (
+            <div className="space-y-3">{[1, 2, 3].map((n) => <SkeletonCard key={n} />)}</div>
+          )}
 
-      {!isLoading && filtered.length > 0 && (
-        <div className="space-y-3">
-          {filtered.map((memory) => {
-            const memType = memory.type ?? "conversation";
-            const icon = TYPE_ICON[memType] ?? "📄";
-            const colorClass = TYPE_COLOR[memType] ?? "bg-gray-50 text-gray-600 border-gray-200 dark:bg-white/5 dark:text-slate-300 dark:border-white/10";
-            const preview = memory.content.length > 120 ? memory.content.slice(0, 120) + "…" : memory.content;
+          {!isLoading && !error && filtered.length === 0 && (
+            <div className="flex flex-col items-center gap-3 py-20 text-center">
+              <span className="text-5xl">🧠</span>
+              <p className="text-base font-medium text-gray-900 dark:text-white">{t("memory_empty")}</p>
+              <p className="text-sm text-gray-400 dark:text-slate-500">{t("memory_empty_desc")}</p>
+            </div>
+          )}
 
-            return (
-              <div key={memory.id}
-                className="card group relative p-5 hover:shadow-md">
-                <button onClick={() => handleDelete(memory)} disabled={deletingId === memory.id}
-                  className="absolute right-4 top-4 hidden rounded-lg p-1.5 text-gray-400 transition hover:bg-red-50 hover:text-red-500 group-hover:flex disabled:opacity-40 dark:hover:bg-red-500/10 dark:hover:text-red-400"
-                  aria-label="delete">
-                  {deletingId === memory.id ? (
-                    <svg className="h-3.5 w-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                  ) : (
-                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  )}
-                </button>
+          {!isLoading && filtered.length > 0 && (
+            <div className="space-y-3">
+              {filtered.map((memory) => {
+                const memType = memory.type ?? "conversation";
+                const icon = TYPE_ICON[memType] ?? "📄";
+                const colorClass = TYPE_COLOR[memType] ?? "bg-gray-50 text-gray-600 border-gray-200 dark:bg-white/5 dark:text-slate-300 dark:border-white/10";
+                const preview = memory.content.length > 120 ? memory.content.slice(0, 120) + "…" : memory.content;
 
-                <div className="flex items-start gap-3">
-                  <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border text-base ${colorClass}`}>
-                    {icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <span className={`inline-block rounded-lg border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${colorClass}`}>
-                      {memType}
-                    </span>
-                    <p className="mt-1.5 text-sm leading-relaxed text-gray-700 dark:text-slate-200">{preview}</p>
-                    <div className="mt-3 flex flex-wrap items-center gap-3">
-                      <span className="text-[11px] text-gray-400 dark:text-slate-500">{formatTime(memory.timestamp)}</span>
-                      <ImportanceDots value={memory.importance} />
-                      {memory.tags && memory.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1">
-                          {memory.tags.map((tag) => (
-                            <span key={tag} className="rounded-md border border-gray-100 bg-gray-50 px-1.5 py-0.5 text-[10px] text-gray-400 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-slate-500">
-                              #{tag}
-                            </span>
-                          ))}
-                        </div>
+                return (
+                  <div key={memory.id} className="card group relative p-5 hover:shadow-md">
+                    <button onClick={() => handleDelete(memory)} disabled={deletingId === memory.id}
+                      className="absolute right-4 top-4 hidden rounded-lg p-1.5 text-gray-400 transition hover:bg-red-50 hover:text-red-500 group-hover:flex disabled:opacity-40 dark:hover:bg-red-500/10 dark:hover:text-red-400"
+                      aria-label="delete">
+                      {deletingId === memory.id ? (
+                        <svg className="h-3.5 w-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                      ) : (
+                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
                       )}
+                    </button>
+
+                    <div className="flex items-start gap-3">
+                      <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border text-base ${colorClass}`}>
+                        {icon}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span className={`inline-block rounded-lg border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${colorClass}`}>
+                          {memType}
+                        </span>
+                        <p className="mt-1.5 text-sm leading-relaxed text-gray-700 dark:text-slate-200">{preview}</p>
+                        <div className="mt-3 flex flex-wrap items-center gap-3">
+                          <span className="text-[11px] text-gray-400 dark:text-slate-500">{formatTime(memory.timestamp)}</span>
+                          <ImportanceDots value={memory.importance} />
+                          {memory.tags && memory.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {memory.tags.map((tag) => (
+                                <span key={tag} className="rounded-md border border-gray-100 bg-gray-50 px-1.5 py-0.5 text-[10px] text-gray-400 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-slate-500">
+                                  #{tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                );
+              })}
+            </div>
+          )}
+        </>
       )}
 
       {showAddModal && (
