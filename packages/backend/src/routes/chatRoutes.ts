@@ -73,26 +73,18 @@ router.post("/:agentId", async (req, res) => {
       model
     );
 
-    // 3. Persist conversation memories (fire-and-forget style, non-blocking)
+    // 5. Persist conversation memories — user first (+0ms), agent +1ms to guarantee sort order
     const userMemoryPromise = MemoryVaultService.saveMemory(
       agentId,
-      {
-        type: "conversation",
-        content: `User: ${message}`,
-        importance: 0.5,
-        tags: ["conversation"]
-      },
+      { type: "conversation", content: `User: ${message}`, importance: 0.5, tags: ["conversation"] },
       walletAddress
     );
-
+    // Wait for user message to be saved before saving agent response
+    // This guarantees timestamp(user) <= timestamp(agent)
+    await userMemoryPromise;
     const agentMemoryPromise = MemoryVaultService.saveMemory(
       agentId,
-      {
-        type: "conversation",
-        content: `Agent: ${response}`,
-        importance: 0.5,
-        tags: ["conversation"]
-      },
+      { type: "conversation", content: `Agent: ${response}`, importance: 0.5, tags: ["conversation"] },
       walletAddress
     );
 
@@ -101,7 +93,7 @@ router.post("/:agentId", async (req, res) => {
     const importance = proof.teeVerified ? 4 : proof.inferenceMode === "real" ? 3 : 2;
     const decisionPromise = DecisionChainService.recordDecision(agentId, proof, importance);
 
-    await Promise.all([userMemoryPromise, agentMemoryPromise, decisionPromise]);
+    await Promise.all([agentMemoryPromise, decisionPromise]);
 
     // 5. Record inference on INFT contract (non-blocking, updates level/stats)
     recordInferenceOnChain(agentId).catch(() => {});
