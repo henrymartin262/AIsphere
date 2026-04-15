@@ -794,13 +794,16 @@ A recent security analysis of MCP~\cite{mcp-security2025} identifies tool poison
 \midrule
 \textbf{0G Chain} & 5 smart contracts: AIsphereINFT (ERC-721 + soul state), DecisionChain (audit log + anti-replay), AgentRegistry (agent directory + discovery), BountyBoard (7-state task marketplace + escrow), AgentMarketplace (INFT trading + escrow) \\[2pt]
 \textbf{0G Storage KV} & Memory Vault (AES-256-GCM ciphertexts), Hive Mind (collective intelligence persistence), Living Soul (experience metadata), Multi-Agent session state; all with dual-layer hot cache \\[2pt]
-\textbf{0G Compute} & TEE inference via TeeML (Layer 1), provider discovery via \texttt{ListService}, fee settlement via \texttt{processResponse}, request signing via \texttt{getRequestHeaders}; 4-layer degradation strategy \\[2pt]
+\textbf{0G Compute} & TEE inference via TeeML, provider discovery, fee settlement via \texttt{processResponse}, request signing; multi-layer degradation with transparent tier labeling \\[2pt]
+\textbf{Agentic ID (ERC-7857)} & On-chain agent identity standard: ERC-721 INFT with soul signature, passport certification, trust score, 5-tier level system, ownership transfer with memory migration \\[2pt]
+\textbf{0G Memory} & Persistent agent memory across sessions via 0G Storage KV; dual-layer architecture (in-memory hot cache + 0G KV); hydration on startup; graceful degradation to cache-only mode \\[2pt]
+\textbf{TEE / Private Sandbox} & Sealed Mind runs all primary inference inside hardware enclave (Intel TDX via TeeML); hardware-signed attestation per response; enclave isolation ensures neither host nor platform can observe computation \\[2pt]
 \textbf{0G Agent Skills} & 7 official skills integrated: \#4 Streaming Chat, \#5 Text-to-Image, \#6 Speech-to-Text, \#7 Provider Discovery, \#8 Account Management, \#13 Storage$\times$Chain, \#14 Compute$\times$Storage \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-To our knowledge, AIsphere is the first project to deeply integrate \emph{all four pillars} of 0G Network in a single coherent application. Most projects at the time of writing use only one or two components (typically Chain alone).
+To our knowledge, AIsphere is the first project to deeply integrate \emph{all six} 0G Network components plus seven official Agent Skills in a single coherent application. Most projects at the time of writing use only one or two components (typically Chain alone).
 
 
 % ══════════════════════════════════════════════════════════════════════════════
