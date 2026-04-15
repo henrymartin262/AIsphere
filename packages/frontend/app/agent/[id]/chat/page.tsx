@@ -68,8 +68,10 @@ export default function AgentChatPage() {
   const cancelledRef = useRef(false);
   const isZh = lang === "zh";
 
-  // Load history from backend on first mount
-  useEffect(() => { if (agentId) loadHistory(); }, [agentId]); // eslint-disable-line
+  // Load history from backend on first mount — only to warm up backend cache.
+  // Do NOT restore messages from backend history here; localStorage sessions are the source of truth.
+  // (Backend history is built from in-memory store which resets on restart.)
+  useEffect(() => { if (agentId) loadHistory().catch(() => {}); }, [agentId]); // eslint-disable-line
 
   // Restore messages from session when switching
   useEffect(() => {

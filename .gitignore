@@ -68,3 +68,6 @@ e2e/report/
 e2e/.auth/
 playwright-report/
 blob-report/
+
+# Runtime data (memory persistence, not committed)
+packages/backend/data/

@@ -1,4 +1,6 @@
 import { randomUUID } from "crypto";
+import { writeFileSync, readFileSync, mkdirSync, existsSync } from "fs";
+import { join } from "path";
 import { keccak256, toUtf8Bytes } from "ethers";
 import { deriveAgentKey, encryptMemory, decryptMemory } from "../utils/encryption.js";
 import { initialize0GClients, kvBatchWrite } from "../config/og.js";
@@ -35,12 +37,46 @@ interface EncryptedMemory {
   tags: string[];
 }
 
+// ─── File persistence helpers ─────────────────────────────────────────────────
+
+const DATA_DIR = join(process.cwd(), "data");
+const MEMORIES_FILE = join(DATA_DIR, "memories.json");
+
+function loadStoreFromFile(): Map<number, EncryptedMemory[]> {
+  try {
+    if (!existsSync(MEMORIES_FILE)) return new Map();
+    const raw = readFileSync(MEMORIES_FILE, "utf-8");
+    const obj = JSON.parse(raw) as Record<string, EncryptedMemory[]>;
+    const map = new Map<number, EncryptedMemory[]>();
+    for (const [k, v] of Object.entries(obj)) {
+      if (Array.isArray(v)) map.set(parseInt(k, 10), v);
+    }
+    console.log(`[MemoryVault] Loaded ${map.size} agents from file cache`);
+    return map;
+  } catch {
+    return new Map();
+  }
+}
+
+function persistStoreToFile(): void {
+  try {
+    mkdirSync(DATA_DIR, { recursive: true });
+    const obj: Record<string, EncryptedMemory[]> = {};
+    for (const [k, v] of store.entries()) {
+      obj[String(k)] = v;
+    }
+    writeFileSync(MEMORIES_FILE, JSON.stringify(obj), "utf-8");
+  } catch (err) {
+    console.warn("[MemoryVault] File persist failed (non-fatal):", (err as Error).message);
+  }
+}
+
 // ─── Dual-layer store: in-memory cache + 0G KV Storage persistence ───────────
 // Memory Map serves as hot cache; 0G KV Storage provides durable persistence.
-// Write path: encrypt → push to cache → async persist to 0G KV
-// Read path: serve from cache (populated from 0G KV on first access)
+// Write path: encrypt → push to cache → async persist to 0G KV + local file
+// Read path: serve from cache (pre-populated from file on startup, hydrated from 0G KV on first access)
 
-const store: Map<number, EncryptedMemory[]> = new Map();
+const store: Map<number, EncryptedMemory[]> = loadStoreFromFile();
 
 // Track which agents have been hydrated from 0G KV
 const hydratedAgents: Set<number> = new Set();
@@ -186,6 +222,7 @@ export async function saveMemory(
 
   // 1. Push to in-memory cache (immediate)
   getStore(agentId).push(encrypted);
+  persistStoreToFile();
 
   // 2. Persist to 0G KV Storage (async, non-blocking)
   persistTo0GKV(agentId, encrypted).catch((err) => {
@@ -316,6 +353,7 @@ export async function deleteMemory(
   const idx = list.findIndex((m) => m.id === memoryId);
   if (idx === -1) return false;
   list.splice(idx, 1);
+  persistStoreToFile();
 
   // Update the index on 0G KV to reflect deletion
   try {

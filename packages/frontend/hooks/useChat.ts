@@ -54,7 +54,9 @@ export function useChat(agentId: string) {
           proof: m.proof,
         };
       });
-      setMessages(normalized);
+      // Only apply backend history if localStorage hasn't already restored messages.
+      // localStorage sessions are the source of truth; backend history is a fallback only.
+      setMessages((prev) => prev.length > 0 ? prev : normalized);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load history");
     } finally {
