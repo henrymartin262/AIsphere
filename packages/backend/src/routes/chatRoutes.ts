@@ -2,6 +2,8 @@ import { Router, type Router as ExpressRouter } from "express";
 import * as MemoryVaultService from "../services/MemoryVaultService.js";
 import * as SealedInferenceService from "../services/SealedInferenceService.js";
 import * as DecisionChainService from "../services/DecisionChainService.js";
+import * as AgentService from "../services/AgentService.js";
+import { buildPrompt } from "../services/PromptBuilder.js";
 import { soulService } from "../services/SoulService.js";
 import { ExperienceType } from "../services/SoulService.js";
 import { initialize0GClients } from "../config/og.js";
@@ -49,22 +51,25 @@ router.post("/:agentId", async (req, res) => {
       return;
     }
 
-    // 1. Build personality/knowledge context only (no conversation — session-isolated)
-    const memContext = await MemoryVaultService.buildPersonalityContext(agentId, walletAddress);
+    // 1. Load personality/knowledge memories for system prompt
+    const personalityContext = await MemoryVaultService.buildPersonalityContext(agentId, walletAddress);
 
-    // 2. Build multi-turn history from session history sent by frontend
-    //    This ensures each chat session has its own isolated context
-    const historyContext = history && history.length > 0
-      ? history.slice(-20).map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`).join("\n")
-      : "";
+    // 2. Fetch agent name for identity injection
+    const agentInfo = await AgentService.getAgent(agentId);
+    const agentName = agentInfo?.profile?.name ?? `Agent #${agentId}`;
 
-    const context = [memContext, historyContext].filter(Boolean).join("\n\n");
+    // 3. Build structured prompt (system + history + user)
+    const builtPrompt = buildPrompt(
+      { agentId, agentName, personalityContext },
+      (history ?? []).slice(-20),
+      message
+    );
 
-    // 2. Run sealed inference
+    // 4. Run sealed inference with the structured prompt
     const { response, proof } = await SealedInferenceService.inference(
       agentId,
       message,
-      context,
+      builtPrompt,
       model
     );
 

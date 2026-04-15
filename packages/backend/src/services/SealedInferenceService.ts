@@ -1,6 +1,21 @@
 import { hashContent } from "../utils/encryption.js";
 import { initialize0GClients } from "../config/og.js";
 import { env } from "../config/index.js";
+import type { BuiltPrompt, ChatMessage } from "./PromptBuilder.js";
+import { buildPrompt as _buildPrompt } from "./PromptBuilder.js";
+
+/** Normalise a string context or a pre-built BuiltPrompt into a BuiltPrompt */
+function normalisePrompt(promptOrContext: BuiltPrompt | string, userMessage: string, agentId: number): BuiltPrompt {
+  if (typeof promptOrContext === "string") {
+    // Legacy callers pass a plain context string — wrap it into a minimal BuiltPrompt
+    return _buildPrompt(
+      { agentId, agentName: `Agent #${agentId}`, personalityContext: promptOrContext },
+      [],
+      userMessage
+    );
+  }
+  return promptOrContext;
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -96,19 +111,18 @@ export async function discoverProviders(): Promise<ProviderInfo[]> {
 export async function inference(
   agentId: number,
   userMessage: string,
-  context: string,
+  promptOrContext: BuiltPrompt | string,
   model = "teeml-llama3"
 ): Promise<InferenceResult> {
   const clients = await initialize0GClients();
+  const prompt = normalisePrompt(promptOrContext, userMessage, agentId);
 
   // ── Layer 1: 0G Compute Broker (TeeML) ────────────────────────────────────
-  // Use testnet signer for Compute Broker — testnet has active TEE providers + 30 A0GI balance
   if (clients.brokerStatus === "ready" && env.PRIVATE_KEY) {
     try {
       const { createZGComputeNetworkBroker } = await import("@0glabs/0g-serving-broker");
       const { ethers: ethersLib } = await import("ethers");
 
-      // Create a testnet-specific signer for the Compute Broker
       const TESTNET_RPC = "https://evmrpc-testnet.0g.ai";
       const testProvider = new ethersLib.JsonRpcProvider(TESTNET_RPC);
       const testSigner = new ethersLib.Wallet(env.PRIVATE_KEY, testProvider);
@@ -116,11 +130,6 @@ export async function inference(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const broker = await createZGComputeNetworkBroker(testSigner as any);
 
-      const prompt = context
-        ? `System context:\n${context}\n\nUser: ${userMessage}\nAssistant:`
-        : `User: ${userMessage}\nAssistant:`;
-
-      // listService returns tuple arrays; pick TEE provider first, fall back to any chatbot
       const services = (await broker.inference.listService()) as unknown[][];
       const chatbotServices = services.filter(
         (s) => Array.isArray(s) && (
@@ -129,7 +138,6 @@ export async function inference(
           (s[1] as string) === "llm"
         )
       );
-      // Fall back to ANY service if no chatbot-type found
       const candidates = chatbotServices.length > 0 ? chatbotServices : services.filter(Array.isArray);
       const teeProviders = candidates.filter((s) => s[10] === true);
       const anyProviders = candidates;
@@ -142,7 +150,6 @@ export async function inference(
         const providerAddress = provider[0] as string;
         const isTeeVerified = provider[10] === true;
 
-        // Get service metadata (endpoint + model) from broker — official SKILL pattern
         let endpoint: string;
         let providerModel: string;
         try {
@@ -151,13 +158,11 @@ export async function inference(
           providerModel = (meta.model as string) ?? ((provider[6] as string) ?? (provider[3] as string) ?? model);
           console.log(`[SealedInference] metadata: endpoint=${endpoint} model=${providerModel}`);
         } catch (metaErr) {
-          // fallback to raw service tuple values
           endpoint = (provider[2] as string);
           providerModel = (provider[6] as string) ?? (provider[3] as string) ?? model;
           console.warn(`[SealedInference] getServiceMetadata failed, using tuple: ${endpoint}`, (metaErr as Error).message);
         }
 
-        // Acknowledge provider signer before first use
         try {
           await broker.inference.acknowledgeProviderSigner(providerAddress);
           console.log(`[SealedInference] acknowledgeProviderSigner ok: ${providerAddress}`);
@@ -165,7 +170,6 @@ export async function inference(
           console.warn("[SealedInference] acknowledgeProviderSigner failed (non-fatal):", (ackErr as Error).message);
         }
 
-        // getRequestHeaders — no prompt arg per official SKILL.md
         let rawHeaders: unknown;
         try {
           rawHeaders = await (broker.inference as any).getRequestHeaders(providerAddress);
@@ -176,24 +180,34 @@ export async function inference(
         }
         const headers = rawHeaders as Record<string, string>;
 
-        // Use endpoint from metadata (no /v1 prefix — per official SKILL.md)
         const chatUrl = `${endpoint}/chat/completions`;
         console.log(`[SealedInference] Calling ${chatUrl} model=${providerModel}`);
+
         let response: Response;
         try {
+          // Use structured messages array (system + history + user)
           response = await fetch(chatUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json", ...headers },
             body: JSON.stringify({
               model: providerModel,
-              messages: [{ role: "user", content: prompt }],
+              messages: prompt.messages,
               max_tokens: 512
             })
           });
           console.log(`[SealedInference] Provider response status: ${response.status}`);
         } catch (fetchErr) {
-          console.warn("[SealedInference] fetch failed:", (fetchErr as Error).message);
-          throw fetchErr;
+          // Some 0G providers don't support messages array — fall back to flat prompt
+          console.warn("[SealedInference] messages fetch failed, retrying with flat prompt:", (fetchErr as Error).message);
+          response = await fetch(chatUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", ...headers },
+            body: JSON.stringify({
+              model: providerModel,
+              messages: [{ role: "user", content: prompt.flatPrompt }],
+              max_tokens: 512
+            })
+          });
         }
 
         if (response.ok) {
@@ -205,11 +219,9 @@ export async function inference(
           };
           const text = data.choices?.[0]?.message?.content ?? "";
 
-          // Per official SKILL.md: ZG-Res-Key header first, data.id as fallback
           const chatID = response.headers.get("ZG-Res-Key") ?? response.headers.get("zg-res-key") ?? data.id ?? "";
           console.log(`[SealedInference] TEE response ok, chatID=${chatID} tee=${isTeeVerified}`);
 
-          // processResponse is CRITICAL for fee settlement — must be called after inference
           if (chatID) {
             try {
               await broker.inference.processResponse(providerAddress, chatID, JSON.stringify(data.usage ?? {}));
@@ -220,7 +232,7 @@ export async function inference(
 
           const proof = buildProof(
             providerModel,
-            prompt,
+            prompt.flatPrompt,
             text,
             isTeeVerified,
             isTeeVerified ? "tee" : "real",
@@ -230,11 +242,11 @@ export async function inference(
         }
       }
     } catch (err) {
-      console.warn("[SealedInference] Broker inference failed, falling back to DeepSeek:", err);
+      console.warn("[SealedInference] Broker inference failed, falling back:", err);
     }
   }
 
-  // ── Layer 2: GLM (ZhiPu AI) — Primary real inference ───────────────────────
+  // ── Layer 2: GLM (ZhiPu AI) ───────────────────────────────────────────────
   if (env.GLM_API_KEY) {
     try {
       const response = await fetch(`${env.GLM_BASE_URL}/chat/completions`, {
@@ -245,10 +257,7 @@ export async function inference(
         },
         body: JSON.stringify({
           model: env.GLM_MODEL,
-          messages: [
-            { role: "system", content: context || "You are a helpful AI agent on AIsphere, a privacy-sovereign AI Agent OS built on 0G Network." },
-            { role: "user", content: userMessage }
-          ],
+          messages: prompt.messages,   // ← full structured messages with history
           max_tokens: 1024,
           temperature: 0.7
         })
@@ -270,7 +279,7 @@ export async function inference(
     }
   }
 
-  // ── Layer 3: DeepSeek API (fallback) ──────────────────────────────────────
+  // ── Layer 3: DeepSeek API ─────────────────────────────────────────────────
   if (env.DEEPSEEK_API_KEY) {
     try {
       const response = await fetch(`${env.DEEPSEEK_BASE_URL}/chat/completions`, {
@@ -281,10 +290,7 @@ export async function inference(
         },
         body: JSON.stringify({
           model: "deepseek-chat",
-          messages: [
-            { role: "system", content: context || "You are a helpful AI agent." },
-            { role: "user", content: userMessage }
-          ],
+          messages: prompt.messages,   // ← full structured messages with history
           max_tokens: 1024,
           temperature: 0.7
         })
@@ -306,7 +312,7 @@ export async function inference(
   }
 
   // ── Layer 4: Mock fallback ─────────────────────────────────────────────────
-  const mockResponse = generateMockResponse(agentId, userMessage, context);
+  const mockResponse = generateMockResponse(agentId, userMessage, prompt.systemPrompt);
   const proof = buildProof(model, userMessage, mockResponse, false, "mock");
   return { response: mockResponse, proof };
 }

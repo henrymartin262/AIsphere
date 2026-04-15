@@ -156,9 +156,11 @@ function SessionSheet({ session, onClose }: SessionSheetProps) {
           </button>
         </div>
 
-        {/* Message list */}
+        {/* Message list — sorted by timestamp to guarantee user→assistant order */}
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-          {session?.messages.map((msg) => (
+          {[...(session?.messages ?? [])]
+            .sort((a, b) => a.timestamp - b.timestamp)
+            .map((msg) => (
             <div
               key={msg.id}
               className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}
@@ -392,7 +394,10 @@ export default function AgentMemoryPage() {
     { key: "decision",     labelKey: "memory_decision" },
   ];
 
-  const filtered = activeTab === "all" ? memories : memories.filter((m) => m.type === activeTab);
+  // "all" tab excludes conversation-type (those are local sessions shown in the Conversation tab)
+  const filtered = activeTab === "all"
+    ? memories.filter((m) => m.type !== "conversation")
+    : memories.filter((m) => m.type === activeTab);
 
   async function handleDelete(memory: MemoryItem) {
     if (!window.confirm(t("memory_delete_confirm"))) return;
