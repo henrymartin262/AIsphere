@@ -8,6 +8,7 @@ import { WagmiProvider, useAccount } from "wagmi";
 import { createWagmiConfig } from "../lib/wagmiConfig";
 import { LangProvider } from "../contexts/LangContext";
 import { ThemeProvider } from "../contexts/ThemeContext";
+import { ComputeProvider } from "../contexts/ComputeContext";
 import { setApiWalletAddress } from "../lib/api";
 
 /** 将当前钱包地址同步到 API 层，所有请求自动附带 x-wallet-address */
@@ -58,11 +59,13 @@ export function Providers({ children }: PropsWithChildren) {
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider theme={customTheme} modalSize="compact">
           <WalletSync>
-            <ThemeProvider>
-              <LangProvider>
-                {children}
-              </LangProvider>
-            </ThemeProvider>
+            <ComputeProvider>
+              <ThemeProvider>
+                <LangProvider>
+                  {children}
+                </LangProvider>
+              </ThemeProvider>
+            </ComputeProvider>
           </WalletSync>
         </RainbowKitProvider>
       </QueryClientProvider>

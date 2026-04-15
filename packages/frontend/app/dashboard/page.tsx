@@ -9,16 +9,8 @@ import { AgentCard } from "../../components/AgentCard";
 import { useLang } from "../../contexts/LangContext";
 import { apiGet, apiPost, setApiWalletAddress } from "../../lib/api";
 import { useMemory } from "../../hooks/useMemory";
+import { useCompute } from "../../contexts/ComputeContext";
 import type { Agent } from "../../types";
-
-/* ── 0G Compute 账户数据类型 ── */
-interface ComputeAccount {
-  balance: string;
-  available: string;
-  locked: string;
-}
-
-type ComputeStatus = "loading" | "unstaked" | "ready" | "error";
 
 /* ── 0G Compute 初始化 Modal ── */
 function ComputeInitModal({ address, isEn, onClose, onSuccess }: {
@@ -144,28 +136,8 @@ function ComputeInitModal({ address, isEn, onClose, onSuccess }: {
 }
 
 /* ── 0G Compute 状态 Banner ── */
-function ComputeStatusBanner({ address, isEn, onInitClick }: { address: string; isEn: boolean; onInitClick: () => void }) {
-  const [status, setStatus] = useState<ComputeStatus>("loading");
-  const [balance, setBalance] = useState<string>("0");
-
-  const fetchStatus = useCallback(() => {
-    let cancelled = false;
-    setStatus("loading");
-    setApiWalletAddress(address);
-    apiGet<ComputeAccount>("/compute/account")
-      .then((data) => {
-        if (cancelled) return;
-        const bal = parseFloat(data.balance ?? "0");
-        setBalance(data.balance ?? "0");
-        setStatus(bal > 0 ? "ready" : "unstaked");
-      })
-      .catch(() => { if (!cancelled) setStatus("error"); });
-    return () => { cancelled = true; };
-  }, [address]);
-
-  useEffect(() => {
-    return fetchStatus();
-  }, [fetchStatus]);
+function ComputeStatusBanner({ isEn, onInitClick }: { isEn: boolean; onInitClick: () => void }) {
+  const { status, balance, networkName } = useCompute();
 
   /* loading skeleton */
   if (status === "loading") {
@@ -177,26 +149,29 @@ function ComputeStatusBanner({ address, isEn, onInitClick }: { address: string; 
     );
   }
 
-  /* silent error — do not render anything */
+  /* silent error */
   if (status === "error") return null;
 
-  /* ── ready: compact green badge ── */
+  /* ── ready ── */
   if (status === "ready") {
     return (
-      <div className="mt-6 flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 dark:border-green-500/25 dark:bg-green-500/10 px-4 py-2 w-fit">
+      <div className="mt-6 flex items-center gap-2.5 rounded-xl border border-green-200 bg-green-50 dark:border-green-500/25 dark:bg-green-500/10 px-4 py-2 w-fit">
         <span className="flex h-4 w-4 items-center justify-center rounded-full bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400 text-[10px] font-bold">⚡</span>
-        <span className="text-xs font-medium text-green-700 dark:text-green-300">
+        <span className="text-xs font-semibold text-green-700 dark:text-green-300">
           {isEn ? "0G Compute Ready" : "0G Compute 就绪"}
         </span>
+        <span className="text-[10px] text-green-500/70 dark:text-green-400/50">|</span>
+        <span className="text-xs text-green-600 dark:text-green-400/80">{networkName}</span>
+        <span className="text-[10px] text-green-500/70 dark:text-green-400/50">|</span>
         <span className="text-xs text-green-500 dark:text-green-400/70">
-          {isEn ? `Balance: ${balance} A0GI` : `余额：${balance} A0GI`}
+          {isEn ? `Staked: ${balance} A0GI` : `已质押：${balance} A0GI`}
         </span>
         <span className="text-green-500 dark:text-green-400 text-xs">✓</span>
       </div>
     );
   }
 
-  /* ── unstaked: amber warning card ── */
+  /* ── unstaked ── */
   return (
     <div className="mt-6 rounded-2xl border border-amber-300/60 bg-amber-50 dark:border-amber-500/25 dark:bg-amber-500/10 px-5 py-4">
       <div className="flex items-start justify-between gap-4">
@@ -207,9 +182,7 @@ function ComputeStatusBanner({ address, isEn, onInitClick }: { address: string; 
               {isEn ? "0G Compute Not Initialized" : "0G Compute 未初始化"}
             </p>
             <p className="mt-0.5 text-xs text-amber-700/70 dark:text-amber-400/70">
-              {isEn
-                ? "Stake A0GI to enable AI inference. Balance: 0 A0GI"
-                : "需要质押 A0GI 才能使用 AI 推理功能。余额：0 A0GI"}
+              {networkName} · {isEn ? "Stake A0GI to enable AI inference" : "质押 A0GI 以启用 AI 推理"}
             </p>
           </div>
         </div>
@@ -218,9 +191,6 @@ function ComputeStatusBanner({ address, isEn, onInitClick }: { address: string; 
           className="shrink-0 flex items-center gap-1 rounded-xl border border-amber-300 bg-white dark:bg-amber-500/10 dark:border-amber-500/30 px-3 py-1.5 text-xs font-semibold text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors"
         >
           {isEn ? "Initialize" : "初始化"}
-          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-          </svg>
         </button>
       </div>
     </div>
@@ -658,7 +628,7 @@ export default function DashboardPage() {
 
   const [showComputeModal, setShowComputeModal] = useState(false);
   const [showStorageModal, setShowStorageModal] = useState(false);
-  const [computeKey, setComputeKey] = useState(0); // re-mount banner after staking
+  const { refetch: refetchCompute } = useCompute();
 
   // 持久化已删除的 agent ID（localStorage）
   const [deletedIds, setDeletedIds] = useState<Set<number>>(() => {
@@ -717,8 +687,6 @@ export default function DashboardPage() {
       {/* 0G Compute 状态 Banner */}
       {address && (
         <ComputeStatusBanner
-          key={computeKey}
-          address={address}
           isEn={isEn}
           onInitClick={() => setShowComputeModal(true)}
         />
@@ -740,7 +708,7 @@ export default function DashboardPage() {
           address={address}
           isEn={isEn}
           onClose={() => setShowComputeModal(false)}
-          onSuccess={() => setComputeKey((k) => k + 1)}
+          onSuccess={() => { refetchCompute(); }}
         />
       )}
 

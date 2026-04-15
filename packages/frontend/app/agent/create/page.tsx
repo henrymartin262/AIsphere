@@ -6,7 +6,8 @@ import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useCreateAgent } from "../../../hooks/useAgent";
 import { useLang } from "../../../contexts/LangContext";
-import { apiGet, apiPost, setApiWalletAddress } from "../../../lib/api";
+import { apiPost, setApiWalletAddress } from "../../../lib/api";
+import { useCompute } from "../../../contexts/ComputeContext";
 
 type Step = "form" | "minting" | "done";
 
@@ -17,72 +18,30 @@ interface ModelInfo {
   teeSupported: boolean;
 }
 
-interface ComputeAccount {
-  balance: string;
-  address: string;
-  initialized: boolean;
-}
-
-type ComputeStatus = "loading" | "unstaked" | "ready" | "error";
-
 const FALLBACK_MODELS: ModelInfo[] = [
   { id: "deepseek-chat", name: "DeepSeek Chat", provider: "DeepSeek", teeSupported: false },
   { id: "teeml-llama3", name: "LLaMA-3 (TeeML)", provider: "0G-TeeML", teeSupported: true },
 ];
 
-/* ── 0G Compute 内联状态检查 ── */
+/* ── 0G Compute 内联状态检查 — 使用全局 context ── */
 function ComputeStatusInline({ address, isEn }: { address: string; isEn: boolean }) {
-  const [status, setStatus] = useState<ComputeStatus>("loading");
+  const { status, balance, networkName, refetch } = useCompute();
   const [dismissed, setDismissed] = useState(false);
   const [depositAmount, setDepositAmount] = useState("1");
   const [depositing, setDepositing] = useState(false);
   const [depositError, setDepositError] = useState<string | null>(null);
   const [depositSuccess, setDepositSuccess] = useState(false);
 
-  const fetchStatus = (addr: string) => {
-    setApiWalletAddress(addr);
-    return apiGet<ComputeAccount>("/compute/account")
-      .then((data) => {
-        const isUnstaked =
-          !data.initialized ||
-          data.balance === "0" ||
-          data.balance === "0.0" ||
-          parseFloat(data.balance) === 0;
-        setStatus(isUnstaked ? "unstaked" : "ready");
-      })
-      .catch(() => {
-        setStatus("error");
-      });
-  };
-
-  useEffect(() => {
-    let cancelled = false;
-    setApiWalletAddress(address);
-    apiGet<ComputeAccount>("/compute/account")
-      .then((data) => {
-        if (cancelled) return;
-        const isUnstaked =
-          !data.initialized ||
-          data.balance === "0" ||
-          data.balance === "0.0" ||
-          parseFloat(data.balance) === 0;
-        setStatus(isUnstaked ? "unstaked" : "ready");
-      })
-      .catch(() => {
-        if (!cancelled) setStatus("error");
-      });
-    return () => { cancelled = true; };
-  }, [address]);
-
   const handleDeposit = async () => {
     setDepositError(null);
     setDepositing(true);
     try {
+      setApiWalletAddress(address);
       await apiPost<unknown>("/compute/deposit", { amount: depositAmount });
       setDepositSuccess(true);
       setTimeout(() => {
         setDepositSuccess(false);
-        fetchStatus(address);
+        refetch();
       }, 1500);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : (isEn ? "Deposit failed" : "质押失败");
@@ -105,13 +64,17 @@ function ComputeStatusInline({ address, isEn }: { address: string; isEn: boolean
 
   if (status === "ready") {
     return (
-      <div className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 dark:border-green-500/25 dark:bg-green-500/10 px-4 py-2.5">
+      <div className="flex items-center gap-2.5 rounded-xl border border-green-200 bg-green-50 dark:border-green-500/25 dark:bg-green-500/10 px-4 py-2.5">
         <span className="text-green-500 dark:text-green-400 text-sm">✓</span>
         <p className="text-xs font-medium text-green-700 dark:text-green-300">
-          {isEn
-            ? "0G Compute Ready — TEE inference supported"
-            : "0G Compute 就绪，支持 TEE 推理"}
+          {isEn ? "0G Compute Ready" : "0G Compute 就绪"}
         </p>
+        <span className="text-[10px] text-green-500/60 dark:text-green-400/40">|</span>
+        <span className="text-xs text-green-600/80 dark:text-green-400/70">{networkName}</span>
+        <span className="text-[10px] text-green-500/60 dark:text-green-400/40">|</span>
+        <span className="text-xs text-green-500 dark:text-green-400/70">
+          {isEn ? `Staked: ${balance} A0GI` : `已质押：${balance} A0GI`}
+        </span>
       </div>
     );
   }
