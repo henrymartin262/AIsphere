@@ -8,6 +8,7 @@ import * as AgentService from "./services/AgentService.js";
 import * as BountyService from "./services/BountyService.js";
 import { passportService } from "./services/PassportService.js";
 import { soulService } from "./services/SoulService.js";
+import { startKVSyncScheduler } from "./services/MemoryVaultService.js";
 import { hiveMindService } from "./services/HiveMindService.js";
 import { walletAuth } from "./middleware/auth.js";
 import agentRoutes from "./routes/agentRoutes.js";
@@ -109,6 +110,9 @@ async function bootstrap() {
     initTimeout(() => soulService.init(), "SoulService"),
     initTimeout(() => hiveMindService.init(), "HiveMindService", 15_000),
   ]);
+
+  // Start periodic 0G KV sync for memory persistence (every 1 hour)
+  startKVSyncScheduler();
 
   // Pre-warm caches so first user request is instant (not RPC timeout)
   console.log("[Bootstrap] Pre-warming caches...");

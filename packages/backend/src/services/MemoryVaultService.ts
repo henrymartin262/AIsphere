@@ -71,15 +71,74 @@ function persistStoreToFile(): void {
   }
 }
 
-// ─── Dual-layer store: in-memory cache + 0G KV Storage persistence ───────────
-// Memory Map serves as hot cache; 0G KV Storage provides durable persistence.
-// Write path: encrypt → push to cache → async persist to 0G KV + local file
-// Read path: serve from cache (pre-populated from file on startup, hydrated from 0G KV on first access)
+// ─── Dual-layer store: in-memory cache + file persistence + periodic 0G KV sync ─
+// Write path:  encrypt → memory → file (sync) → mark dirty
+// Sync path:   every SYNC_INTERVAL_MS, flush all dirty agents to 0G KV
+// Read path:   file on startup; 0G KV hydration on first access (supplement only)
 
 const store: Map<number, EncryptedMemory[]> = loadStoreFromFile();
 
 // Track which agents have been hydrated from 0G KV
 const hydratedAgents: Set<number> = new Set();
+
+// Track agents with changes not yet synced to 0G KV
+const dirtyAgents: Set<number> = new Set();
+
+/** How often to batch-sync dirty agents to 0G KV (default: 1 hour) */
+const SYNC_INTERVAL_MS = 60 * 60 * 1000;
+
+/** Sync all dirty agents to 0G KV in one batch, then clear dirty set */
+async function syncDirtyAgentsToKV(): Promise<void> {
+  if (dirtyAgents.size === 0) return;
+
+  const clients = await initialize0GClients();
+  if (!clients.kvReady) {
+    console.log("[MemoryVault] 0G KV not ready, skipping sync");
+    return;
+  }
+
+  const toSync = [...dirtyAgents];
+  dirtyAgents.clear();
+
+  let synced = 0;
+  for (const agentId of toSync) {
+    try {
+      const list = getStore(agentId);
+      const streamId = getStreamId(agentId);
+
+      // Write each memory entry
+      for (const encrypted of list) {
+        const kvKey = toKvKey(`memory:${encrypted.id}`);
+        const kvData = new TextEncoder().encode(JSON.stringify(encrypted));
+        await kvBatchWrite(clients, streamId, kvKey, kvData);
+      }
+
+      // Write updated index
+      await persistIndex(clients, agentId);
+      synced++;
+      console.log(`[MemoryVault] Synced agent ${agentId} (${list.length} memories) to 0G KV`);
+    } catch (err) {
+      // Re-mark dirty so it retries next cycle
+      dirtyAgents.add(agentId);
+      console.warn(`[MemoryVault] 0G KV sync failed for agent ${agentId}, will retry:`, (err as Error).message);
+    }
+  }
+
+  if (synced > 0) {
+    console.log(`[MemoryVault] 0G KV sync complete: ${synced}/${toSync.length} agents`);
+  }
+}
+
+/** Start the periodic 0G KV sync timer */
+export function startKVSyncScheduler(): void {
+  setInterval(() => {
+    syncDirtyAgentsToKV().catch((err) =>
+      console.warn("[MemoryVault] Scheduled KV sync error:", (err as Error).message)
+    );
+  }, SYNC_INTERVAL_MS);
+
+  console.log(`[MemoryVault] 0G KV sync scheduled every ${SYNC_INTERVAL_MS / 60000} minutes`);
+}
 
 // ─── 0G KV Storage helpers ───────────────────────────────────────────────────
 
@@ -222,12 +281,12 @@ export async function saveMemory(
 
   // 1. Push to in-memory cache (immediate)
   getStore(agentId).push(encrypted);
+
+  // 2. Persist to local file (sync, survives restarts)
   persistStoreToFile();
 
-  // 2. Persist to 0G KV Storage (async, non-blocking)
-  persistTo0GKV(agentId, encrypted).catch((err) => {
-    console.warn("[MemoryVault] Async 0G KV persist failed:", err);
-  });
+  // 3. Mark agent dirty for next 0G KV sync cycle
+  dirtyAgents.add(agentId);
 
   return { id, agentId, ...memory, timestamp };
 }
@@ -355,16 +414,8 @@ export async function deleteMemory(
   list.splice(idx, 1);
   persistStoreToFile();
 
-  // Update the index on 0G KV to reflect deletion
-  try {
-    const clients = await initialize0GClients();
-    if (clients.kvReady) {
-      await persistIndex(clients, agentId);
-      console.log(`[MemoryVault] Deleted memory ${memoryId} — 0G KV index updated`);
-    }
-  } catch (err) {
-    console.warn("[MemoryVault] 0G KV index update after delete failed:", (err as Error).message);
-  }
+  // Mark dirty for next 0G KV sync cycle
+  dirtyAgents.add(agentId);
 
   return true;
 }
