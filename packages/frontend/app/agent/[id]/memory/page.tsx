@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { useAccount } from "wagmi";
 import { useMemory } from "../../../../hooks/useMemory";
 import { useLang } from "../../../../contexts/LangContext";
-import { apiPost, apiDelete } from "../../../../lib/api";
+import { apiPost, apiDelete, setApiWalletAddress } from "../../../../lib/api";
 import type { MemoryItem } from "../../../../types";
 
 type MemoryType = "all" | "conversation" | "knowledge" | "personality" | "skill" | "decision";
@@ -74,6 +74,7 @@ function AddMemoryModal({ agentId, walletAddress, onClose, onSaved }: AddMemoryM
     if (!content.trim()) return;
     setSaving(true); setErr(null);
     try {
+      setApiWalletAddress(walletAddress);
       await apiPost(`/memory/${agentId}`, {
         type, content: content.trim(), importance,
         tags: tags.split(",").map((s) => s.trim()).filter(Boolean), walletAddress,
@@ -178,7 +179,11 @@ export default function AgentMemoryPage() {
   async function handleDelete(memory: MemoryItem) {
     if (!window.confirm(t("memory_delete_confirm"))) return;
     setDeletingId(memory.id);
-    try { await apiDelete(`/memory/${agentId}/${memory.id}`); await refetch(); }
+    try {
+      setApiWalletAddress(address ?? "");
+      await apiDelete(`/memory/${agentId}/${memory.id}`, { walletAddress: address ?? "" });
+      await refetch();
+    }
     catch { /* ignore */ }
     finally { setDeletingId(null); }
   }

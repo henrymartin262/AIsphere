@@ -118,12 +118,14 @@ export async function apiPost<T>(
 
 export async function apiDelete<T>(
   path: string,
+  body?: unknown,
   timeoutMs: number = DEFAULT_TIMEOUT
 ): Promise<T> {
   const url = buildUrl(path);
   const res = await fetch(url, {
     method: "DELETE",
     headers: buildAuthHeaders(),
+    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
     signal: createTimeoutSignal(timeoutMs),
   });
   return handleResponse<T>(res);
