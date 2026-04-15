@@ -156,11 +156,12 @@ function SessionSheet({ session, onClose }: SessionSheetProps) {
           </button>
         </div>
 
-        {/* Message list — sorted by timestamp to guarantee user→assistant order */}
+        {/* Message list — sort by timestamp, use array index as tiebreaker to keep user→assistant order */}
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
           {[...(session?.messages ?? [])]
-            .sort((a, b) => a.timestamp - b.timestamp)
-            .map((msg) => (
+            .map((msg, i) => ({ msg, i }))
+            .sort((a, b) => a.msg.timestamp - b.msg.timestamp || a.i - b.i)
+            .map(({ msg }) => (
             <div
               key={msg.id}
               className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}
