@@ -6,6 +6,7 @@ import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useCreateAgent } from "../../../hooks/useAgent";
 import { useLang } from "../../../contexts/LangContext";
+import { apiGet, setApiWalletAddress } from "../../../lib/api";
 
 type Step = "form" | "minting" | "done";
 
@@ -16,16 +17,96 @@ interface ModelInfo {
   teeSupported: boolean;
 }
 
+interface ComputeAccount {
+  balance: string;
+  address: string;
+  initialized: boolean;
+}
+
+type ComputeStatus = "loading" | "unstaked" | "ready" | "error";
+
 const FALLBACK_MODELS: ModelInfo[] = [
   { id: "deepseek-chat", name: "DeepSeek Chat", provider: "DeepSeek", teeSupported: false },
   { id: "teeml-llama3", name: "LLaMA-3 (TeeML)", provider: "0G-TeeML", teeSupported: true },
 ];
+
+/* ── 0G Compute 内联状态检查 ── */
+function ComputeStatusInline({ address, isEn }: { address: string; isEn: boolean }) {
+  const [status, setStatus] = useState<ComputeStatus>("loading");
+
+  useEffect(() => {
+    let cancelled = false;
+    setApiWalletAddress(address);
+    apiGet<ComputeAccount>("/compute/account")
+      .then((data) => {
+        if (cancelled) return;
+        const isUnstaked =
+          !data.initialized ||
+          data.balance === "0" ||
+          data.balance === "0.0" ||
+          parseFloat(data.balance) === 0;
+        setStatus(isUnstaked ? "unstaked" : "ready");
+      })
+      .catch(() => {
+        if (!cancelled) setStatus("error");
+      });
+    return () => { cancelled = true; };
+  }, [address]);
+
+  if (status === "loading") {
+    return (
+      <div className="animate-pulse rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-4 py-3 flex items-center gap-3">
+        <div className="h-3 w-3 rounded-full bg-gray-200 dark:bg-white/20" />
+        <div className="h-3 w-56 rounded bg-gray-200 dark:bg-white/10" />
+      </div>
+    );
+  }
+
+  if (status === "error") return null;
+
+  if (status === "ready") {
+    return (
+      <div className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 dark:border-green-500/25 dark:bg-green-500/10 px-4 py-2.5">
+        <span className="text-green-500 dark:text-green-400 text-sm">✓</span>
+        <p className="text-xs font-medium text-green-700 dark:text-green-300">
+          {isEn
+            ? "0G Compute Ready — TEE inference supported"
+            : "0G Compute 就绪，支持 TEE 推理"}
+        </p>
+      </div>
+    );
+  }
+
+  /* unstaked */
+  return (
+    <div className="rounded-xl border border-yellow-300/70 bg-yellow-50 dark:border-yellow-500/25 dark:bg-yellow-500/10 px-4 py-3">
+      <div className="flex items-start gap-2.5">
+        <span className="mt-0.5 text-yellow-500 dark:text-yellow-400 text-sm shrink-0">⚠</span>
+        <div>
+          <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-300">
+            {isEn ? "0G Compute Not Initialized" : "0G Compute 未初始化"}
+            {" — "}
+            {isEn
+              ? "Mock inference will be used (no TEE verification)"
+              : "创建 Agent 后将使用 Mock 推理（无 TEE 验证）"}
+          </p>
+          <p className="mt-1 text-xs text-yellow-700/70 dark:text-yellow-400/60">
+            {isEn
+              ? "You can stake A0GI first for verified inference, or continue with limited functionality."
+              : "可以先质押 A0GI 以启用可验证推理，或继续创建（功能受限）。"}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function CreateAgentPage() {
   const router = useRouter();
   const { address, isConnected } = useAccount();
   const { createAgent, isLoading, error } = useCreateAgent();
   const { t, lang } = useLang();
+  const isEn = lang === "en";
 
   const [models, setModels] = useState<ModelInfo[]>(FALLBACK_MODELS);
 
@@ -157,6 +238,9 @@ export default function CreateAgentPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="card p-8 space-y-6">
+        {/* 0G Compute 状态检查 */}
+        {address && <ComputeStatusInline address={address} isEn={isEn} />}
+
         {/* Name */}
         <div>
           <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">

@@ -3,10 +3,107 @@
 import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAgents } from "../../hooks/useAgent";
 import { AgentCard } from "../../components/AgentCard";
 import { useLang } from "../../contexts/LangContext";
+import { apiGet, setApiWalletAddress } from "../../lib/api";
+
+/* ── 0G Compute 账户数据类型 ── */
+interface ComputeAccount {
+  balance: string;
+  address: string;
+  initialized: boolean;
+}
+
+type ComputeStatus = "loading" | "unstaked" | "ready" | "error";
+
+/* ── 0G Compute 状态 Banner ── */
+function ComputeStatusBanner({ address, isEn }: { address: string; isEn: boolean }) {
+  const router = useRouter();
+  const [status, setStatus] = useState<ComputeStatus>("loading");
+  const [balance, setBalance] = useState<string>("0");
+
+  useEffect(() => {
+    let cancelled = false;
+    setApiWalletAddress(address);
+    apiGet<ComputeAccount>("/compute/account")
+      .then((data) => {
+        if (cancelled) return;
+        const isUnstaked =
+          !data.initialized ||
+          data.balance === "0" ||
+          data.balance === "0.0" ||
+          parseFloat(data.balance) === 0;
+        setBalance(data.balance);
+        setStatus(isUnstaked ? "unstaked" : "ready");
+      })
+      .catch(() => {
+        if (!cancelled) setStatus("error");
+      });
+    return () => { cancelled = true; };
+  }, [address]);
+
+  /* loading skeleton */
+  if (status === "loading") {
+    return (
+      <div className="mt-6 animate-pulse rounded-2xl border border-amber-200/60 bg-amber-50/40 dark:border-amber-500/20 dark:bg-amber-500/5 px-5 py-3 flex items-center gap-3">
+        <div className="h-4 w-4 rounded-full bg-amber-200 dark:bg-amber-500/30" />
+        <div className="h-3 w-48 rounded bg-amber-200/70 dark:bg-amber-500/20" />
+      </div>
+    );
+  }
+
+  /* silent error — do not render anything */
+  if (status === "error") return null;
+
+  /* ── ready: compact green badge ── */
+  if (status === "ready") {
+    return (
+      <div className="mt-6 flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 dark:border-green-500/25 dark:bg-green-500/10 px-4 py-2 w-fit">
+        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400 text-[10px] font-bold">⚡</span>
+        <span className="text-xs font-medium text-green-700 dark:text-green-300">
+          {isEn ? "0G Compute Ready" : "0G Compute 就绪"}
+        </span>
+        <span className="text-xs text-green-500 dark:text-green-400/70">
+          {isEn ? `Balance: ${balance} A0GI` : `余额：${balance} A0GI`}
+        </span>
+        <span className="text-green-500 dark:text-green-400 text-xs">✓</span>
+      </div>
+    );
+  }
+
+  /* ── unstaked: amber warning card ── */
+  return (
+    <div className="mt-6 rounded-2xl border border-amber-300/60 bg-amber-50 dark:border-amber-500/25 dark:bg-amber-500/10 px-5 py-4">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-base">⚡</span>
+          <div>
+            <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+              {isEn ? "0G Compute Not Initialized" : "0G Compute 未初始化"}
+            </p>
+            <p className="mt-0.5 text-xs text-amber-700/70 dark:text-amber-400/70">
+              {isEn
+                ? "Stake A0GI to enable AI inference. Balance: 0 A0GI"
+                : "需要质押 A0GI 才能使用 AI 推理功能。余额：0 A0GI"}
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={() => router.push("/agent/create")}
+          className="shrink-0 flex items-center gap-1 rounded-xl border border-amber-300 bg-white dark:bg-amber-500/10 dark:border-amber-500/30 px-3 py-1.5 text-xs font-semibold text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors"
+        >
+          {isEn ? "Initialize" : "初始化"}
+          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function SkeletonCard() {
   return (
@@ -111,7 +208,8 @@ function ConnectWalletPrompt() {
 export default function DashboardPage() {
   const { address, isConnected } = useAccount();
   const { agents, isLoading, error, refetch } = useAgents(address);
-  const { t } = useLang();
+  const { t, lang } = useLang();
+  const isEn = lang === "en";
 
   // 持久化已删除的 agent ID（localStorage）
   const [deletedIds, setDeletedIds] = useState<Set<number>>(() => {
@@ -166,6 +264,9 @@ export default function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      {/* 0G Compute 状态 Banner */}
+      {address && <ComputeStatusBanner address={address} isEn={isEn} />}
 
       {/* Error */}
       {error && (
