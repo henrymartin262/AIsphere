@@ -37,10 +37,11 @@ router.post("/:agentId", async (req, res) => {
       return;
     }
 
-    const { message, walletAddress, model } = req.body as {
+    const { message, walletAddress, model, history } = req.body as {
       message?: string;
       walletAddress?: string;
       model?: string;
+      history?: Array<{ role: "user" | "assistant"; content: string }>;
     };
 
     if (!message || !walletAddress) {
@@ -48,8 +49,16 @@ router.post("/:agentId", async (req, res) => {
       return;
     }
 
-    // 1. Build context from prior memories
-    const context = await MemoryVaultService.buildContext(agentId, walletAddress);
+    // 1. Build personality/knowledge context only (no conversation — session-isolated)
+    const memContext = await MemoryVaultService.buildPersonalityContext(agentId, walletAddress);
+
+    // 2. Build multi-turn history from session history sent by frontend
+    //    This ensures each chat session has its own isolated context
+    const historyContext = history && history.length > 0
+      ? history.slice(-20).map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`).join("\n")
+      : "";
+
+    const context = [memContext, historyContext].filter(Boolean).join("\n\n");
 
     // 2. Run sealed inference
     const { response, proof } = await SealedInferenceService.inference(

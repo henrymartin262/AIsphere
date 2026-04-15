@@ -278,6 +278,32 @@ export async function buildContext(agentId: number, walletAddress: string): Prom
   return sections.join("\n\n");
 }
 
+/**
+ * Build context from personality and knowledge memories only.
+ * Does NOT include conversation memories — those are session-isolated
+ * and passed directly from the frontend via the history field.
+ */
+export async function buildPersonalityContext(agentId: number, walletAddress: string): Promise<string> {
+  const memories = await loadMemories(agentId, walletAddress, {
+    minImportance: 0.3,
+    limit: 20
+  });
+
+  const sections: string[] = [];
+
+  const personality = memories.filter((m) => m.type === "personality");
+  if (personality.length) {
+    sections.push("## Personality\n" + personality.map((m) => `- ${m.content}`).join("\n"));
+  }
+
+  const knowledge = memories.filter((m) => m.type === "knowledge");
+  if (knowledge.length) {
+    sections.push("## Knowledge\n" + knowledge.map((m) => `- ${m.content}`).join("\n"));
+  }
+
+  return sections.join("\n\n");
+}
+
 export async function deleteMemory(
   agentId: number,
   memoryId: string,

@@ -12,6 +12,7 @@ export interface ChatSession {
 }
 
 const SESSION_KEY = (agentId: string) => `aisphere:sessions:${agentId}`;
+const ACTIVE_KEY = (agentId: string) => `aisphere:active-session:${agentId}`;
 const MAX_SESSIONS = 50;
 
 function loadSessions(agentId: string): ChatSession[] {
@@ -24,6 +25,15 @@ function loadSessions(agentId: string): ChatSession[] {
 
 function saveSessions(agentId: string, sessions: ChatSession[]) {
   localStorage.setItem(SESSION_KEY(agentId), JSON.stringify(sessions.slice(0, MAX_SESSIONS)));
+}
+
+function saveActiveId(agentId: string, sessionId: string) {
+  localStorage.setItem(ACTIVE_KEY(agentId), sessionId);
+}
+
+function loadActiveId(agentId: string): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(ACTIVE_KEY(agentId));
 }
 
 function makeId() {
@@ -59,13 +69,19 @@ export function useChatSessions(agentId: string) {
     const stored = loadSessions(agentId);
     if (stored.length > 0) {
       setSessions(stored);
-      setActiveSessionId(stored[0].id);
-      activeSessionIdRef.current = stored[0].id;
+      // Restore last active session, fall back to most recent
+      const savedActiveId = loadActiveId(agentId);
+      const restoredId = savedActiveId && stored.find((s) => s.id === savedActiveId)
+        ? savedActiveId
+        : stored[0].id;
+      setActiveSessionId(restoredId);
+      activeSessionIdRef.current = restoredId;
     } else {
       const s = createSession();
       setSessions([s]);
       setActiveSessionId(s.id);
       activeSessionIdRef.current = s.id;
+      saveActiveId(agentId, s.id);
     }
   }, [agentId]);
 
@@ -103,6 +119,7 @@ export function useChatSessions(agentId: string) {
     });
     setActiveSessionId(s.id);
     activeSessionIdRef.current = s.id;
+    saveActiveId(agentId, s.id);
     // Unblock auto-save after React has flushed
     setTimeout(() => { switchingRef.current = false; }, 100);
     return s;
@@ -113,8 +130,9 @@ export function useChatSessions(agentId: string) {
     switchingRef.current = true;
     setActiveSessionId(sessionId);
     activeSessionIdRef.current = sessionId;
+    saveActiveId(agentId, sessionId);
     setTimeout(() => { switchingRef.current = false; }, 100);
-  }, []);
+  }, [agentId]);
 
   // Rename a session
   const renameSession = useCallback((sessionId: string, title: string) => {
@@ -134,12 +152,14 @@ export function useChatSessions(agentId: string) {
         saveSessions(agentId, [fresh]);
         setActiveSessionId(fresh.id);
         activeSessionIdRef.current = fresh.id;
+        saveActiveId(agentId, fresh.id);
         return [fresh];
       }
       saveSessions(agentId, next);
       if (sessionId === activeSessionIdRef.current) {
         setActiveSessionId(next[0].id);
         activeSessionIdRef.current = next[0].id;
+        saveActiveId(agentId, next[0].id);
       }
       return next;
     });

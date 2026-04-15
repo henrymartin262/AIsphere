@@ -109,7 +109,9 @@ export default function AgentChatPage() {
       }
 
       if (!cancelledRef.current) {
-        await sendMessage(item.content, item.importance, () => cancelledRef.current);
+        // Pass current messages as history for multi-turn context (snapshot before this message)
+        const historySnapshot = [...messages];
+        await sendMessage(item.content, item.importance, () => cancelledRef.current, historySnapshot);
       }
 
       setThinkStep(null);

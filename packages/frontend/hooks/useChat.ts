@@ -63,7 +63,7 @@ export function useChat(agentId: string) {
   }, [agentId, walletAddress]);
 
   const sendMessage = useCallback(
-    async (content: string, importance = 3, isCancelled?: () => boolean): Promise<void> => {
+    async (content: string, importance = 3, isCancelled?: () => boolean, history?: import("../types").ChatMessage[]): Promise<void> => {
       if (!content.trim() || !agentId) return;
 
       const userMsg: ChatMessage = {
@@ -83,10 +83,17 @@ export function useChat(agentId: string) {
         const prevWallet = getApiWalletAddress();
         if (!prevWallet) setApiWalletAddress(effectiveWallet);
 
+        // Send session history so backend can do proper multi-turn inference
+        const historyPayload = (history ?? []).map((m) => ({
+          role: m.role,
+          content: m.content,
+        }));
+
         const data = await apiPost<ChatResponse>(`/chat/${agentId}`, {
           message: content,
           importance,
           walletAddress: effectiveWallet,
+          history: historyPayload,
         }, CHAT_TIMEOUT);
 
         // Restore previous wallet address
