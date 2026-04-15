@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { useAccount } from "wagmi";
 import { useMemory } from "../../../../hooks/useMemory";
 import { useLang } from "../../../../contexts/LangContext";
-import { apiPost, apiDelete, setApiWalletAddress } from "../../../../lib/api";
+import { apiPost, apiDelete, setApiWalletAddress, MEMORY_TIMEOUT } from "../../../../lib/api";
 import type { MemoryItem, ChatMessage } from "../../../../types";
 
 // ─── Local types ─────────────────────────────────────────────────────────────
@@ -303,7 +303,7 @@ function AddMemoryModal({ agentId, walletAddress, onClose, onSaved }: AddMemoryM
       await apiPost(`/memory/${agentId}`, {
         type, content: content.trim(), importance,
         tags: tags.split(",").map((s) => s.trim()).filter(Boolean), walletAddress,
-      });
+      }, MEMORY_TIMEOUT);
       onSaved(); onClose();
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Failed to save");
@@ -411,7 +411,7 @@ export default function AgentMemoryPage() {
     setDeletingId(memory.id);
     try {
       setApiWalletAddress(address ?? "");
-      await apiDelete(`/memory/${agentId}/${memory.id}`, { walletAddress: address ?? "" });
+      await apiDelete(`/memory/${agentId}/${memory.id}`, { walletAddress: address ?? "" }, MEMORY_TIMEOUT);
       await refetch();
     }
     catch { /* ignore */ }

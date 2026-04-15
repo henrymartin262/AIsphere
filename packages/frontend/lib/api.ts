@@ -2,6 +2,8 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
 
 /** 默认请求超时时间（毫秒） */
 const DEFAULT_TIMEOUT = 15_000; // 15 秒
+/** Memory save/delete timeout — file + optional 0G KV write can be slow */
+export const MEMORY_TIMEOUT = 30_000; // 30 秒
 
 /** Chat 推理专用超时 — TEE inference 可能需要 60s+ */
 export const CHAT_TIMEOUT = 90_000; // 90 秒
