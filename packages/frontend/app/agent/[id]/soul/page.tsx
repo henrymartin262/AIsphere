@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import { useAccount } from "wagmi";
+import { apiGet, setApiWalletAddress } from "../../../../lib/api";
 import { SoulTimeline } from "../../../../components/SoulTimeline";
 import type { AgentExperience } from "../../../../components/SoulTimeline";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
 
 interface SoulState {
   currentHash: string;
@@ -63,6 +63,8 @@ export default function AgentSoulPage() {
       ? params.id[0]
       : "";
 
+  const { address } = useAccount();
+
   const [soulState, setSoulState] = useState<SoulState | null>(null);
   const [experiences, setExperiences] = useState<AgentExperience[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,18 +75,16 @@ export default function AgentSoulPage() {
 
   useEffect(() => {
     if (!agentId) return;
+    // Set wallet address for authenticated requests
+    if (address) setApiWalletAddress(address);
     let cancelled = false;
 
     async function loadSoul() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`${API_BASE}/soul/${agentId}`);
-        const json = await res.json();
-        if (!cancelled) {
-          if (json.success && json.data) setSoulState(json.data);
-          else if (json.currentHash !== undefined) setSoulState(json as SoulState);
-        }
+        const data = await apiGet<SoulState>(`/soul/${agentId}`);
+        if (!cancelled) setSoulState(data);
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load soul state");
       } finally {
@@ -95,12 +95,8 @@ export default function AgentSoulPage() {
     async function loadExperiences() {
       setExpLoading(true);
       try {
-        const res = await fetch(`${API_BASE}/soul/${agentId}/history`);
-        const json = await res.json();
-        if (!cancelled) {
-          const list = json.data ?? json.experiences ?? json ?? [];
-          setExperiences(Array.isArray(list) ? list : []);
-        }
+        const data = await apiGet<AgentExperience[]>(`/soul/${agentId}/history`);
+        if (!cancelled) setExperiences(Array.isArray(data) ? data : []);
       } catch { /* non-critical */ }
       finally { if (!cancelled) setExpLoading(false); }
     }
@@ -108,16 +104,15 @@ export default function AgentSoulPage() {
     loadSoul();
     loadExperiences();
     return () => { cancelled = true; };
-  }, [agentId]);
+  }, [agentId, address]);
 
   async function handleVerify() {
     setVerifying(true);
     setVerifyResult(null);
     try {
-      const res = await fetch(`${API_BASE}/soul/${agentId}/verify`);
-      const json = await res.json();
-      const valid = json.valid ?? json.data?.valid ?? json.success ?? false;
-      setVerifyResult({ valid, message: json.message ?? json.data?.message });
+      if (address) setApiWalletAddress(address);
+      const data = await apiGet<{ valid: boolean; message?: string }>(`/soul/${agentId}/verify`);
+      setVerifyResult({ valid: data.valid ?? false, message: data.message });
     } catch (err) {
       setVerifyResult({ valid: false, message: err instanceof Error ? err.message : "Verification failed" });
     } finally {
