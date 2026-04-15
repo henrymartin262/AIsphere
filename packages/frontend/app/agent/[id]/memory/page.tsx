@@ -158,7 +158,7 @@ export default function AgentMemoryPage() {
   const params = useParams();
   const agentId = typeof params?.id === "string" ? params.id : Array.isArray(params?.id) ? params.id[0] : "";
   const { address } = useAccount();
-  const { memories, isLoading, error, refetch } = useMemory(agentId);
+  const { memories, isLoading, error, refetch } = useMemory(agentId, address ?? "");
   const { t } = useLang();
 
   const [activeTab, setActiveTab] = useState<MemoryType>("all");

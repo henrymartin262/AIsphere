@@ -1,50 +1,171 @@
 "use client";
 
-import { useAccount } from "wagmi";
+import { useAccount, useChainId } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
 import { useState, useCallback, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useAgents } from "../../hooks/useAgent";
 import { AgentCard } from "../../components/AgentCard";
 import { useLang } from "../../contexts/LangContext";
-import { apiGet, setApiWalletAddress } from "../../lib/api";
+import { apiGet, apiPost, setApiWalletAddress } from "../../lib/api";
+import { useMemory } from "../../hooks/useMemory";
 import type { Agent } from "../../types";
 
 /* ── 0G Compute 账户数据类型 ── */
 interface ComputeAccount {
   balance: string;
-  address: string;
-  initialized: boolean;
+  available: string;
+  locked: string;
 }
 
 type ComputeStatus = "loading" | "unstaked" | "ready" | "error";
 
+/* ── 0G Compute 初始化 Modal ── */
+function ComputeInitModal({ address, isEn, onClose, onSuccess }: {
+  address: string;
+  isEn: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const chainId = useChainId();
+  const isTestnet = chainId === 16602;
+  const networkLabel = isTestnet ? "0G Testnet" : "0G Mainnet";
+
+  const [amount, setAmount] = useState("1.0");
+  const [depositing, setDepositing] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+
+  async function handleDeposit() {
+    const val = parseFloat(amount);
+    if (isNaN(val) || val <= 0) { setErr(isEn ? "Invalid amount" : "金额无效"); return; }
+    setDepositing(true); setErr(null);
+    try {
+      setApiWalletAddress(address);
+      await apiPost("/compute/deposit", { amount });
+      setDone(true);
+      setTimeout(() => { onSuccess(); onClose(); }, 1500);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : (isEn ? "Deposit failed" : "质押失败"));
+    } finally { setDepositing(false); }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-white dark:border-white/10 dark:bg-slate-900 p-6 shadow-2xl">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400 text-lg">⚡</span>
+            <div>
+              <h2 className="text-base font-semibold text-slate-800 dark:text-white">
+                {isEn ? "Initialize 0G Compute" : "初始化 0G Compute"}
+              </h2>
+              <p className="text-xs text-slate-400 dark:text-slate-500">{networkLabel}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        {done ? (
+          <div className="flex flex-col items-center gap-3 py-6">
+            <span className="text-4xl">✅</span>
+            <p className="text-sm font-semibold text-green-700 dark:text-green-400">
+              {isEn ? "Staking successful!" : "质押成功！"}
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Info */}
+            <div className="mb-4 rounded-xl border border-amber-100 bg-amber-50/60 dark:border-amber-500/20 dark:bg-amber-500/5 px-4 py-3 text-xs text-amber-700 dark:text-amber-300 space-y-1">
+              <p>• {isEn ? "Stake A0GI to pay for AI inference via 0G Compute" : "质押 A0GI 用于支付 0G Compute 的 AI 推理费用"}</p>
+              <p>• {isEn ? "Funds stay in your wallet-controlled ledger" : "资金保留在你的钱包控制的账本中"}</p>
+              <p>• {isEn ? "Unused balance can be refunded anytime" : "未使用余额可随时退回"}</p>
+            </div>
+
+            {/* Network badge */}
+            <div className="mb-4 flex items-center gap-2">
+              <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${isTestnet ? "bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300" : "bg-green-50 text-green-600 dark:bg-green-500/15 dark:text-green-300"}`}>
+                <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                {networkLabel}
+              </span>
+              {isTestnet && (
+                <a href="https://faucet.0g.ai" target="_blank" rel="noopener noreferrer"
+                  className="text-xs text-indigo-500 hover:underline">
+                  {isEn ? "Get testnet tokens ↗" : "获取测试网代币 ↗"}
+                </a>
+              )}
+            </div>
+
+            {/* Amount input */}
+            <div className="mb-4">
+              <label className="mb-1.5 block text-xs font-medium text-gray-500 dark:text-slate-400">
+                {isEn ? "Stake Amount (A0GI)" : "质押金额 (A0GI)"}
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="number" min="0.1" max="100" step="0.1"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="flex-1 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-white/10 dark:bg-white/5 dark:text-white dark:focus:border-indigo-400/50"
+                />
+                <div className="flex gap-1">
+                  {["0.5", "1.0", "2.0"].map((v) => (
+                    <button key={v} onClick={() => setAmount(v)}
+                      className={`rounded-lg px-2.5 py-1.5 text-xs font-medium transition border ${amount === v ? "border-indigo-300 bg-indigo-50 text-indigo-600 dark:border-indigo-500/40 dark:bg-indigo-500/10 dark:text-indigo-300" : "border-gray-200 bg-white text-gray-500 hover:border-gray-300 dark:border-white/10 dark:bg-white/5 dark:text-slate-400"}`}>
+                      {v}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {err && (
+              <p className="mb-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">{err}</p>
+            )}
+
+            <div className="flex gap-2">
+              <button onClick={onClose}
+                className="flex-1 rounded-xl border border-gray-200 px-4 py-2 text-sm text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-white/10 dark:text-slate-400 dark:hover:text-white transition-colors">
+                {isEn ? "Skip for now" : "暂时跳过"}
+              </button>
+              <button onClick={handleDeposit} disabled={depositing}
+                className="flex-1 rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-600 disabled:opacity-50 transition-colors">
+                {depositing ? (isEn ? "Staking…" : "质押中…") : (isEn ? "Stake A0GI" : "确认质押")}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ── 0G Compute 状态 Banner ── */
-function ComputeStatusBanner({ address, isEn }: { address: string; isEn: boolean }) {
-  const router = useRouter();
+function ComputeStatusBanner({ address, isEn, onInitClick }: { address: string; isEn: boolean; onInitClick: () => void }) {
   const [status, setStatus] = useState<ComputeStatus>("loading");
   const [balance, setBalance] = useState<string>("0");
 
-  useEffect(() => {
+  const fetchStatus = useCallback(() => {
     let cancelled = false;
+    setStatus("loading");
     setApiWalletAddress(address);
     apiGet<ComputeAccount>("/compute/account")
       .then((data) => {
         if (cancelled) return;
-        const isUnstaked =
-          !data.initialized ||
-          data.balance === "0" ||
-          data.balance === "0.0" ||
-          parseFloat(data.balance) === 0;
-        setBalance(data.balance);
-        setStatus(isUnstaked ? "unstaked" : "ready");
+        const bal = parseFloat(data.balance ?? "0");
+        setBalance(data.balance ?? "0");
+        setStatus(bal > 0 ? "ready" : "unstaked");
       })
-      .catch(() => {
-        if (!cancelled) setStatus("error");
-      });
+      .catch(() => { if (!cancelled) setStatus("error"); });
     return () => { cancelled = true; };
   }, [address]);
+
+  useEffect(() => {
+    return fetchStatus();
+  }, [fetchStatus]);
 
   /* loading skeleton */
   if (status === "loading") {
@@ -93,7 +214,7 @@ function ComputeStatusBanner({ address, isEn }: { address: string; isEn: boolean
           </div>
         </div>
         <button
-          onClick={() => router.push("/agent/create")}
+          onClick={onInitClick}
           className="shrink-0 flex items-center gap-1 rounded-xl border border-amber-300 bg-white dark:bg-amber-500/10 dark:border-amber-500/30 px-3 py-1.5 text-xs font-semibold text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors"
         >
           {isEn ? "Initialize" : "初始化"}
@@ -115,7 +236,7 @@ interface StorageStatusBarProps {
 
 type StorageStatus = "loading" | "ready" | "error";
 
-function StorageStatusBar({ agents, address, isEn }: StorageStatusBarProps) {
+function StorageStatusBar({ agents, address, isEn, onDetailsClick }: StorageStatusBarProps & { onDetailsClick: () => void }) {
   const [totalMemories, setTotalMemories] = useState<number>(0);
   const [status, setStatus] = useState<StorageStatus>("loading");
 
@@ -194,13 +315,107 @@ function StorageStatusBar({ agents, address, isEn }: StorageStatusBarProps) {
           {isEn ? "Data always yours" : "解放本地存储 · 数据永远属于你"}
         </span>
         {firstAgentId !== undefined && (
-          <Link
-            href={`/agent/${firstAgentId}/memory`}
+          <button
+            onClick={onDetailsClick}
             className="text-xs font-medium text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors whitespace-nowrap"
           >
             {isEn ? "Details ›" : "查看详情 ›"}
-          </Link>
+          </button>
         )}
+      </div>
+    </div>
+  );
+}
+
+/* ── 0G Storage 详情 Modal ── */
+function StorageDetailsModal({ agents, address, isEn, onClose }: {
+  agents: Array<{ agentId: number; profile?: { name?: string } }>;
+  address: string;
+  isEn: boolean;
+  onClose: () => void;
+}) {
+  const { memories, isLoading, error } = useMemory(
+    agents[0]?.agentId?.toString(),
+    address
+  );
+
+  const [selectedAgent, setSelectedAgent] = useState(agents[0]?.agentId);
+
+  const { memories: selectedMemories, isLoading: loadingSelected } = useMemory(
+    selectedAgent?.toString(),
+    address
+  );
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="w-full max-w-xl rounded-2xl border border-gray-100 bg-white dark:border-white/10 dark:bg-slate-900 shadow-2xl flex flex-col max-h-[80vh]">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-white/10 shrink-0">
+          <div className="flex items-center gap-3">
+            <span className="text-lg">☁️</span>
+            <h2 className="text-base font-semibold text-slate-800 dark:text-white">
+              {isEn ? "0G Storage Cloud" : "0G Storage 云盘"}
+            </h2>
+          </div>
+          <button onClick={onClose} className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        {/* Agent tabs */}
+        {agents.length > 1 && (
+          <div className="flex gap-1 px-6 pt-4 shrink-0 flex-wrap">
+            {agents.map((a) => (
+              <button key={a.agentId}
+                onClick={() => setSelectedAgent(a.agentId)}
+                className={`rounded-lg px-3 py-1.5 text-xs font-medium transition border ${selectedAgent === a.agentId ? "border-cyan-300 bg-cyan-50 text-cyan-700 dark:border-cyan-500/40 dark:bg-cyan-500/10 dark:text-cyan-300" : "border-gray-200 bg-white text-gray-500 hover:border-gray-300 dark:border-white/10 dark:bg-white/5 dark:text-slate-400"}`}>
+                {a.profile?.name ?? `Agent ${a.agentId}`}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Memory list */}
+        <div className="overflow-y-auto flex-1 px-6 py-4 space-y-2">
+          {loadingSelected && (
+            <div className="space-y-2">
+              {[1,2,3].map((n) => (
+                <div key={n} className="animate-pulse rounded-xl border border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 h-16" />
+              ))}
+            </div>
+          )}
+          {!loadingSelected && selectedMemories.length === 0 && (
+            <div className="flex flex-col items-center gap-2 py-12 text-center">
+              <span className="text-3xl">🧠</span>
+              <p className="text-sm text-gray-400 dark:text-slate-500">
+                {isEn ? "No memories stored yet" : "暂无存储的记忆"}
+              </p>
+            </div>
+          )}
+          {!loadingSelected && selectedMemories.map((m) => (
+            <div key={m.id} className="rounded-xl border border-gray-100 dark:border-white/10 bg-gray-50/60 dark:bg-white/[0.03] px-4 py-3">
+              <div className="flex items-start justify-between gap-2">
+                <span className="text-xs font-semibold text-indigo-500 dark:text-indigo-400 uppercase tracking-wide">{m.type}</span>
+                <span className="text-[10px] text-gray-400 shrink-0">{new Date(m.timestamp * 1000).toLocaleDateString()}</span>
+              </div>
+              <p className="mt-1 text-sm text-gray-700 dark:text-slate-300 line-clamp-2">{m.content}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-3 border-t border-gray-100 dark:border-white/10 shrink-0 flex justify-between items-center">
+          <span className="text-xs text-gray-400 dark:text-slate-500">
+            {isEn ? `${selectedMemories.length} memories` : `${selectedMemories.length} 条记忆`}
+          </span>
+          <Link
+            href={`/agent/${selectedAgent}/memory`}
+            onClick={onClose}
+            className="text-xs font-medium text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
+          >
+            {isEn ? "Open full page →" : "打开完整页面 →"}
+          </Link>
+        </div>
       </div>
     </div>
   );
@@ -441,6 +656,10 @@ export default function DashboardPage() {
   const { t, lang } = useLang();
   const isEn = lang === "en";
 
+  const [showComputeModal, setShowComputeModal] = useState(false);
+  const [showStorageModal, setShowStorageModal] = useState(false);
+  const [computeKey, setComputeKey] = useState(0); // re-mount banner after staking
+
   // 持久化已删除的 agent ID（localStorage）
   const [deletedIds, setDeletedIds] = useState<Set<number>>(() => {
     if (typeof window === "undefined") return new Set();
@@ -496,11 +715,43 @@ export default function DashboardPage() {
       </div>
 
       {/* 0G Compute 状态 Banner */}
-      {address && <ComputeStatusBanner address={address} isEn={isEn} />}
+      {address && (
+        <ComputeStatusBanner
+          key={computeKey}
+          address={address}
+          isEn={isEn}
+          onInitClick={() => setShowComputeModal(true)}
+        />
+      )}
 
       {/* 0G Storage 云盘状态条 */}
       {visibleAgents.length > 0 && address && (
-        <StorageStatusBar agents={visibleAgents} address={address} isEn={isEn} />
+        <StorageStatusBar
+          agents={visibleAgents}
+          address={address}
+          isEn={isEn}
+          onDetailsClick={() => setShowStorageModal(true)}
+        />
+      )}
+
+      {/* Compute Init Modal */}
+      {showComputeModal && address && (
+        <ComputeInitModal
+          address={address}
+          isEn={isEn}
+          onClose={() => setShowComputeModal(false)}
+          onSuccess={() => setComputeKey((k) => k + 1)}
+        />
+      )}
+
+      {/* Storage Details Modal */}
+      {showStorageModal && address && visibleAgents.length > 0 && (
+        <StorageDetailsModal
+          agents={visibleAgents}
+          address={address}
+          isEn={isEn}
+          onClose={() => setShowStorageModal(false)}
+        />
       )}
 
       {/* Error */}

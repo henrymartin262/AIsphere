@@ -8,7 +8,7 @@ interface MemoryResponse {
   memories?: MemoryItem[];
 }
 
-export function useMemory(agentId?: string) {
+export function useMemory(agentId?: string, address?: string) {
   const [memories, setMemories] = useState<MemoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -21,7 +21,8 @@ export function useMemory(agentId?: string) {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await apiGet<MemoryResponse | MemoryItem[]>(`/memory/${agentId}`);
+      const params = address ? { address: address.toLowerCase() } : undefined;
+      const data = await apiGet<MemoryResponse | MemoryItem[]>(`/memory/${agentId}`, params);
       const items: MemoryItem[] = Array.isArray(data)
         ? data
         : (data as MemoryResponse).memories ?? [];
@@ -32,7 +33,7 @@ export function useMemory(agentId?: string) {
     } finally {
       setIsLoading(false);
     }
-  }, [agentId]);
+  }, [agentId, address]);
 
   useEffect(() => {
     fetchMemories();
