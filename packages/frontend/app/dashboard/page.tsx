@@ -9,6 +9,7 @@ import { useAgents } from "../../hooks/useAgent";
 import { AgentCard } from "../../components/AgentCard";
 import { useLang } from "../../contexts/LangContext";
 import { apiGet, setApiWalletAddress } from "../../lib/api";
+import type { Agent } from "../../types";
 
 /* ── 0G Compute 账户数据类型 ── */
 interface ComputeAccount {
@@ -100,6 +101,106 @@ function ComputeStatusBanner({ address, isEn }: { address: string; isEn: boolean
             <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
           </svg>
         </button>
+      </div>
+    </div>
+  );
+}
+
+/* ── 0G Storage 云盘状态条 ── */
+interface StorageStatusBarProps {
+  agents: Array<{ agentId: number; profile?: { name?: string } }>;
+  address: string;
+  isEn: boolean;
+}
+
+type StorageStatus = "loading" | "ready" | "error";
+
+function StorageStatusBar({ agents, address, isEn }: StorageStatusBarProps) {
+  const [totalMemories, setTotalMemories] = useState<number>(0);
+  const [status, setStatus] = useState<StorageStatus>("loading");
+
+  useEffect(() => {
+    let cancelled = false;
+    setApiWalletAddress(address);
+
+    const topAgents = agents.slice(0, 3);
+    Promise.all(
+      topAgents.map((agent) =>
+        apiGet<unknown[]>(`/memory/${agent.agentId}`, { address: address.toLowerCase() })
+          .then((arr) => (Array.isArray(arr) ? arr.length : 0))
+          .catch(() => 0)
+      )
+    )
+      .then((counts) => {
+        if (cancelled) return;
+        const total = counts.reduce((sum, n) => sum + n, 0);
+        setTotalMemories(total);
+        setStatus("ready");
+      })
+      .catch(() => {
+        if (!cancelled) setStatus("error");
+      });
+
+    return () => { cancelled = true; };
+  }, [address, agents]);
+
+  const firstAgentId = agents[0]?.agentId;
+  /* 50 memories = "full" bar; cap at 100 % */
+  const fillPct = Math.min((totalMemories / 50) * 100, 100);
+
+  if (status === "loading") {
+    return (
+      <div className="mt-4 animate-pulse rounded-xl border border-cyan-200/60 bg-cyan-50/30 dark:border-cyan-500/20 dark:bg-cyan-500/5 px-4 py-2.5 flex items-center gap-3">
+        <div className="h-3 w-3 rounded-full bg-cyan-200 dark:bg-cyan-500/30 shrink-0" />
+        <div className="h-3 w-44 rounded bg-cyan-200/70 dark:bg-cyan-500/20" />
+      </div>
+    );
+  }
+
+  const memLabel =
+    status === "error"
+      ? (isEn ? "Storage ready" : "云盘已就绪")
+      : totalMemories === 0
+      ? (isEn ? "No data yet" : "暂无数据")
+      : (isEn ? `${totalMemories} memories synced` : `已同步 ${totalMemories} 条记忆`);
+
+  return (
+    <div className="mt-4 flex items-center gap-3 rounded-xl border border-cyan-200/60 bg-cyan-50/30 dark:border-cyan-500/20 dark:bg-cyan-500/5 px-4 py-2.5">
+      {/* Left: icon + label */}
+      <span className="text-sm shrink-0" aria-hidden="true">☁️</span>
+      <span className="text-xs font-semibold text-cyan-700 dark:text-cyan-300 shrink-0 whitespace-nowrap">
+        {isEn ? "0G Storage" : "0G Storage 云盘"}
+      </span>
+
+      {/* Middle: progress bar + memory count + sync badge */}
+      <div className="flex flex-1 items-center gap-2 min-w-0">
+        <div className="w-24 h-1.5 rounded-full bg-cyan-100 dark:bg-cyan-900/40 overflow-hidden shrink-0">
+          <div
+            className="h-full rounded-full bg-cyan-400 dark:bg-cyan-500 transition-all duration-700"
+            style={{ width: `${fillPct}%` }}
+          />
+        </div>
+        <span className="text-xs text-cyan-600 dark:text-cyan-400 truncate">
+          {memLabel}
+        </span>
+        <span className="hidden sm:inline text-xs text-cyan-500 dark:text-cyan-400/70 shrink-0 whitespace-nowrap">
+          · {isEn ? "Cross-device sync ✓" : "跨设备同步 ✓"}
+        </span>
+      </div>
+
+      {/* Right: tagline + details link */}
+      <div className="flex items-center gap-2 shrink-0">
+        <span className="hidden md:inline text-[10px] text-cyan-500/60 dark:text-cyan-400/40 whitespace-nowrap">
+          {isEn ? "Data always yours" : "解放本地存储 · 数据永远属于你"}
+        </span>
+        {firstAgentId !== undefined && (
+          <Link
+            href={`/agent/${firstAgentId}/memory`}
+            className="text-xs font-medium text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors whitespace-nowrap"
+          >
+            {isEn ? "Details ›" : "查看详情 ›"}
+          </Link>
+        )}
       </div>
     </div>
   );
@@ -205,6 +306,135 @@ function ConnectWalletPrompt() {
   );
 }
 
+/* ── 上链设置区块 ── */
+interface OnChainSetupSectionProps {
+  agents: Agent[];
+  isEn: boolean;
+}
+
+function OnChainSetupSection({ agents, isEn }: OnChainSetupSectionProps) {
+  const [open, setOpen] = useState(false);
+
+  const features = isEn
+    ? [
+        "On-chain INFT identity (ERC-721)",
+        "TEE-verified sealed inference",
+        "Encrypted memory on 0G Storage",
+        "Soul grows with each interaction",
+      ]
+    : [
+        "获得 INFT 链上身份（ERC-721）",
+        "推理过程 TEE 可验证",
+        "记忆加密存储在 0G Storage",
+        "Soul 随使用成长",
+      ];
+
+  return (
+    <div className="mt-8 rounded-2xl border border-gray-100 bg-white dark:border-gray-700/50 dark:bg-gray-900/40 overflow-hidden">
+      {/* Collapsible header */}
+      <button
+        onClick={() => setOpen((prev) => !prev)}
+        className="w-full flex items-center justify-between gap-4 px-6 py-4 text-left hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors"
+        aria-expanded={open}
+      >
+        <div className="flex items-center gap-3">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-50 dark:bg-violet-500/15 text-violet-600 dark:text-violet-400 text-base">
+            ⛓
+          </span>
+          <div>
+            <span className="text-sm font-semibold text-slate-800 dark:text-white">
+              {isEn ? "⛓ On-Chain Setup" : "⛓ 上链设置"}
+            </span>
+            <span className="ml-2 text-xs text-slate-400 dark:text-slate-500">
+              {isEn ? "Bind your Agent to an on-chain identity" : "将你的 Agent 绑定链上身份"}
+            </span>
+          </div>
+        </div>
+        <svg
+          className={`h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2.5}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {/* Expandable body */}
+      {open && (
+        <div className="border-t border-gray-100 dark:border-gray-700/50 px-6 py-5 grid gap-5 sm:grid-cols-2">
+          {/* Left: info card */}
+          <div className="rounded-xl border border-violet-100 bg-violet-50/60 dark:border-violet-500/20 dark:bg-violet-500/5 p-5">
+            <h3 className="text-sm font-semibold text-violet-800 dark:text-violet-300 mb-3">
+              {isEn ? "What is an On-Chain Agent?" : "什么是链上 Agent？"}
+            </h3>
+            <ul className="space-y-2">
+              {features.map((feat) => (
+                <li key={feat} className="flex items-start gap-2 text-xs text-violet-700 dark:text-violet-400/80">
+                  <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-violet-200/60 dark:bg-violet-500/20 text-violet-600 dark:text-violet-400 text-[10px]">
+                    ✓
+                  </span>
+                  {feat}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Right: agent status + action */}
+          <div className="flex flex-col gap-4">
+            {/* Agent on-chain status list */}
+            <div className="space-y-2">
+              {agents.map((agent) => {
+                const isOnChain =
+                  !!agent.profile.metadataHash &&
+                  agent.profile.metadataHash !== "" &&
+                  agent.profile.metadataHash !== "0x";
+                return (
+                  <div
+                    key={agent.agentId}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 dark:border-gray-700/40 bg-gray-50/60 dark:bg-gray-800/30 px-4 py-2.5"
+                  >
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">
+                      {agent.profile.name}
+                    </span>
+                    {isOnChain ? (
+                      <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-green-100 dark:bg-green-500/15 px-2.5 py-0.5 text-[10px] font-semibold text-green-700 dark:text-green-400">
+                        <span className="h-1.5 w-1.5 rounded-full bg-green-500 dark:bg-green-400" />
+                        {isEn ? "On-chain" : "已上链"}
+                      </span>
+                    ) : (
+                      <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-500/15 px-2.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-400">
+                        <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+                        {isEn ? "Off-chain" : "未上链"}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* CTA */}
+            <div className="mt-auto">
+              <p className="mb-2 text-xs text-slate-400 dark:text-slate-500">
+                {isEn
+                  ? "Creating a new Agent automatically mints its INFT on-chain."
+                  : "创建 Agent 时会自动完成 INFT 铸造。"}
+              </p>
+              <Link
+                href="/agent/create"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-violet-200 dark:border-violet-500/30 bg-violet-50 dark:bg-violet-500/10 px-4 py-2 text-xs font-semibold text-violet-700 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-500/20 transition-colors"
+              >
+                {isEn ? "Create On-Chain Agent →" : "创建链上 Agent →"}
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const { address, isConnected } = useAccount();
   const { agents, isLoading, error, refetch } = useAgents(address);
@@ -268,6 +498,11 @@ export default function DashboardPage() {
       {/* 0G Compute 状态 Banner */}
       {address && <ComputeStatusBanner address={address} isEn={isEn} />}
 
+      {/* 0G Storage 云盘状态条 */}
+      {visibleAgents.length > 0 && address && (
+        <StorageStatusBar agents={visibleAgents} address={address} isEn={isEn} />
+      )}
+
       {/* Error */}
       {error && (
         <div className="mt-6 animate-scale-in flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-5 py-4">
@@ -325,6 +560,11 @@ export default function DashboardPage() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* On-Chain Setup section — only when wallet connected + ≥1 agent */}
+      {!isLoading && visibleAgents.length > 0 && (
+        <OnChainSetupSection agents={visibleAgents} isEn={isEn} />
       )}
     </main>
   );

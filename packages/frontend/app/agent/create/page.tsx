@@ -6,7 +6,7 @@ import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useCreateAgent } from "../../../hooks/useAgent";
 import { useLang } from "../../../contexts/LangContext";
-import { apiGet, setApiWalletAddress } from "../../../lib/api";
+import { apiGet, apiPost, setApiWalletAddress } from "../../../lib/api";
 
 type Step = "form" | "minting" | "done";
 
@@ -33,6 +33,27 @@ const FALLBACK_MODELS: ModelInfo[] = [
 /* ── 0G Compute 内联状态检查 ── */
 function ComputeStatusInline({ address, isEn }: { address: string; isEn: boolean }) {
   const [status, setStatus] = useState<ComputeStatus>("loading");
+  const [dismissed, setDismissed] = useState(false);
+  const [depositAmount, setDepositAmount] = useState("1");
+  const [depositing, setDepositing] = useState(false);
+  const [depositError, setDepositError] = useState<string | null>(null);
+  const [depositSuccess, setDepositSuccess] = useState(false);
+
+  const fetchStatus = (addr: string) => {
+    setApiWalletAddress(addr);
+    return apiGet<ComputeAccount>("/compute/account")
+      .then((data) => {
+        const isUnstaked =
+          !data.initialized ||
+          data.balance === "0" ||
+          data.balance === "0.0" ||
+          parseFloat(data.balance) === 0;
+        setStatus(isUnstaked ? "unstaked" : "ready");
+      })
+      .catch(() => {
+        setStatus("error");
+      });
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -52,6 +73,24 @@ function ComputeStatusInline({ address, isEn }: { address: string; isEn: boolean
       });
     return () => { cancelled = true; };
   }, [address]);
+
+  const handleDeposit = async () => {
+    setDepositError(null);
+    setDepositing(true);
+    try {
+      await apiPost<unknown>("/compute/deposit", { amount: depositAmount });
+      setDepositSuccess(true);
+      setTimeout(() => {
+        setDepositSuccess(false);
+        fetchStatus(address);
+      }, 1500);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : (isEn ? "Deposit failed" : "质押失败");
+      setDepositError(msg);
+    } finally {
+      setDepositing(false);
+    }
+  };
 
   if (status === "loading") {
     return (
@@ -77,26 +116,102 @@ function ComputeStatusInline({ address, isEn }: { address: string; isEn: boolean
     );
   }
 
-  /* unstaked */
+  /* unstaked — dismissed */
+  if (dismissed) return null;
+
+  /* unstaked — interactive deposit banner */
   return (
-    <div className="rounded-xl border border-yellow-300/70 bg-yellow-50 dark:border-yellow-500/25 dark:bg-yellow-500/10 px-4 py-3">
+    <div className="rounded-xl border border-yellow-300/70 bg-yellow-50 dark:border-yellow-500/25 dark:bg-yellow-500/10 px-4 py-3 space-y-3">
+      {/* Header */}
       <div className="flex items-start gap-2.5">
-        <span className="mt-0.5 text-yellow-500 dark:text-yellow-400 text-sm shrink-0">⚠</span>
-        <div>
+        <span className="mt-0.5 text-yellow-500 dark:text-yellow-400 text-sm shrink-0">⚡</span>
+        <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-300">
             {isEn ? "0G Compute Not Initialized" : "0G Compute 未初始化"}
-            {" — "}
-            {isEn
-              ? "Mock inference will be used (no TEE verification)"
-              : "创建 Agent 后将使用 Mock 推理（无 TEE 验证）"}
           </p>
-          <p className="mt-1 text-xs text-yellow-700/70 dark:text-yellow-400/60">
+          <p className="mt-0.5 text-xs text-yellow-700/70 dark:text-yellow-400/60">
             {isEn
-              ? "You can stake A0GI first for verified inference, or continue with limited functionality."
-              : "可以先质押 A0GI 以启用可验证推理，或继续创建（功能受限）。"}
+              ? "Inference will use Mock mode (no TEE verification). Stake to enable real verified inference."
+              : "推理将使用 Mock 模式（无 TEE 验证）。质押后可启用真实推理。"}
           </p>
         </div>
       </div>
+
+      {/* Quick Deposit row */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs font-medium text-yellow-700 dark:text-yellow-400 shrink-0">
+          {isEn ? "Quick deposit:" : "快速质押："}
+        </span>
+        <div className="flex items-center gap-1.5">
+          <input
+            type="number"
+            min="0.1"
+            max="10"
+            step="0.1"
+            value={depositAmount}
+            onChange={(e) => setDepositAmount(e.target.value)}
+            disabled={depositing}
+            className="w-16 rounded-lg border border-yellow-300 bg-white px-2 py-1 text-sm text-gray-900 outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-200 dark:border-yellow-500/40 dark:bg-white/10 dark:text-white dark:focus:border-yellow-400/60 dark:focus:ring-yellow-400/10 disabled:opacity-50"
+          />
+          <span className="text-xs font-medium text-yellow-700 dark:text-yellow-400">A0GI</span>
+        </div>
+        <button
+          type="button"
+          onClick={handleDeposit}
+          disabled={depositing}
+          className="inline-flex items-center gap-1.5 rounded-lg bg-yellow-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-yellow-500/80 dark:hover:bg-yellow-500"
+        >
+          {depositing ? (
+            <>
+              <svg className="h-3 w-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              {isEn ? "Staking…" : "质押中…"}
+            </>
+          ) : (
+            isEn ? "Stake & Continue →" : "质押并继续 →"
+          )}
+        </button>
+        <button
+          type="button"
+          onClick={() => setDismissed(true)}
+          className="text-xs text-yellow-600/70 underline underline-offset-2 hover:text-yellow-700 dark:text-yellow-400/60 dark:hover:text-yellow-400"
+        >
+          {isEn ? "Skip, continue" : "跳过，继续"}
+        </button>
+      </div>
+
+      {/* Success */}
+      {depositSuccess && (
+        <div className="flex items-center gap-1.5 rounded-lg border border-green-200 bg-green-50 px-3 py-1.5 dark:border-green-500/30 dark:bg-green-500/10">
+          <span className="text-green-500 text-xs">✓</span>
+          <p className="text-xs font-medium text-green-700 dark:text-green-300">
+            {isEn ? "Deposit successful! Refreshing status…" : "质押成功！正在刷新状态…"}
+          </p>
+        </div>
+      )}
+
+      {/* Error */}
+      {depositError && (
+        <div className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 dark:border-red-500/30 dark:bg-red-500/10">
+          <span className="text-red-500 text-xs">✕</span>
+          <p className="text-xs text-red-600 dark:text-red-300">{depositError}</p>
+        </div>
+      )}
+
+      {/* Faucet link */}
+      <p className="text-xs text-yellow-600/60 dark:text-yellow-400/50">
+        {isEn ? "Need test tokens? " : "余额不足？先从水龙头获取测试 A0GI "}
+        <a
+          href="https://faucet.0g.ai"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline underline-offset-2 hover:text-yellow-700 dark:hover:text-yellow-300"
+        >
+          {isEn ? "Get test A0GI from faucet ↗" : "↗"}
+        </a>
+      </p>
     </div>
   );
 }
