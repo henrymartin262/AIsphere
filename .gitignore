@@ -57,3 +57,8 @@ README_EXPLORATION.md
 
 # OMC agent state (auto-generated)
 **/.omc/
+
+# AI assistant generated docs (not for repo)
+CLAUDE.md
+RENAME_CHECKLIST.md
+.agent-skills/
