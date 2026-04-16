@@ -4,6 +4,16 @@ import { env } from "../config/index.js";
 import type { BuiltPrompt, ChatMessage } from "./PromptBuilder.js";
 import { buildPrompt as _buildPrompt } from "./PromptBuilder.js";
 
+/** Timeout for each LLM API call (ms). Front-end CHAT_TIMEOUT is 90s; keep backend tighter. */
+const LLM_FETCH_TIMEOUT_MS = 60_000; // 60s per inference call
+
+function makeFetchSignal(): AbortSignal {
+  if (typeof AbortSignal.timeout === "function") return AbortSignal.timeout(LLM_FETCH_TIMEOUT_MS);
+  const ctrl = new AbortController();
+  setTimeout(() => ctrl.abort(), LLM_FETCH_TIMEOUT_MS);
+  return ctrl.signal;
+}
+
 /** Normalise a string context or a pre-built BuiltPrompt into a BuiltPrompt */
 function normalisePrompt(promptOrContext: BuiltPrompt | string, userMessage: string, agentId: number): BuiltPrompt {
   if (typeof promptOrContext === "string") {
@@ -193,7 +203,8 @@ export async function inference(
               model: providerModel,
               messages: prompt.messages,
               max_tokens: 512
-            })
+            }),
+            signal: makeFetchSignal(),
           });
           console.log(`[SealedInference] Provider response status: ${response.status}`);
         } catch (fetchErr) {
@@ -206,7 +217,8 @@ export async function inference(
               model: providerModel,
               messages: [{ role: "user", content: prompt.flatPrompt }],
               max_tokens: 512
-            })
+            }),
+            signal: makeFetchSignal(),
           });
         }
 
@@ -260,7 +272,8 @@ export async function inference(
           messages: prompt.messages,   // ← full structured messages with history
           max_tokens: 1024,
           temperature: 0.7
-        })
+        }),
+        signal: makeFetchSignal(),
       });
 
       if (response.ok) {
@@ -293,7 +306,8 @@ export async function inference(
           messages: prompt.messages,   // ← full structured messages with history
           max_tokens: 1024,
           temperature: 0.7
-        })
+        }),
+        signal: makeFetchSignal(),
       });
 
       if (response.ok) {

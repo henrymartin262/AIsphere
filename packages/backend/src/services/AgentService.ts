@@ -185,7 +185,7 @@ const mockAgents: Map<number, AgentInfo> = new Map([
 
 // ─── TTL Cache (avoid repeated RPC calls) ─────────────────────────────────────
 const CACHE_TTL_MS = 60_000; // 60 seconds
-const RPC_TIMEOUT_MS = 3_000; // 3s max for any single RPC call — fallback to mock if exceeded
+const RPC_TIMEOUT_MS = 8_000; // 8s max for any single RPC call — fallback to mock if exceeded
 
 interface CacheEntry { data: AgentInfo; expiresAt: number; }
 const agentCache: Map<number, CacheEntry> = new Map();
