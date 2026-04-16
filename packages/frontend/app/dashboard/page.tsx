@@ -9,6 +9,7 @@ import { AgentCard } from "../../components/AgentCard";
 import { useLang } from "../../contexts/LangContext";
 import { apiGet, apiPost, setApiWalletAddress } from "../../lib/api";
 import { useMemory } from "../../hooks/useMemory";
+import { useLocalChatSessions } from "../../hooks/useLocalChatSessions";
 import { useCompute } from "../../contexts/ComputeContext";
 import type { Agent } from "../../types";
 
@@ -208,6 +209,7 @@ type StorageStatus = "loading" | "ready" | "error";
 
 function StorageStatusBar({ agents, address, isEn, onDetailsClick }: StorageStatusBarProps & { onDetailsClick: () => void }) {
   const [totalMemories, setTotalMemories] = useState<number>(0);
+  const [totalSessions, setTotalSessions] = useState<number>(0);
   const [status, setStatus] = useState<StorageStatus>("loading");
 
   useEffect(() => {
@@ -217,8 +219,9 @@ function StorageStatusBar({ agents, address, isEn, onDetailsClick }: StorageStat
     const topAgents = agents.slice(0, 3);
     Promise.all(
       topAgents.map((agent) =>
-        apiGet<unknown[]>(`/memory/${agent.agentId}`, { address: address.toLowerCase() })
-          .then((arr) => (Array.isArray(arr) ? arr.length : 0))
+        apiGet<Array<{ type?: string }>>(`/memory/${agent.agentId}`, { address: address.toLowerCase() })
+          // Only count non-conversation memories (conversation sessions are in localStorage)
+          .then((arr) => (Array.isArray(arr) ? arr.filter((m) => m.type !== "conversation").length : 0))
           .catch(() => 0)
       )
     )
@@ -232,12 +235,26 @@ function StorageStatusBar({ agents, address, isEn, onDetailsClick }: StorageStat
         if (!cancelled) setStatus("error");
       });
 
+    // Count conversation sessions from localStorage across top agents
+    if (typeof window !== "undefined") {
+      const sessionCount = topAgents.reduce((sum, agent) => {
+        try {
+          const raw = localStorage.getItem(`aisphere:sessions:${agent.agentId}`);
+          if (!raw) return sum;
+          const parsed = JSON.parse(raw) as Array<{ messages?: unknown[] }>;
+          return sum + parsed.filter((s) => s.messages && s.messages.length > 0).length;
+        } catch { return sum; }
+      }, 0);
+      setTotalSessions(sessionCount);
+    }
+
     return () => { cancelled = true; };
   }, [address, agents]);
 
   const firstAgentId = agents[0]?.agentId;
-  /* 50 memories = "full" bar; cap at 100 % */
-  const fillPct = Math.min((totalMemories / 50) * 100, 100);
+  const totalItems = totalMemories + totalSessions;
+  /* 50 items = "full" bar; cap at 100 % */
+  const fillPct = Math.min((totalItems / 50) * 100, 100);
 
   if (status === "loading") {
     return (
@@ -251,9 +268,11 @@ function StorageStatusBar({ agents, address, isEn, onDetailsClick }: StorageStat
   const memLabel =
     status === "error"
       ? (isEn ? "Storage ready" : "云盘已就绪")
-      : totalMemories === 0
+      : totalItems === 0
       ? (isEn ? "No data yet" : "暂无数据")
-      : (isEn ? `${totalMemories} memories synced` : `已同步 ${totalMemories} 条记忆`);
+      : isEn
+        ? `${totalSessions} sessions · ${totalMemories} memories`
+        : `${totalSessions} 个对话 · ${totalMemories} 条记忆`;
 
   return (
     <div className="mt-4 flex items-center gap-3 rounded-xl border border-cyan-200/60 bg-cyan-50/30 dark:border-cyan-500/20 dark:bg-cyan-500/5 px-4 py-2.5">
@@ -304,17 +323,19 @@ function StorageDetailsModal({ agents, address, isEn, onClose }: {
   isEn: boolean;
   onClose: () => void;
 }) {
-  const { memories, isLoading, error } = useMemory(
-    agents[0]?.agentId?.toString(),
-    address
-  );
-
   const [selectedAgent, setSelectedAgent] = useState(agents[0]?.agentId);
+  const selectedAgentStr = selectedAgent?.toString() ?? "";
 
-  const { memories: selectedMemories, isLoading: loadingSelected } = useMemory(
-    selectedAgent?.toString(),
-    address
-  );
+  // Non-conversation memories from backend (knowledge, personality, skill, decision)
+  const { memories, isLoading: loadingMem } = useMemory(selectedAgentStr, address);
+  const nonConvMemories = memories.filter((m) => m.type !== "conversation");
+
+  // Conversation sessions from localStorage
+  const sessions = useLocalChatSessions(selectedAgentStr);
+
+  const TYPE_ICONS: Record<string, string> = {
+    knowledge: "📚", personality: "🧠", skill: "⚡", decision: "⛓",
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -345,38 +366,73 @@ function StorageDetailsModal({ agents, address, isEn, onClose }: {
           </div>
         )}
 
-        {/* Memory list */}
-        <div className="overflow-y-auto flex-1 px-6 py-4 space-y-2">
-          {loadingSelected && (
-            <div className="space-y-2">
-              {[1,2,3].map((n) => (
-                <div key={n} className="animate-pulse rounded-xl border border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 h-16" />
-              ))}
+        {/* Content */}
+        <div className="overflow-y-auto flex-1 px-6 py-4 space-y-4">
+          {/* Conversation sessions */}
+          {sessions.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">
+                💬 {isEn ? `${sessions.length} Conversations` : `${sessions.length} 条对话`}
+              </p>
+              <div className="space-y-2">
+                {sessions.map((s) => (
+                  <div key={s.id} className="rounded-xl border border-blue-100 dark:border-blue-500/20 bg-blue-50/50 dark:bg-blue-500/5 px-4 py-3">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className="text-xs font-medium text-blue-700 dark:text-blue-300 truncate">{s.title}</span>
+                      <span className="text-[10px] text-gray-400 shrink-0">{new Date(s.updatedAt).toLocaleDateString()}</span>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">
+                      {s.messages.length} {isEn ? "messages" : "条消息"}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
-          {!loadingSelected && selectedMemories.length === 0 && (
+
+          {/* Knowledge / Personality / Skill / Decision memories */}
+          {loadingMem && (
+            <div className="space-y-2">
+              {[1,2].map((n) => <div key={n} className="animate-pulse rounded-xl border border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 h-14" />)}
+            </div>
+          )}
+          {!loadingMem && nonConvMemories.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">
+                🧠 {isEn ? `${nonConvMemories.length} Memories` : `${nonConvMemories.length} 条记忆`}
+              </p>
+              <div className="space-y-2">
+                {nonConvMemories.map((m) => (
+                  <div key={m.id} className="rounded-xl border border-gray-100 dark:border-white/10 bg-gray-50/60 dark:bg-white/[0.03] px-4 py-3">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className="text-xs font-semibold text-indigo-500 dark:text-indigo-400 uppercase tracking-wide">
+                        {TYPE_ICONS[m.type ?? ""] ?? "📄"} {m.type}
+                      </span>
+                      <span className="text-[10px] text-gray-400 shrink-0">{new Date(m.timestamp * 1000).toLocaleDateString()}</span>
+                    </div>
+                    <p className="text-xs text-gray-700 dark:text-slate-300 line-clamp-2">{m.content}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {!loadingMem && sessions.length === 0 && nonConvMemories.length === 0 && (
             <div className="flex flex-col items-center gap-2 py-12 text-center">
               <span className="text-3xl">🧠</span>
               <p className="text-sm text-gray-400 dark:text-slate-500">
-                {isEn ? "No memories stored yet" : "暂无存储的记忆"}
+                {isEn ? "No data stored yet" : "暂无存储的数据"}
               </p>
             </div>
           )}
-          {!loadingSelected && selectedMemories.map((m) => (
-            <div key={m.id} className="rounded-xl border border-gray-100 dark:border-white/10 bg-gray-50/60 dark:bg-white/[0.03] px-4 py-3">
-              <div className="flex items-start justify-between gap-2">
-                <span className="text-xs font-semibold text-indigo-500 dark:text-indigo-400 uppercase tracking-wide">{m.type}</span>
-                <span className="text-[10px] text-gray-400 shrink-0">{new Date(m.timestamp * 1000).toLocaleDateString()}</span>
-              </div>
-              <p className="mt-1 text-sm text-gray-700 dark:text-slate-300 line-clamp-2">{m.content}</p>
-            </div>
-          ))}
         </div>
 
         {/* Footer */}
         <div className="px-6 py-3 border-t border-gray-100 dark:border-white/10 shrink-0 flex justify-between items-center">
           <span className="text-xs text-gray-400 dark:text-slate-500">
-            {isEn ? `${selectedMemories.length} memories` : `${selectedMemories.length} 条记忆`}
+            {isEn
+              ? `${sessions.length} sessions · ${nonConvMemories.length} memories`
+              : `${sessions.length} 个对话 · ${nonConvMemories.length} 条记忆`}
           </span>
           <Link
             href={`/agent/${selectedAgent}/memory`}

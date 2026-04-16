@@ -4,23 +4,14 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useAccount } from "wagmi";
 import { useMemory } from "../../../../hooks/useMemory";
+import { useLocalChatSessions, type ChatSession } from "../../../../hooks/useLocalChatSessions";
 import { useLang } from "../../../../contexts/LangContext";
 import { apiPost, apiDelete, setApiWalletAddress, MEMORY_TIMEOUT } from "../../../../lib/api";
-import type { MemoryItem, ChatMessage } from "../../../../types";
-
-// ─── Local types ─────────────────────────────────────────────────────────────
-
-type MemoryType = "all" | "conversation" | "knowledge" | "personality" | "skill" | "decision";
-
-interface ChatSession {
-  id: string;
-  title: string;
-  createdAt: number;
-  updatedAt: number;
-  messages: ChatMessage[];
-}
+import type { MemoryItem } from "../../../../types";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
+
+type MemoryType = "all" | "conversation" | "knowledge" | "personality" | "skill" | "decision";
 
 const TYPE_ICON: Record<string, string> = {
   conversation: "💬", knowledge: "📚", personality: "🧠", skill: "⚡", decision: "⛓",
@@ -33,29 +24,6 @@ const TYPE_COLOR: Record<string, string> = {
   skill:        "bg-amber-50   text-amber-600   border-amber-200   dark:bg-amber-500/10   dark:text-amber-300   dark:border-amber-500/30",
   decision:     "bg-indigo-50  text-indigo-600  border-indigo-200  dark:bg-indigo-500/10  dark:text-indigo-300  dark:border-indigo-500/30",
 };
-
-// ─── useLocalChatSessions ────────────────────────────────────────────────────
-
-function useLocalChatSessions(agentId: string): ChatSession[] {
-  const [sessions, setSessions] = useState<ChatSession[]>([]);
-
-  useEffect(() => {
-    if (!agentId || typeof window === "undefined") return;
-    try {
-      const raw = localStorage.getItem(`aisphere:sessions:${agentId}`);
-      if (!raw) return;
-      const parsed: ChatSession[] = JSON.parse(raw);
-      const filtered = parsed
-        .filter((s) => s.messages && s.messages.length > 0)
-        .sort((a, b) => b.updatedAt - a.updatedAt);
-      setSessions(filtered);
-    } catch {
-      setSessions([]);
-    }
-  }, [agentId]);
-
-  return sessions;
-}
 
 // ─── ImportanceDots ──────────────────────────────────────────────────────────
 
