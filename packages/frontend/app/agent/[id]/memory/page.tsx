@@ -8,6 +8,7 @@ import { useLocalChatSessions, type ChatSession } from "../../../../hooks/useLoc
 import { useLang } from "../../../../contexts/LangContext";
 import { apiPost, apiDelete, setApiWalletAddress, MEMORY_TIMEOUT } from "../../../../lib/api";
 import type { MemoryItem } from "../../../../types";
+import { SkillsTab } from "../../../../components/SkillsTab";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -354,7 +355,7 @@ export default function AgentMemoryPage() {
   const agentId = typeof params?.id === "string" ? params.id : Array.isArray(params?.id) ? params.id[0] : "";
   const { address } = useAccount();
   const { memories, isLoading, error, refetch } = useMemory(agentId, address ?? "");
-  const { t } = useLang();
+  const { t, lang } = useLang();
 
   const [activeTab, setActiveTab] = useState<MemoryType>("all");
   const [showAddModal, setShowAddModal] = useState(false);
@@ -508,8 +509,13 @@ export default function AgentMemoryPage() {
         </>
       )}
 
-      {/* Specific non-conversation tabs */}
-      {activeTab !== "conversation" && activeTab !== "all" && (
+      {/* Skill tab: dedicated SkillsTab UI */}
+      {activeTab === "skill" && (
+        <SkillsTab agentId={agentId} address={address ?? ""} isEn={lang === "en"} />
+      )}
+
+      {/* Specific non-conversation, non-skill tabs */}
+      {activeTab !== "conversation" && activeTab !== "all" && activeTab !== "skill" && (
         <>
           {isLoading && <div className="space-y-3">{[1,2,3].map((n) => <SkeletonCard key={n} />)}</div>}
           {!isLoading && !error && filtered.length === 0 && (

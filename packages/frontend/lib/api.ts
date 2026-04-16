@@ -133,3 +133,17 @@ export async function apiDelete<T>(
   return handleResponse<T>(res);
 }
 
+export async function apiPut<T>(
+  path: string,
+  body: unknown,
+  timeoutMs: number = DEFAULT_TIMEOUT
+): Promise<T> {
+  const url = buildUrl(path);
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: buildAuthHeaders(),
+    body: JSON.stringify(body),
+    signal: createTimeoutSignal(timeoutMs),
+  });
+  return handleResponse<T>(res);
+}
