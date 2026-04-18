@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useAccount } from "wagmi";
-import { apiPost, apiGet, setApiWalletAddress, getApiWalletAddress, CHAT_TIMEOUT } from "../lib/api";
+import { apiPost, apiGet, setApiWalletAddress, getApiWalletAddress, CHAT_TIMEOUT, MEMORY_TIMEOUT } from "../lib/api";
 import type { ChatMessage, InferenceProof } from "../types";
 
 interface RawMessage {
@@ -38,7 +38,7 @@ export function useChat(agentId: string) {
     try {
       const params: Record<string, string> = { walletAddress };
 
-      const data = await apiGet<RawMessage[]>(`/chat/${agentId}/history`, params);
+      const data = await apiGet<RawMessage[]>(`/chat/${agentId}/history`, params, MEMORY_TIMEOUT);
       const rawMessages: RawMessage[] = Array.isArray(data) ? data : [];
 
       const normalized: ChatMessage[] = rawMessages.map((m, i) => {

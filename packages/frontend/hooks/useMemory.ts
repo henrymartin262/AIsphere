@@ -29,7 +29,7 @@ export function useMemory(agentId?: string, address?: string) {
       setMemories(items);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch memories");
-      setMemories([]);
+      // Don't clear existing memories on error — keep showing stale data
     } finally {
       setIsLoading(false);
     }

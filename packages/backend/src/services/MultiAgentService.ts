@@ -185,13 +185,9 @@ export async function sendMessage(
   // Push to recipient's inbox
   getInbox(toAgentId).push(message);
 
-  // If part of a session, also record there
-  for (const session of sessions.values()) {
-    if (session.agentIds.includes(fromAgentId) && session.agentIds.includes(toAgentId)) {
-      session.messages.push(message);
-      session.updatedAt = Date.now();
-    }
-  }
+  // If part of a session, also record there — but ONLY in the session that owns this message (match by sessionId if provided, otherwise skip auto-propagation to prevent cross-session pollution)
+  // NOTE: We no longer auto-push to all sessions with matching agents — that causes message bleed between sessions.
+  // Messages are added to sessions explicitly in orchestrate() below.
 
   console.log(`[MultiAgent] Message ${message.id}: Agent #${fromAgentId} → Agent #${toAgentId} (${type})`);
   return message;
@@ -400,9 +396,10 @@ export async function orchestrate(
 ): Promise<OrchestrationResult> {
   const routingDecisions: string[] = [];
 
-  // 1. Route the message to the best agent(s)
-  const selectedAgentIds = routeMessage(userMessage, availableAgents);
-  routingDecisions.push(`Routed to agents: [${selectedAgentIds.join(", ")}]`);
+  // User explicitly provided agentIds → use ALL of them, skip keyword routing.
+  // Routing is only for auto-selection when no specific agents are specified.
+  const selectedAgentIds = availableAgents.map((a) => a.agentId);
+  routingDecisions.push(`Using all ${selectedAgentIds.length} specified agent(s): [${selectedAgentIds.join(", ")}]`);
 
   // 2. Get or create a session
   let session: CollaborationSession;
@@ -448,7 +445,30 @@ export async function orchestrate(
   const responses = await Promise.all(inferencePromises);
   routingDecisions.push(`Received ${responses.length} agent responses`);
 
-  // 4. Aggregate responses
+  // 4. Record user query + each agent response into session.messages
+  const userQueryMsg: AgentMessage = {
+    id: randomUUID(),
+    fromAgentId: 0, // 0 = user
+    toAgentId: 0,
+    type: "request",
+    content: userMessage,
+    timestamp: Date.now(),
+  };
+  session.messages.push(userQueryMsg);
+
+  for (const r of responses) {
+    const agentRespMsg: AgentMessage = {
+      id: randomUUID(),
+      fromAgentId: r.agentId,
+      toAgentId: 0, // 0 = user
+      type: "response",
+      content: r.response,
+      timestamp: Date.now(),
+    };
+    session.messages.push(agentRespMsg);
+  }
+
+  // 5. Aggregate responses
   let aggregatedResponse: string;
   if (responses.length === 1) {
     aggregatedResponse = responses[0].response;
@@ -461,15 +481,17 @@ export async function orchestrate(
     aggregatedResponse = parts.join("\n\n---\n\n");
     routingDecisions.push(`Aggregated ${responses.length} agent responses`);
 
-    // Broadcast summary to all participating agents
+    // Broadcast summary to all participating agents and record in session
     for (let i = 0; i < responses.length; i++) {
       for (let j = i + 1; j < responses.length; j++) {
-        await sendMessage(
+        const broadcastMsg = await sendMessage(
           responses[i].agentId,
           responses[j].agentId,
           "broadcast",
           `Collaborated on: "${userMessage.slice(0, 100)}"`
         );
+        // Explicitly push only into THIS session
+        session.messages.push(broadcastMsg);
       }
     }
   }

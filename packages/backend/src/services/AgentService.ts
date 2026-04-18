@@ -434,8 +434,21 @@ export async function getAgentsByOwner(address: string): Promise<AgentInfo[]> {
 const deletedAgentIds: Set<number> = new Set();
 
 export async function deleteAgent(agentId: number, walletAddress: string): Promise<void> {
-  // For on-chain agents: mark as deleted in local set (INFT burn requires owner tx)
-  // For mock agents: remove from map
+  // Check userAgents first (file-persisted user-created agents)
+  const userAgent = userAgents.get(agentId);
+  if (userAgent) {
+    if (userAgent.owner.toLowerCase() !== walletAddress.toLowerCase()) {
+      throw new Error("Not authorized: you don't own this agent");
+    }
+    userAgents.delete(agentId);
+    mockAgents.delete(agentId);
+    persistUserAgents(); // ← write deletion to file so it survives restarts
+    invalidateAgentCache(agentId);
+    ownerCache.delete(walletAddress.toLowerCase());
+    return;
+  }
+
+  // For mock-only agents (not in userAgents): remove from map
   const agent = mockAgents.get(agentId);
   if (agent) {
     if (agent.owner.toLowerCase() !== walletAddress.toLowerCase()) {

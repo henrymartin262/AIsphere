@@ -28,6 +28,7 @@ import mediaRoutes from "./routes/mediaRoutes.js";
 import computeRoutes from "./routes/computeRoutes.js";
 import transferRoutes from "./routes/transferRoutes.js";
 import subBountyRoutes from "./routes/subBountyRoutes.js";
+import chatbotRoutes from "./routes/chatbotRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
@@ -95,6 +96,7 @@ app.use("/api/compute",     walletAuth, computeRoutes);
 app.use("/api/media",       walletAuth, mediaRoutes);
 app.use("/api/transfer",    walletAuth, transferRoutes);
 app.use("/api/sub-bounty",  subBountyRoutes);
+app.use("/api/chatbot",     chatbotRoutes);
 app.use(errorHandler);
 
 async function bootstrap() {

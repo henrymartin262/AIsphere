@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useLang } from "../../contexts/LangContext";
-import { apiGet, apiPost } from "../../lib/api";
+import { apiGet, apiPost, setApiWalletAddress, CHAT_TIMEOUT } from "../../lib/api";
 
 /* ── Types ── */
 interface CollaborationSession {
@@ -19,10 +19,10 @@ interface CollaborationSession {
 
 interface OrchestrationResult {
   sessionId: string;
-  selectedAgents: Array<{ agentId: number; name: string; score: number }>;
-  results: Array<{ agentId: number; response: string; proof?: unknown }>;
+  // backend returns `responses`, not `selectedAgents`
+  responses: Array<{ agentId: number; response: string; proofHash: string; teeVerified: boolean }>;
   aggregatedResponse: string;
-  timestamp: number;
+  routingDecisions: string[];
 }
 
 /* ── Status Card ── */
@@ -61,6 +61,31 @@ export default function MultiAgentPage() {
   // Tab
   const [activeTab, setActiveTab] = useState<"orchestrate" | "sessions">("orchestrate");
 
+  const [selectedSession, setSelectedSession] = useState<CollaborationSession | null>(null);
+  const [sessionDetail, setSessionDetail] = useState<CollaborationSession | null>(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+
+  const handleOpenSession = useCallback(async (session: CollaborationSession) => {
+    setSelectedSession(session);
+    setLoadingDetail(true);
+    try {
+      setApiWalletAddress(address!);
+      const data = await apiGet<{ data: CollaborationSession }>(`/multi-agent/sessions/${session.id}`);
+      setSessionDetail(data.data ?? session);
+    } catch {
+      setSessionDetail(session);
+    } finally {
+      setLoadingDetail(false);
+    }
+  }, [address]);
+
+  const handleCloseSession = useCallback(() => {
+    setSelectedSession(null);
+    setSessionDetail(null);
+  }, []);
+
+  const [orchestrateError, setOrchestrateError] = useState<string | null>(null);
+
   /* ── Fetch sessions ── */
   const fetchSessions = useCallback(async () => {
     if (!address) return;
@@ -80,16 +105,22 @@ export default function MultiAgentPage() {
     if (!address || !queryMessage.trim() || !agentIdsInput.trim()) return;
     setOrchestrating(true);
     setOrchestrateResult(null);
+    setOrchestrateError(null);
     try {
+      setApiWalletAddress(address);
       const agentIds = agentIdsInput.split(",").map((s) => parseInt(s.trim(), 10)).filter((n) => !isNaN(n));
+      if (agentIds.length === 0) {
+        setOrchestrateError("Please enter valid agent IDs");
+        return;
+      }
       const result = await apiPost<OrchestrationResult>("/multi-agent/orchestrate", {
         message: queryMessage,
         agentIds,
         walletAddress: address,
-      });
+      }, CHAT_TIMEOUT);
       setOrchestrateResult(result);
     } catch (err) {
-      console.error("Orchestration failed:", err);
+      setOrchestrateError(err instanceof Error ? err.message : "Orchestration failed");
     } finally {
       setOrchestrating(false);
     }
@@ -254,6 +285,13 @@ export default function MultiAgentPage() {
               </button>
             </div>
 
+            {/* Error */}
+            {orchestrateError && (
+              <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
+                ⚠ {orchestrateError}
+              </div>
+            )}
+
             {/* Result */}
             {orchestrateResult && (
               <div className="mt-6 rounded-xl border border-indigo-100 bg-indigo-50/30 p-5">
@@ -265,17 +303,34 @@ export default function MultiAgentPage() {
                     <p className="text-xs text-slate-400 mb-1">{isEn ? "Aggregated Response" : "聚合回复"}</p>
                     <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{orchestrateResult.aggregatedResponse}</p>
                   </div>
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    {orchestrateResult.selectedAgents?.map((ag) => (
-                      <div key={ag.agentId} className="flex items-center gap-2 rounded-lg bg-white border border-gray-100 p-3">
-                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-xs font-bold text-indigo-600">#{ag.agentId}</span>
-                        <div>
-                          <p className="text-xs font-medium text-slate-700">{ag.name}</p>
-                          <p className="text-[10px] text-slate-400">{isEn ? "Score" : "得分"}: {ag.score}</p>
+                  {orchestrateResult.responses?.length > 0 && (
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {orchestrateResult.responses.map((r) => (
+                        <div key={r.agentId} className="flex items-start gap-2 rounded-lg bg-white border border-gray-100 p-3">
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-xs font-bold text-indigo-600">#{r.agentId}</span>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <p className="text-xs font-medium text-slate-700">{isEn ? "Agent" : "Agent"} #{r.agentId}</p>
+                              {r.teeVerified && <span className="text-[10px] rounded bg-emerald-50 border border-emerald-200 text-emerald-600 px-1.5 py-0">TEE ✓</span>}
+                            </div>
+                            <p className="text-[11px] text-slate-500 leading-relaxed line-clamp-3">{r.response}</p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
+                  {orchestrateResult.routingDecisions?.length > 0 && (
+                    <div className="rounded-lg bg-white border border-gray-100 p-3">
+                      <p className="text-xs text-slate-400 mb-1.5">{isEn ? "Routing Log" : "路由日志"}</p>
+                      <ul className="space-y-0.5">
+                        {orchestrateResult.routingDecisions.map((d, i) => (
+                          <li key={i} className="text-[11px] text-slate-500 flex gap-1.5">
+                            <span className="text-indigo-300">▸</span>{d}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -352,7 +407,11 @@ export default function MultiAgentPage() {
             {!loadingSessions && sessions.length > 0 && (
               <div className="mt-4 space-y-3">
                 {sessions.map((session) => (
-                  <div key={session.id} className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50/50 p-4 transition hover:border-indigo-200">
+                  <div
+                    key={session.id}
+                    onClick={() => handleOpenSession(session)}
+                    className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50/50 p-4 transition hover:border-indigo-200 hover:bg-indigo-50/30 cursor-pointer"
+                  >
                     <div>
                       <h3 className="text-sm font-semibold text-slate-800">{session.name}</h3>
                       <div className="mt-1 flex items-center gap-3">
@@ -367,15 +426,149 @@ export default function MultiAgentPage() {
                         </span>
                       </div>
                     </div>
-                    <span className="text-[10px] text-slate-400 font-mono">
-                      {new Date(session.createdAt).toLocaleDateString()}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-slate-400 font-mono">
+                        {new Date(session.createdAt).toLocaleDateString()}
+                      </span>
+                      <svg className="h-4 w-4 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" d="M9 5l7 7-7 7" /></svg>
+                    </div>
                   </div>
                 ))}
               </div>
             )}
           </div>
         </section>
+      )}
+
+      {/* ── Session Detail Modal ── */}
+      {selectedSession && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="w-full max-w-2xl rounded-2xl border border-gray-100 bg-white dark:border-white/10 dark:bg-slate-900 shadow-2xl flex flex-col max-h-[85vh]">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-white/10 shrink-0">
+              <div>
+                <h2 className="text-base font-semibold text-slate-800 dark:text-white">{selectedSession.name}</h2>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  {isEn ? "Agents" : "参与 Agent"}：{selectedSession.agentIds.map(id => `#${id}`).join(", ")}
+                  {" · "}{new Date(selectedSession.createdAt).toLocaleString()}
+                </p>
+              </div>
+              <button
+                onClick={handleCloseSession}
+                className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="overflow-y-auto flex-1 px-6 py-4 space-y-4">
+              {loadingDetail && (
+                <div className="space-y-3">
+                  {[1,2,3].map(n => <div key={n} className="animate-pulse rounded-xl bg-gray-50 dark:bg-white/5 h-16" />)}
+                </div>
+              )}
+
+              {!loadingDetail && sessionDetail && (
+                <>
+                  {/* Tasks */}
+                  {(sessionDetail.tasks as Array<{id: string; description?: string; status?: string; result?: string; delegateAgentId?: number}>).length > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">
+                        📋 {isEn ? "Tasks" : "任务"} ({sessionDetail.tasks.length})
+                      </p>
+                      <div className="space-y-2">
+                        {(sessionDetail.tasks as Array<{id: string; description?: string; status?: string; result?: string; delegateAgentId?: number}>).map((task) => (
+                          <div key={task.id} className="rounded-xl border border-gray-100 dark:border-white/10 bg-gray-50/60 dark:bg-white/[0.03] px-4 py-3">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{task.description ?? task.id}</span>
+                              <span className={`text-[10px] rounded border px-1.5 py-0 ${
+                                task.status === "completed" ? "border-emerald-200 text-emerald-600 bg-emerald-50" :
+                                task.status === "failed" ? "border-red-200 text-red-500 bg-red-50" :
+                                "border-amber-200 text-amber-600 bg-amber-50"
+                              }`}>{task.status ?? "pending"}</span>
+                            </div>
+                            {task.result && <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-3">{task.result}</p>}
+                            {task.delegateAgentId && <p className="text-[10px] text-slate-400 mt-1">→ Agent #{task.delegateAgentId}</p>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Messages */}
+                  {(sessionDetail.messages as Array<{id: string; fromAgentId?: number; toAgentId?: number; type?: string; content?: string; timestamp?: number}>).length > 0 ? (
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">
+                        💬 {isEn ? "Messages" : "消息记录"} ({sessionDetail.messages.length})
+                      </p>
+                      <div className="space-y-2">
+                        {(sessionDetail.messages as Array<{id: string; fromAgentId?: number; toAgentId?: number; type?: string; content?: string; timestamp?: number}>).map((msg) => {
+                          const isUser = msg.fromAgentId === 0 && msg.type === "request";
+                          const isAgentResp = msg.toAgentId === 0 && msg.type === "response";
+                          return (
+                          <div key={msg.id} className={`rounded-xl border px-4 py-3 ${
+                            isUser
+                              ? "border-blue-100 dark:border-blue-500/20 bg-blue-50/40 dark:bg-blue-500/5"
+                              : isAgentResp
+                              ? "border-emerald-100 dark:border-emerald-500/20 bg-emerald-50/40 dark:bg-emerald-500/5"
+                              : "border-indigo-100 dark:border-indigo-500/20 bg-indigo-50/40 dark:bg-indigo-500/5"
+                          }`}>
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className={`text-[10px] font-semibold ${
+                                isUser ? "text-blue-600 dark:text-blue-400"
+                                : isAgentResp ? "text-emerald-600 dark:text-emerald-400"
+                                : "text-indigo-600 dark:text-indigo-400"
+                              }`}>
+                                {isUser
+                                  ? (isEn ? "👤 User" : "👤 用户")
+                                  : isAgentResp
+                                  ? `🤖 Agent #${msg.fromAgentId}`
+                                  : `Agent #${msg.fromAgentId} → #${msg.toAgentId}`}
+                              </span>
+                              <span className={`text-[10px] rounded border px-1.5 py-0 ${
+                                isUser ? "border-blue-100 dark:border-blue-500/20 bg-white dark:bg-blue-500/10 text-blue-400"
+                                : isAgentResp ? "border-emerald-100 dark:border-emerald-500/20 bg-white dark:bg-emerald-500/10 text-emerald-400"
+                                : "border-indigo-100 dark:border-indigo-500/20 bg-white dark:bg-indigo-500/10 text-indigo-400"
+                              }`}>{msg.type}</span>
+                              {msg.timestamp && (
+                                <span className="text-[10px] text-slate-400 ml-auto">{new Date(msg.timestamp).toLocaleTimeString()}</span>
+                              )}
+                            </div>
+                            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                          </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2 py-10 text-center">
+                      <span className="text-3xl">💬</span>
+                      <p className="text-sm text-gray-400 dark:text-slate-500">
+                        {isEn ? "No messages in this session yet" : "此会话暂无消息记录"}
+                      </p>
+                      <p className="text-xs text-gray-300 dark:text-slate-600">
+                        {isEn ? "Run an orchestration with this session to see messages" : "使用此会话运行编排任务后可查看消息"}
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-3 border-t border-gray-100 dark:border-white/10 shrink-0 flex justify-between items-center">
+              <span className="text-xs text-gray-400 dark:text-slate-500">
+                {sessionDetail
+                  ? `${(sessionDetail.tasks as unknown[]).length} ${isEn ? "tasks" : "个任务"} · ${(sessionDetail.messages as unknown[]).length} ${isEn ? "messages" : "条消息"}`
+                  : ""}
+              </span>
+              <button onClick={handleCloseSession} className="rounded-xl border border-gray-200 dark:border-white/10 px-4 py-1.5 text-sm text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-white/5 transition">
+                {isEn ? "Close" : "关闭"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </main>
   );

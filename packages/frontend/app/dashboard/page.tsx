@@ -408,7 +408,7 @@ function StorageDetailsModal({ agents, address, isEn, onClose }: {
                       <span className="text-xs font-semibold text-indigo-500 dark:text-indigo-400 uppercase tracking-wide">
                         {TYPE_ICONS[m.type ?? ""] ?? "📄"} {m.type}
                       </span>
-                      <span className="text-[10px] text-gray-400 shrink-0">{new Date(m.timestamp * 1000).toLocaleDateString()}</span>
+                      <span className="text-[10px] text-gray-400 shrink-0">{new Date(m.timestamp).toLocaleDateString()}</span>
                     </div>
                     <p className="text-xs text-gray-700 dark:text-slate-300 line-clamp-2">{m.content}</p>
                   </div>

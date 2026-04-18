@@ -82,6 +82,7 @@ export function Navbar() {
 
   const links = [
     { href: "/", label: t("nav_home") },
+    { href: "/chatbot", label: lang === "zh" ? "Bot 接入" : "Chatbot" },
     { href: "/dashboard", label: t("nav_dashboard") },
     { href: "/openclaw", label: "OpenClaw" },
     { href: "/explore", label: t("nav_explore") },

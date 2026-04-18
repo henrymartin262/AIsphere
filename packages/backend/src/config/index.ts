@@ -23,6 +23,7 @@ const envSchema = z.object({
   GLM_MODEL: z.string().default("GLM-4.7"),
   BOUNTY_BOARD_ADDRESS: z.string().optional(),
   ENCRYPTION_SECRET: z.string().optional(),
+  CLAWHUB_TOKEN: z.string().optional(),
 });
 
 export const env = envSchema.parse(process.env);
