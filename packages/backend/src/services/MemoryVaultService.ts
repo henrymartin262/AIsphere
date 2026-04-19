@@ -129,6 +129,65 @@ async function syncDirtyAgentsToKV(): Promise<void> {
   }
 }
 
+/** Manually push a single agent's local memories to 0G KV (on-demand upload) */
+export async function pushAgentToKV(agentId: number): Promise<{ synced: number }> {
+  const clients = await initialize0GClients();
+  if (!clients.kvReady) throw new Error("0G KV not ready");
+
+  const list = getStore(agentId);
+  const streamId = getStreamId(agentId);
+
+  for (const encrypted of list) {
+    const kvKey = toKvKey(`memory:${encrypted.id}`);
+    const kvData = new TextEncoder().encode(JSON.stringify(encrypted));
+    await kvBatchWrite(clients, streamId, kvKey, kvData);
+  }
+  await persistIndex(clients, agentId);
+  dirtyAgents.delete(agentId);
+  console.log(`[MemoryVault] Manual push: agent ${agentId} (${list.length} memories) → 0G KV`);
+  return { synced: list.length };
+}
+
+/** Manually pull memories from 0G KV into local cache (on-demand download) */
+export async function pullAgentFromKV(agentId: number): Promise<{ loaded: number }> {
+  const clients = await initialize0GClients();
+  if (!clients.kvReady) throw new Error("0G KV not ready");
+
+  // Force re-hydration by clearing the hydrated flag
+  hydratedAgents.delete(agentId);
+
+  const streamId = getStreamId(agentId);
+  const indexRaw = await clients.kvClient!.getValue(streamId, toKvKey("index:memories"));
+  const indexBytes = indexRaw as unknown as Uint8Array | null | undefined;
+  if (!indexBytes || indexBytes.length === 0) return { loaded: 0 };
+
+  const indexStr = new TextDecoder().decode(indexBytes);
+  const index = JSON.parse(indexStr) as Array<{ id: string }>;
+
+  const localIds = new Set(getStore(agentId).map((m) => m.id));
+  let loaded = 0;
+
+  for (const entry of index) {
+    if (localIds.has(entry.id)) continue;
+    try {
+      const memRaw = await clients.kvClient!.getValue(streamId, toKvKey(`memory:${entry.id}`));
+      const memBytes = memRaw as unknown as Uint8Array | null | undefined;
+      if (memBytes && memBytes.length > 0) {
+        const encrypted = JSON.parse(new TextDecoder().decode(memBytes)) as EncryptedMemory;
+        getStore(agentId).push(encrypted);
+        loaded++;
+      }
+    } catch { /* skip individual failures */ }
+  }
+
+  if (loaded > 0) {
+    persistStoreToFile();
+    hydratedAgents.add(agentId);
+    console.log(`[MemoryVault] Manual pull: loaded ${loaded} memories from 0G KV for agent ${agentId}`);
+  }
+  return { loaded };
+}
+
 /** Start the periodic 0G KV sync timer */
 export function startKVSyncScheduler(): void {
   setInterval(() => {

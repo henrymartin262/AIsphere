@@ -15,6 +15,7 @@ interface OpenClawSkill {
 
 interface OpenClawAgent {
   agentId: string;
+  name: string;
   sealMindTokenId: number;
   workspace: string;
   skills: OpenClawSkill[];
@@ -497,9 +498,9 @@ export default function OpenClawPage() {
                           </svg>
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-slate-800 truncate dark:text-white">{agent.workspace}</p>
+                          <p className="text-sm font-semibold text-slate-800 truncate dark:text-white">{agent.name || agent.agentId}</p>
                           <div className="flex items-center gap-2 mt-0.5">
-                            <p className="text-[10px] text-slate-400 font-mono">INFT #{agent.sealMindTokenId}</p>
+                            <p className="text-[10px] text-slate-400 font-mono">INFT #{agent.sealMindTokenId} · {agent.agentId}</p>
                             <span className="inline-flex items-center gap-1 rounded-full border border-amber-200/60 bg-amber-50 px-1.5 py-0.5 text-[9px] font-medium text-amber-600 dark:border-amber-400/20 dark:bg-amber-500/10 dark:text-amber-400">
                               {isEn ? "Non-transferable" : "不可转让"}
                             </span>

@@ -9,6 +9,7 @@ import * as MultiAgentService from "./MultiAgentService.js";
 /** OpenClaw Agent definition */
 export interface OpenClawAgent {
   agentId: string;
+  name: string;
   sealMindTokenId: number;
   workspace: string;
   skills: OpenClawSkill[];
@@ -152,7 +153,7 @@ export async function registerAgent(
   skills: string[] = [],
   bindings: OpenClawBinding[] = []
 ): Promise<OpenClawAgent> {
-  const agentId = `sealmind-agent-${sealMindTokenId}`;
+  const agentId = `aisphere-agent-${sealMindTokenId}`;
 
   // Map requested skill IDs to registered skills
   const agentSkills: OpenClawSkill[] = skills
@@ -166,6 +167,7 @@ export async function registerAgent(
 
   const agent: OpenClawAgent = {
     agentId,
+    name: agentName,
     sealMindTokenId,
     workspace: `~/.openclaw/agents/${agentId}/`,
     skills: agentSkills,
@@ -238,7 +240,7 @@ export async function executeSkill(
   // Resolve AIsphere token ID
   const tokenId = typeof agentIdOrTokenId === "number"
     ? agentIdOrTokenId
-    : parseInt(agentIdOrTokenId.replace("sealmind-agent-", ""), 10);
+    : parseInt(agentIdOrTokenId.replace("aisphere-agent-", ""), 10);
 
   let output: string;
   let proofHash: string;
@@ -299,7 +301,7 @@ export async function executeSkill(
 
   return {
     skillId,
-    agentId: typeof agentIdOrTokenId === "string" ? agentIdOrTokenId : `sealmind-agent-${agentIdOrTokenId}`,
+    agentId: typeof agentIdOrTokenId === "string" ? agentIdOrTokenId : `aisphere-agent-${agentIdOrTokenId}`,
     output,
     proofHash,
     teeVerified,
@@ -388,7 +390,7 @@ async function executePipeline(
   walletAddress: string
 ): Promise<string> {
   // For now, execute the default pipeline: context → inference → memory save
-  const tokenId = parseInt(agentId.replace("sealmind-agent-", ""), 10) || 1;
+  const tokenId = parseInt(agentId.replace("aisphere-agent-", ""), 10) || 1;
 
   // Step 1: Build context
   const context = await MemoryVaultService.buildContext(tokenId, walletAddress);
@@ -433,7 +435,7 @@ export async function generateConfig(): Promise<OpenClawConfig> {
     bindings: allBindings,
     routing: {
       strategy: "capability",
-      fallbackAgentId: agents[0]?.agentId ?? "sealmind-agent-1"
+      fallbackAgentId: agents[0]?.agentId ?? "aisphere-agent-1"
     }
   };
 }

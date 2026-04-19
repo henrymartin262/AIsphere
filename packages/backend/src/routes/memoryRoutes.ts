@@ -78,6 +78,32 @@ router.post("/:agentId", async (req, res) => {
   }
 });
 
+// POST /api/memory/:agentId/sync/push — Upload local memories to 0G KV
+router.post("/:agentId/sync/push", async (req, res) => {
+  try {
+    const agentId = parseInt(req.params.agentId, 10);
+    if (isNaN(agentId)) { res.status(400).json({ error: "agentId must be a number" }); return; }
+    const result = await MemoryVaultService.pushAgentToKV(agentId);
+    res.status(200).json({ success: true, data: result });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Push failed";
+    res.status(500).json({ error: message });
+  }
+});
+
+// POST /api/memory/:agentId/sync/pull — Download memories from 0G KV to local
+router.post("/:agentId/sync/pull", async (req, res) => {
+  try {
+    const agentId = parseInt(req.params.agentId, 10);
+    if (isNaN(agentId)) { res.status(400).json({ error: "agentId must be a number" }); return; }
+    const result = await MemoryVaultService.pullAgentFromKV(agentId);
+    res.status(200).json({ success: true, data: result });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Pull failed";
+    res.status(500).json({ error: message });
+  }
+});
+
 // DELETE /api/memory/:agentId/:memoryId
 router.delete("/:agentId/:memoryId", async (req, res) => {
   try {

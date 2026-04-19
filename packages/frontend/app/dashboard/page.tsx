@@ -333,9 +333,46 @@ function StorageDetailsModal({ agents, address, isEn, onClose }: {
   // Conversation sessions from localStorage
   const sessions = useLocalChatSessions(selectedAgentStr);
 
+  // Sync state: "idle" | "pushing" | "pulling" | "done" | "error"
+  type SyncState = "idle" | "pushing" | "pulling" | "done" | "error";
+  const [syncState, setSyncState] = useState<SyncState>("idle");
+  const [syncMsg, setSyncMsg] = useState<string>("");
+
+  const handlePush = async () => {
+    if (!selectedAgent) return;
+    setSyncState("pushing");
+    setSyncMsg("");
+    try {
+      setApiWalletAddress(address);
+      const res = await apiPost<{ synced: number }>(`/memory/${selectedAgent}/sync/push`, {});
+      setSyncMsg(isEn ? `✓ Uploaded ${res.synced} memories to 0G Cloud` : `✓ 已上传 ${res.synced} 条记忆到 0G 云盘`);
+      setSyncState("done");
+    } catch (err) {
+      setSyncMsg(isEn ? `Upload failed: ${err instanceof Error ? err.message : "unknown error"}` : `上传失败：${err instanceof Error ? err.message : "未知错误"}`);
+      setSyncState("error");
+    }
+  };
+
+  const handlePull = async () => {
+    if (!selectedAgent) return;
+    setSyncState("pulling");
+    setSyncMsg("");
+    try {
+      setApiWalletAddress(address);
+      const res = await apiPost<{ loaded: number }>(`/memory/${selectedAgent}/sync/pull`, {});
+      setSyncMsg(isEn ? `✓ Downloaded ${res.loaded} new memories from 0G Cloud` : `✓ 已从 0G 云盘下载 ${res.loaded} 条新记忆`);
+      setSyncState("done");
+    } catch (err) {
+      setSyncMsg(isEn ? `Download failed: ${err instanceof Error ? err.message : "unknown error"}` : `下载失败：${err instanceof Error ? err.message : "未知错误"}`);
+      setSyncState("error");
+    }
+  };
+
   const TYPE_ICONS: Record<string, string> = {
     knowledge: "📚", personality: "🧠", skill: "⚡", decision: "⛓",
   };
+
+  const isSyncing = syncState === "pushing" || syncState === "pulling";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -358,13 +395,55 @@ function StorageDetailsModal({ agents, address, isEn, onClose }: {
           <div className="flex gap-1 px-6 pt-4 shrink-0 flex-wrap">
             {agents.map((a) => (
               <button key={a.agentId}
-                onClick={() => setSelectedAgent(a.agentId)}
+                onClick={() => { setSelectedAgent(a.agentId); setSyncState("idle"); setSyncMsg(""); }}
                 className={`rounded-lg px-3 py-1.5 text-xs font-medium transition border ${selectedAgent === a.agentId ? "border-cyan-300 bg-cyan-50 text-cyan-700 dark:border-cyan-500/40 dark:bg-cyan-500/10 dark:text-cyan-300" : "border-gray-200 bg-white text-gray-500 hover:border-gray-300 dark:border-white/10 dark:bg-white/5 dark:text-slate-400"}`}>
                 {a.profile?.name ?? `Agent ${a.agentId}`}
               </button>
             ))}
           </div>
         )}
+
+        {/* Sync action bar */}
+        <div className="px-6 pt-4 shrink-0">
+          <div className="flex items-center gap-2 rounded-xl border border-cyan-200/60 bg-cyan-50/40 dark:border-cyan-500/20 dark:bg-cyan-500/5 px-4 py-3">
+            <span className="text-sm shrink-0">☁️</span>
+            <span className="text-xs text-cyan-700 dark:text-cyan-300 font-medium flex-1">
+              {isEn ? "Sync with 0G Storage" : "与 0G 云盘同步"}
+            </span>
+            {/* Upload button */}
+            <button
+              onClick={handlePush}
+              disabled={isSyncing}
+              className="flex items-center gap-1.5 rounded-lg bg-cyan-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {syncState === "pushing" ? (
+                <svg className="h-3 w-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+              ) : (
+                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+              )}
+              {isEn ? "Upload" : "上传"}
+            </button>
+            {/* Download button */}
+            <button
+              onClick={handlePull}
+              disabled={isSyncing}
+              className="flex items-center gap-1.5 rounded-lg border border-cyan-300 bg-white px-3 py-1.5 text-xs font-semibold text-cyan-700 hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors dark:border-cyan-500/40 dark:bg-transparent dark:text-cyan-300 dark:hover:bg-cyan-500/10"
+            >
+              {syncState === "pulling" ? (
+                <svg className="h-3 w-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+              ) : (
+                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l4 4m0 0l4-4m-4 4V4"/></svg>
+              )}
+              {isEn ? "Download" : "下载"}
+            </button>
+          </div>
+          {/* Sync result message */}
+          {syncMsg && (
+            <p className={`mt-2 text-xs px-1 ${syncState === "error" ? "text-red-500" : "text-cyan-600 dark:text-cyan-400"}`}>
+              {syncMsg}
+            </p>
+          )}
+        </div>
 
         {/* Content */}
         <div className="overflow-y-auto flex-1 px-6 py-4 space-y-4">
