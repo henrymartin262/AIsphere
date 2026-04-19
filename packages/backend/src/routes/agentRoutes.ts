@@ -1,6 +1,7 @@
 import { Router, type Router as ExpressRouter } from "express";
 import * as AgentService from "../services/AgentService.js";
 import { listAvailableModels } from "../services/SealedInferenceService.js";
+import { saveMemory } from "../services/MemoryVaultService.js";
 
 const router: ExpressRouter = Router();
 
@@ -28,6 +29,26 @@ router.post("/", async (req, res) => {
     // merge description/personality into metadata
     const mergedMeta = { ...metadata, description, personality };
     const result = await AgentService.createAgent({ name, model, metadata: mergedMeta, walletAddress: wallet });
+
+    // Save personality and description as memories so they appear in the Memory page
+    const { agentId } = result;
+    if (personality?.trim()) {
+      await saveMemory(agentId, {
+        type: "personality",
+        content: personality.trim(),
+        importance: 9,
+        tags: ["init", "personality"],
+      }, wallet);
+    }
+    if (description?.trim()) {
+      await saveMemory(agentId, {
+        type: "knowledge",
+        content: description.trim(),
+        importance: 7,
+        tags: ["init", "description"],
+      }, wallet);
+    }
+
     res.status(201).json({ success: true, data: result });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to create agent";
