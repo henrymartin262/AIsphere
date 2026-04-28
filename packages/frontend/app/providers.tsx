@@ -9,14 +9,22 @@ import { createWagmiConfig } from "../lib/wagmiConfig";
 import { LangProvider } from "../contexts/LangContext";
 import { ThemeProvider } from "../contexts/ThemeContext";
 import { ComputeProvider } from "../contexts/ComputeContext";
-import { setApiWalletAddress } from "../lib/api";
+import { setApiWalletAddress, setApiJwt } from "../lib/api";
+import { useAuth } from "../hooks/useAuth";
 
-/** 将当前钱包地址同步到 API 层，所有请求自动附带 x-wallet-address */
+/** 钱包连接后自动完成 SIWE 签名登录，获取 JWT */
 function WalletSync({ children }: PropsWithChildren) {
   const { address } = useAccount();
+  const { status } = useAuth(); // triggers auto sign-in on connect
+
   useEffect(() => {
-    setApiWalletAddress(address ?? null);
-  }, [address]);
+    if (!address) {
+      setApiWalletAddress(null);
+      setApiJwt(null);
+    }
+    // JWT + wallet address are set inside useAuth on success
+  }, [address, status]);
+
   return <>{children}</>;
 }
 

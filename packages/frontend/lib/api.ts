@@ -8,8 +8,9 @@ export const MEMORY_TIMEOUT = 30_000; // 30 秒
 /** Chat 推理专用超时 — TEE inference 可能需要 60s+ */
 export const CHAT_TIMEOUT = 90_000; // 90 秒
 
-/** ── 全局钱包地址（自动附带到需要认证的请求） ── */
+/** ── 全局认证状态 ── */
 let _walletAddress: string | null = null;
+let _jwt: string | null = null;
 
 export function setApiWalletAddress(address: string | null | undefined) {
   _walletAddress = address?.toLowerCase() ?? null;
@@ -19,9 +20,24 @@ export function getApiWalletAddress(): string | null {
   return _walletAddress;
 }
 
+/** Set the JWT returned from /api/auth/verify */
+export function setApiJwt(token: string | null) {
+  _jwt = token;
+}
+
+export function getApiJwt(): string | null {
+  return _jwt;
+}
+
 function buildAuthHeaders(): Record<string, string> {
   const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (_jwt) {
+    // Prefer JWT Bearer token — provides real signature-based auth
+    headers["Authorization"] = `Bearer ${_jwt}`;
+  }
   if (_walletAddress) {
+    // Always include x-wallet-address for backwards compat with routes
+    // that still read it directly (chatbot webhook, explore, etc.)
     headers["x-wallet-address"] = _walletAddress;
   }
   return headers;
