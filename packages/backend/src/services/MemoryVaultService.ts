@@ -1,9 +1,13 @@
 import { randomUUID } from "crypto";
-import { writeFileSync, readFileSync, mkdirSync, existsSync } from "fs";
-import { join } from "path";
 import { keccak256, toUtf8Bytes } from "ethers";
 import { deriveAgentKey, encryptMemory, decryptMemory } from "../utils/encryption.js";
 import { initialize0GClients, kvBatchWrite } from "../config/og.js";
+import {
+  insertMemory as dbInsertMemory,
+  getMemoriesForAgent as dbGetMemoriesForAgent,
+  deleteMemoryById as dbDeleteMemoryById,
+  replaceAllMemoriesForAgent as dbReplaceAllMemories,
+} from "../db/memories.js";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -37,46 +41,12 @@ interface EncryptedMemory {
   tags: string[];
 }
 
-// ─── File persistence helpers ─────────────────────────────────────────────────
+// ─── In-memory write-through cache + 0G KV sync ──────────────────────────────
+// Write path:  encrypt → SQLite (durable) → in-memory cache → mark dirty
+// Sync path:   every SYNC_INTERVAL_MS, flush dirty agents to 0G KV
+// Read path:   SQLite on first access; 0G KV supplements with cloud-only items
 
-const DATA_DIR = join(process.cwd(), "data");
-const MEMORIES_FILE = join(DATA_DIR, "memories.json");
-
-function loadStoreFromFile(): Map<number, EncryptedMemory[]> {
-  try {
-    if (!existsSync(MEMORIES_FILE)) return new Map();
-    const raw = readFileSync(MEMORIES_FILE, "utf-8");
-    const obj = JSON.parse(raw) as Record<string, EncryptedMemory[]>;
-    const map = new Map<number, EncryptedMemory[]>();
-    for (const [k, v] of Object.entries(obj)) {
-      if (Array.isArray(v)) map.set(parseInt(k, 10), v);
-    }
-    console.log(`[MemoryVault] Loaded ${map.size} agents from file cache`);
-    return map;
-  } catch {
-    return new Map();
-  }
-}
-
-function persistStoreToFile(): void {
-  try {
-    mkdirSync(DATA_DIR, { recursive: true });
-    const obj: Record<string, EncryptedMemory[]> = {};
-    for (const [k, v] of store.entries()) {
-      obj[String(k)] = v;
-    }
-    writeFileSync(MEMORIES_FILE, JSON.stringify(obj), "utf-8");
-  } catch (err) {
-    console.warn("[MemoryVault] File persist failed (non-fatal):", (err as Error).message);
-  }
-}
-
-// ─── Dual-layer store: in-memory cache + file persistence + periodic 0G KV sync ─
-// Write path:  encrypt → memory → file (sync) → mark dirty
-// Sync path:   every SYNC_INTERVAL_MS, flush all dirty agents to 0G KV
-// Read path:   file on startup; 0G KV hydration on first access (supplement only)
-
-const store: Map<number, EncryptedMemory[]> = loadStoreFromFile();
+const store: Map<number, EncryptedMemory[]> = new Map();
 
 // Track which agents have been hydrated from 0G KV
 const hydratedAgents: Set<number> = new Set();
@@ -181,7 +151,13 @@ export async function pullAgentFromKV(agentId: number): Promise<{ loaded: number
   }
 
   if (loaded > 0) {
-    persistStoreToFile();
+    // Persist newly pulled memories to SQLite
+    const newRows = getStore(agentId).filter((m) => !localIds.has(m.id));
+    for (const m of newRows) {
+      try {
+        dbInsertMemory({ id: m.id, agentId, ownerWallet: "", type: m.type, encryptedData: m.encryptedData, iv: m.iv, importance: m.importance, timestamp: m.timestamp, tags: m.tags });
+      } catch { /* duplicate, skip */ }
+    }
     hydratedAgents.add(agentId);
     console.log(`[MemoryVault] Manual pull: loaded ${loaded} memories from 0G KV for agent ${agentId}`);
   }
@@ -311,7 +287,20 @@ async function hydrateFromKV(agentId: number): Promise<void> {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function getStore(agentId: number): EncryptedMemory[] {
-  if (!store.has(agentId)) store.set(agentId, []);
+  if (!store.has(agentId)) {
+    // Lazy-load from SQLite on first access
+    const rows = dbGetMemoriesForAgent(agentId);
+    store.set(agentId, rows.map((r) => ({
+      id: r.id,
+      agentId: r.agentId,
+      type: r.type,
+      encryptedData: r.encryptedData,
+      iv: r.iv,
+      importance: r.importance,
+      timestamp: r.timestamp,
+      tags: r.tags,
+    })));
+  }
   return store.get(agentId)!;
 }
 
@@ -338,11 +327,21 @@ export async function saveMemory(
     tags: memory.tags ?? []
   };
 
-  // 1. Push to in-memory cache (immediate)
-  getStore(agentId).push(encrypted);
+  // 1. Write to SQLite (durable, per-user isolated)
+  dbInsertMemory({
+    id,
+    agentId,
+    ownerWallet: walletAddress,
+    type: memory.type,
+    encryptedData: encrypted.encryptedData,
+    iv: encrypted.iv,
+    importance: memory.importance,
+    timestamp,
+    tags: memory.tags ?? [],
+  });
 
-  // 2. Persist to local file (sync, survives restarts)
-  persistStoreToFile();
+  // 2. Update in-memory cache
+  getStore(agentId).push(encrypted);
 
   // 3. Mark agent dirty for next 0G KV sync cycle
   dirtyAgents.add(agentId);
@@ -467,11 +466,13 @@ export async function deleteMemory(
   // Verify wallet has access by ensuring the key can be derived
   deriveAgentKey(walletAddress, agentId);
 
+  // Delete from SQLite
+  dbDeleteMemoryById(memoryId, agentId);
+
+  // Update in-memory cache
   const list = getStore(agentId);
   const idx = list.findIndex((m) => m.id === memoryId);
-  if (idx === -1) return false;
-  list.splice(idx, 1);
-  persistStoreToFile();
+  if (idx !== -1) list.splice(idx, 1);
 
   // Mark dirty for next 0G KV sync cycle
   dirtyAgents.add(agentId);

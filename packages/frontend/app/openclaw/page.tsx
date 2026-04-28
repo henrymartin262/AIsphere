@@ -401,9 +401,9 @@ export default function OpenClawPage() {
                             </div>
                             <button
                               onClick={() => setStorageSync((v) => !v)}
-                              className={`relative h-6 w-11 rounded-full transition-colors ${storageSync ? "bg-cyan-500" : "bg-gray-200 dark:bg-white/20"}`}
+                              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${storageSync ? "bg-cyan-500" : "bg-gray-200 dark:bg-white/20"}`}
                             >
-                              <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${storageSync ? "translate-x-5" : "translate-x-0.5"}`} />
+                              <span className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${storageSync ? "translate-x-6" : "translate-x-1"}`} />
                             </button>
                           </div>
                           <button

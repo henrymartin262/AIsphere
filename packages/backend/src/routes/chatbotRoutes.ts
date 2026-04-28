@@ -1,56 +1,18 @@
 import { Router } from "express";
 import { randomUUID } from "crypto";
-import { writeFileSync, readFileSync, existsSync, mkdirSync } from "fs";
-import { join } from "path";
 import * as SealedInferenceService from "../services/SealedInferenceService.js";
 import * as MemoryVaultService from "../services/MemoryVaultService.js";
 import * as AgentService from "../services/AgentService.js";
+import {
+  insertChatbot,
+  getChatbotsByWallet,
+  getChatbotByToken,
+  updateChatbot,
+  deleteChatbot,
+  incrementMessageCount,
+} from "../db/chatbots.js";
 
 const router: Router = Router();
-
-// ─── Persistence ──────────────────────────────────────────────────────────────
-
-const DATA_DIR = join(process.cwd(), "data");
-const CHATBOTS_FILE = join(DATA_DIR, "chatbots.json");
-
-interface ChatbotConfig {
-  id: string;
-  agentId: number;
-  platform: "telegram" | "feishu" | "wechat" | "wecom" | "slack" | "discord" | "whatsapp" | "line" | "matrix" | "teams";
-  name: string;
-  webhookToken: string;
-  botToken?: string;
-  appId?: string;
-  appSecret?: string;
-  webhookUrl: string;
-  enabled: boolean;
-  walletAddress: string;
-  createdAt: number;
-  updatedAt: number;
-  messageCount: number;
-}
-
-function loadChatbots(): Map<string, ChatbotConfig> {
-  try {
-    if (!existsSync(CHATBOTS_FILE)) return new Map();
-    const raw = readFileSync(CHATBOTS_FILE, "utf-8");
-    const obj = JSON.parse(raw) as Record<string, ChatbotConfig>;
-    return new Map(Object.entries(obj));
-  } catch { return new Map(); }
-}
-
-function saveChatbots(chatbots: Map<string, ChatbotConfig>): void {
-  try {
-    mkdirSync(DATA_DIR, { recursive: true });
-    const obj: Record<string, ChatbotConfig> = {};
-    for (const [k, v] of chatbots.entries()) obj[k] = v;
-    writeFileSync(CHATBOTS_FILE, JSON.stringify(obj, null, 2), "utf-8");
-  } catch (err) {
-    console.warn("[Chatbot] Save failed:", (err as Error).message);
-  }
-}
-
-const chatbots: Map<string, ChatbotConfig> = loadChatbots();
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -69,9 +31,8 @@ router.get("/", (req, res) => {
     res.status(400).json({ success: false, error: "walletAddress query param required" });
     return;
   }
-  const configs = Array.from(chatbots.values())
-    .filter((c) => c.walletAddress.toLowerCase() === walletAddress.toLowerCase())
-    .map((c) => ({ ...c, botToken: c.botToken ? "***" : undefined })); // mask secret
+  const configs = getChatbotsByWallet(walletAddress)
+    .map((c) => ({ ...c, botToken: c.botToken ? "***" : undefined }));
   res.json({ success: true, data: configs });
 });
 
@@ -79,7 +40,7 @@ router.get("/", (req, res) => {
 router.post("/", (req, res) => {
   const { agentId, platform, name, botToken, appId, appSecret, walletAddress } = req.body as {
     agentId?: number;
-    platform?: ChatbotConfig["platform"];
+    platform?: "telegram" | "feishu" | "wechat" | "wecom" | "slack" | "discord" | "whatsapp" | "line" | "matrix" | "teams";
     name?: string;
     botToken?: string;
     appId?: string;
@@ -97,85 +58,36 @@ router.post("/", (req, res) => {
   const baseUrl = getBaseUrl(req as Parameters<typeof getBaseUrl>[0]);
   const webhookUrl = `${baseUrl}/api/chatbot/webhook/${platform}/${webhookToken}`;
 
-  const config: ChatbotConfig = {
-    id,
-    agentId,
-    platform,
-    name,
-    webhookToken,
-    botToken,
-    appId,
-    appSecret,
-    webhookUrl,
-    enabled: true,
-    walletAddress,
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-    messageCount: 0,
-  };
-
-  chatbots.set(id, config);
-  saveChatbots(chatbots);
-
-  res.status(201).json({
-    success: true,
-    data: { ...config, botToken: config.botToken ? "***" : undefined },
+  insertChatbot({
+    id, agentId, platform, name, webhookToken, botToken, appId, appSecret,
+    webhookUrl, enabled: true, walletAddress,
+    createdAt: Date.now(), updatedAt: Date.now(), messageCount: 0,
   });
+
+  const config = { id, agentId, platform, name, webhookToken, botToken: botToken ? "***" : undefined, appId, appSecret, webhookUrl, enabled: true, walletAddress, createdAt: Date.now(), updatedAt: Date.now(), messageCount: 0 };
+  res.status(201).json({ success: true, data: config });
 });
 
-// PUT /api/chatbot/:id — update config (enable/disable, update token)
+// PUT /api/chatbot/:id — update config
 router.put("/:id", (req, res) => {
   const { id } = req.params;
   const { walletAddress, botToken, appId, enabled, name } = req.body as {
-    walletAddress?: string;
-    botToken?: string;
-    appId?: string;
-    enabled?: boolean;
-    name?: string;
+    walletAddress?: string; botToken?: string; appId?: string; enabled?: boolean; name?: string;
   };
-
-  const config = chatbots.get(id);
-  if (!config) {
-    res.status(404).json({ success: false, error: "Chatbot config not found" });
-    return;
-  }
-  if (walletAddress && config.walletAddress.toLowerCase() !== walletAddress.toLowerCase()) {
-    res.status(403).json({ success: false, error: "Not authorized" });
-    return;
-  }
-
-  const updated: ChatbotConfig = {
-    ...config,
-    ...(botToken !== undefined && { botToken }),
-    ...(appId !== undefined && { appId }),
-    ...(enabled !== undefined && { enabled }),
-    ...(name !== undefined && { name }),
-    updatedAt: Date.now(),
-  };
-
-  chatbots.set(id, updated);
-  saveChatbots(chatbots);
-
-  res.json({ success: true, data: { ...updated, botToken: updated.botToken ? "***" : undefined } });
+  if (!walletAddress) { res.status(400).json({ success: false, error: "walletAddress required" }); return; }
+  const ok = updateChatbot(id, walletAddress, { name, botToken, appId, enabled });
+  if (!ok) { res.status(404).json({ success: false, error: "Not found or not authorized" }); return; }
+  const updated = getChatbotsByWallet(walletAddress).find((c) => c.id === id);
+  res.json({ success: true, data: updated ? { ...updated, botToken: updated.botToken ? "***" : undefined } : null });
 });
 
 // DELETE /api/chatbot/:id
 router.delete("/:id", (req, res) => {
   const { id } = req.params;
   const { walletAddress } = req.body as { walletAddress?: string };
-
-  const config = chatbots.get(id);
-  if (!config) {
-    res.status(404).json({ success: false, error: "Not found" });
-    return;
-  }
-  if (walletAddress && config.walletAddress.toLowerCase() !== walletAddress.toLowerCase()) {
-    res.status(403).json({ success: false, error: "Not authorized" });
-    return;
-  }
-
-  chatbots.delete(id);
-  saveChatbots(chatbots);
+  if (!walletAddress) { res.status(400).json({ success: false, error: "walletAddress required" }); return; }
+  const ok = deleteChatbot(id, walletAddress);
+  if (!ok) { res.status(404).json({ success: false, error: "Not found or not authorized" }); return; }
   res.json({ success: true });
 });
 
@@ -187,7 +99,7 @@ router.post("/webhook/telegram/:token", async (req, res) => {
   res.json({ ok: true });
 
   const { token } = req.params;
-  const config = Array.from(chatbots.values()).find((c) => c.webhookToken === token && c.platform === "telegram");
+  const config = getChatbotByToken(token, "telegram");
   if (!config || !config.enabled) return;
 
   try {
@@ -214,11 +126,7 @@ router.post("/webhook/telegram/:token", async (req, res) => {
     }
 
     // Record message count
-    config.messageCount++;
-    config.updatedAt = Date.now();
-    saveChatbots(chatbots);
-
-    // Save conversation to memory
+    incrementMessageCount(token);
     await MemoryVaultService.saveMemory(config.agentId, {
       type: "conversation",
       content: `[Telegram] User: ${text}\nAgent: ${response}`,
@@ -237,7 +145,7 @@ router.post("/webhook/telegram/:token", async (req, res) => {
 // POST /api/chatbot/webhook/feishu/:token — receives messages from Feishu
 router.post("/webhook/feishu/:token", async (req, res) => {
   const { token } = req.params;
-  const config = Array.from(chatbots.values()).find((c) => c.webhookToken === token && c.platform === "feishu");
+  const config = getChatbotByToken(token, "feishu");
 
   // Feishu URL verification challenge
   const body = req.body as {
@@ -302,9 +210,7 @@ router.post("/webhook/feishu/:token", async (req, res) => {
       }
     }
 
-    config.messageCount++;
-    config.updatedAt = Date.now();
-    saveChatbots(chatbots);
+    incrementMessageCount(token);
 
     await MemoryVaultService.saveMemory(config.agentId, {
       type: "conversation",

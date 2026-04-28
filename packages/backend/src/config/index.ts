@@ -24,6 +24,7 @@ const envSchema = z.object({
   BOUNTY_BOARD_ADDRESS: z.string().optional(),
   ENCRYPTION_SECRET: z.string().optional(),
   CLAWHUB_TOKEN: z.string().optional(),
+  JWT_SECRET: z.string().optional(),
 });
 
 export const env = envSchema.parse(process.env);

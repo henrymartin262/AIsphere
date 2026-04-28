@@ -2,46 +2,13 @@ import { ethers } from "ethers";
 import { contracts } from "../config/contracts.js";
 import { initialize0GClients, kvBatchWrite } from "../config/og.js";
 import { hashContent } from "../utils/encryption.js";
-import { writeFileSync, readFileSync, mkdirSync, existsSync } from "fs";
-import { join } from "path";
-
-// ─── User-created agent file persistence ─────────────────────────────────────
-// Agents created by real users are persisted here and take priority over mock data.
-
-const DATA_DIR = join(process.cwd(), "data");
-const AGENTS_FILE = join(DATA_DIR, "agents.json");
-
-function loadUserAgents(): Map<number, AgentInfo> {
-  try {
-    if (!existsSync(AGENTS_FILE)) return new Map();
-    const raw = readFileSync(AGENTS_FILE, "utf-8");
-    const obj = JSON.parse(raw) as Record<string, AgentInfo>;
-    const map = new Map<number, AgentInfo>();
-    for (const [k, v] of Object.entries(obj)) {
-      map.set(parseInt(k, 10), v);
-    }
-    console.log(`[AgentService] Loaded ${map.size} user agents from file`);
-    return map;
-  } catch {
-    return new Map();
-  }
-}
-
-function persistUserAgents(): void {
-  try {
-    mkdirSync(DATA_DIR, { recursive: true });
-    const obj: Record<string, AgentInfo> = {};
-    for (const [k, v] of userAgents.entries()) {
-      obj[String(k)] = v;
-    }
-    writeFileSync(AGENTS_FILE, JSON.stringify(obj, null, 2), "utf-8");
-  } catch (err) {
-    console.warn("[AgentService] Agent file persist failed:", (err as Error).message);
-  }
-}
-
-/** User-created agents — loaded from file on startup, takes priority over mock data */
-const userAgents: Map<number, AgentInfo> = loadUserAgents();
+import {
+  upsertAgent as dbUpsertAgent,
+  getAgentById as dbGetAgentById,
+  getAgentsByOwner as dbGetAgentsByOwner,
+  softDeleteAgent as dbSoftDeleteAgent,
+  getAllAgents as dbGetAllAgents,
+} from "../db/agents.js";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -313,8 +280,7 @@ export async function createAgent(params: CreateAgentParams): Promise<CreateAgen
         stats: { totalInferences: 0, totalMemories: 0, trustScore: computeTrustScore({ totalInferences: 0, totalMemories: 0, level: 1 }), level: 1, lastActiveAt: Date.now() },
         source: "chain",
       };
-      userAgents.set(agentId, chainAgent);
-      persistUserAgents();
+      dbUpsertAgent(chainAgent);
       return { agentId, txHash: receipt.hash };
     }
   } catch (err) {
@@ -330,10 +296,8 @@ export async function createAgent(params: CreateAgentParams): Promise<CreateAgen
     stats: { totalInferences: 0, totalMemories: 0, trustScore: computeTrustScore({ totalInferences: 0, totalMemories: 0, level: 1 }), level: 1, lastActiveAt: Date.now() },
     source: "mock",
   };
-  // Save to userAgents so this agent survives restarts and isn't overwritten by hardcoded mocks
-  userAgents.set(agentId, agent);
+  dbUpsertAgent(agent);
   mockAgents.set(agentId, agent);
-  persistUserAgents();
   return { agentId, txHash: `0xmock_${Date.now().toString(16)}`, mock: true };
 }
 
@@ -386,11 +350,11 @@ export async function getAgent(agentId: number): Promise<AgentInfo | null> {
     console.warn("[AgentService] getAgentInfo failed, using mock:", err);
   }
 
-  // User-created agents take priority over hardcoded mock data
-  const userAgent = userAgents.get(agentId);
-  if (userAgent) {
-    setCachedAgent(agentId, userAgent);
-    return userAgent;
+  // DB lookup — user-created agents live in SQLite
+  const dbAgent = dbGetAgentById(agentId);
+  if (dbAgent) {
+    setCachedAgent(agentId, dbAgent);
+    return dbAgent;
   }
 
   const mock = mockAgents.get(agentId) ?? null;
@@ -423,32 +387,31 @@ export async function getAgentsByOwner(address: string): Promise<AgentInfo[]> {
     console.warn("[AgentService] getAgentsByOwner failed, using mock:", err);
   }
 
-  // Mock fallback
+  // SQLite fallback — includes all user-created agents
+  const dbAgents = dbGetAgentsByOwner(address);
+  if (dbAgents.length > 0) return dbAgents;
+
+  // Last resort: hardcoded mock agents
   return Array.from(mockAgents.values()).filter(
     (a) => a.owner.toLowerCase() === address.toLowerCase()
   );
 }
 
-// ─── Delete Agent (mock only — on-chain NFTs can't be burned by this service) ──
+// ─── Delete Agent ──────────────────────────────────────────────────────────────
 
 const deletedAgentIds: Set<number> = new Set();
 
 export async function deleteAgent(agentId: number, walletAddress: string): Promise<void> {
-  // Check userAgents first (file-persisted user-created agents)
-  const userAgent = userAgents.get(agentId);
-  if (userAgent) {
-    if (userAgent.owner.toLowerCase() !== walletAddress.toLowerCase()) {
-      throw new Error("Not authorized: you don't own this agent");
-    }
-    userAgents.delete(agentId);
+  // Try SQLite soft-delete first (covers all user-created + chain agents)
+  const deleted = dbSoftDeleteAgent(agentId, walletAddress);
+  if (deleted) {
     mockAgents.delete(agentId);
-    persistUserAgents(); // ← write deletion to file so it survives restarts
     invalidateAgentCache(agentId);
     ownerCache.delete(walletAddress.toLowerCase());
     return;
   }
 
-  // For mock-only agents (not in userAgents): remove from map
+  // For mock-only agents not in DB
   const agent = mockAgents.get(agentId);
   if (agent) {
     if (agent.owner.toLowerCase() !== walletAddress.toLowerCase()) {
@@ -459,7 +422,8 @@ export async function deleteAgent(agentId: number, walletAddress: string): Promi
     ownerCache.delete(walletAddress.toLowerCase());
     return;
   }
-  // For chain agents: add to deleted set and clear cache so it won't show up
+
+  // For chain agents without a DB record: track in memory
   deletedAgentIds.add(agentId);
   invalidateAgentCache(agentId);
   ownerCache.delete(walletAddress.toLowerCase());
